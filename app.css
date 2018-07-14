@@ -19,7 +19,7 @@ body {
 
 #instructions {
     position: absolute;
-    bottom: 35px;
+    top: 0px;
     right: 5px;
     color: white;
     text-align: right;
