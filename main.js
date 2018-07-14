@@ -342,8 +342,8 @@ window.onload = () => {
     //         app.notify('render');
     //     };
     // })
-    document.getElementById(`import`).addEventListener(`change`, (e) => app.fromJSON(e.target.files))
-    document.getElementById(`export`).addEventListener(`click`, () => app.toJSON())
+    document.getElementById(`import`).addEventListener(`change`, (e) => app.fromJSON(e.target.files));
+    document.getElementById(`export`).addEventListener(`click`, () => app.toJSON());
 
 }
 
