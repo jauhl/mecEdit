@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>MECedit</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
+        crossorigin="anonymous">
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="./app.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
+        crossorigin="anonymous">
+
+
+</head>
+
+<body>
+
+    <!-- ========================== navbar ========================== -->
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">MECedit - A Lightweight Editor for Planar Mechanisms</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav mr-auto">
+                <!-- <li class="nav-item">
+                    <a class="nav-link" href="#">Home
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li> -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+                        File
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <!-- <label class="dropdown-item">Import linkage from *.JSON<input type="file" hidden></label> -->
+                        <label class="btn btn-default btn-file dropdown-item">Import linkage from *.JSON
+                            <input type="file" id="import" style="display: none;" accept="application/json">
+                        </label>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" id="export" href="#">Export linkage as *.JSON</a>
+                    </div>
+                </li>
+                <!-- <li class="nav-item">
+                    <a class="nav-link" data-toggle="collapse" href="#collapseExample">toogle Sidebar
+                        <span class="sr-only"></span>
+                    </a>
+                </li> -->
+            </ul>
+        </div>
+    </nav>
+
+
+    <div id="wrapper" class="container-fluid">
+        <div class="row content">
+
+            <!-- ========================== left sidebar ========================== -->
+            <nav id="sb-l" class="col-sm-5 col-md-4 col-lg-3 col-xl-2 hidden-xs-down bg-faded sidebar sb-l">
+                <!-- add class "data-simplebar" for pretty scrollbar-->
+                <ul class="nav nav-pills flex-column">
+                    <label class="nav-link greenish mb-1 font-weight-bold">
+                        <i class="fas fa-toolbox"></i> Components:</label>
+
+                    <li class="nav-itemmb-1">
+                        <label class="nav-link greenish m-0" for="btn-group">
+                            <i class="fas fa-plus"></i> add node:</label>
+                        <div class="text-center m-1">
+                            <div class="btn-group" role="group" aria-label="nodebuttons">
+                                <button type="button" id="addframenode" class="btn btn-info">
+                                    <i class="fas fa-circle"></i> frame</button>
+                                <button type="button" id="addnode" class="btn btn-info">
+                                    <i class="far fa-circle"></i> normal</button>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li class="nav-item">
+                        <label class="nav-link greenish m-0" for="btn-group">
+                            <i class="fas fa-plus"></i> add constraint:</label>
+                        <div id="vec-container" class="btn-group flex-row flex-wrap mb-1" role="group">
+                            <span class="fl-w">
+                                <input type="image" id="free" class="vec_btn" src="./img/bas.png">
+                                <label for="free">free</label>
+                            </span>
+                            <span class="fl-w">
+                                <input type="image" id="tran" class="vec_btn" src="./img/rot.png">
+                                <label for="tran">tran</label>
+                            </span>
+                            <span class="fl-w">
+                                <input type="image" id="rot" class="vec_btn" src="./img/trn.png">
+                                <label for="rot">rot</label>
+                            </span>
+                            <span class="fl-w">
+                                <input type="image" id="ctrl" class="vec_btn" src="./img/trnrot.png">
+                                <label for="ctrl">ctrl</label>
+                            </span>
+                        </div>
+                    </li>
+
+
+                    <!-- <li class="nav-item">
+                        <label class="nav-link greenish" for="a_Slider">a:</label>
+                        <input type="range" class="custom-range pl-1 pr-1" id="a_Slider" value="0" min="1" max="300" step="1">
+                    </li> -->
+                    <!-- <li class="nav-item">
+                        <label class="nav-link greenish" for="c2">some function (clipped):</label>
+                        <canvas id="c2" width=inherit height=inherit></canvas>
+                    </li> -->
+                </ul>
+
+                <!-- <ul class="nav nav-pills flex-column">
+                    <label class="nav-link greenish mb-1 font-weight-bold">
+                        <i class="fas fa-cogs"></i> Actuators:</label>
+                    <li class="nav-item">
+                        <label class="nav-link greenish" for="phi">φ:</label>
+                        <span class="d-flex ml-1 mr-1"> -->
+                <!-- <mec-slider id="phi" width="600" min="0" max="360" step="1" value="" valstr="φ={value}°"></mec-slider> -->
+                <!-- <span class="btn btn-outline-light btn-sm">
+                                <i class="fas fa-caret-left fa-2x fitlineheight"></i>
+                            </span>
+                            <input type="range" class="custom-range pl-1 pr-1 mt-1" id="phi_Slider" value="90" min="0" max="359" step="1">
+                            <span class="btn btn-outline-light btn-sm">
+                                <i class="fas fa-caret-right fa-2x fitlineheight"></i>
+                            </span> -->
+                <!-- </span>
+
+                    </li>
+                </ul> -->
+
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item mb-1">
+                        <label class="nav-link greenish m-0 font-weight-bold">
+                            <i class="fas fa-wrench"></i> Settings:</label>
+                        <button type="button" id="viewreset" class="btn btn-primary btn-block btn-nohalo mt-1">
+                            <i class="fas fa-expand-arrows-alt fa-lg"></i> reset editor-view
+                        </button>
+                    </li>
+
+                    <!-- <li class="nav-item mb-1">
+                        <button type="button" class="btn btn-secondary btn-block btn-nohalo">
+                            'secondary' Button
+                        </button>
+                    </li> -->
+
+                    <!-- <li class="nav-item">
+                            <a id="addnode" class="nav-link greenish" href="#">add node</a>
+                        </li> -->
+                    <!-- <li class="nav-item mb-1">
+                        <button type="button" id="testbutton" name="button-name" class="btn btn-success btn-block btn-nohalo">'success' Button</button>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <button type="button" class="btn btn-warning btn-block btn-nohalo">'warning' Button</button>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <button type="button" class="btn btn-danger btn-block btn-nohalo">'danger' Button 3</button>
+                    </li> -->
+                </ul>
+            </nav>
+
+            <!-- ========================== canvas ========================== -->
+            <main id="main" class="col-sm-7 col-md-8 col-lg-9 col-xl-10 p-0 main-container">
+                <!-- <main class="col p-0 main-container"> -->
+                <!-- <canvas-area id="ca" width="1200" height="820" cartesian="true" resizable="both"> -->
+                <canvas id="c" class="canvas" width="1200" height="820"></canvas>
+                <!-- </canvas-area> -->
+                <div id="instructions"></div>
+
+                <div id="actuators-container" class="d-inline-flex flex-wrap">
+                    <!-- <div>
+                        <span id="left" class="reverse" style="cursor:pointer;">◁</span>
+                        <input style="width:300px;margin:0;padding:0;" min="0" max="360" value="0" step="1" type="range">
+                        <span id="right" class="forward" style="cursor:pointer;">▷</span>
+                    </div>
+                    <div>
+                        <span id="dhdh" class="reverse" style="cursor:pointer;">◁</span>
+                        <input style="width:300px;margin:0;padding:0;" min="0" max="360" value="0" step="1" type="range">
+                        <span id="dhdhr" class="forward" style="cursor:pointer;">▷</span>
+                    </div> -->
+                </div>
+
+                <div class="statbar">
+                    <span id="statbar" class="text-muted pl-1">X: 0, Y: 0</span>
+                </div>
+            </main>
+
+        </div>
+    </div>
+
+    <!-- ========================== Custom ContextMenu ========================== -->
+    <div id="contextMenu" class="dropdown clearfix">
+        <div class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;">
+            <a class="dropdown-item" href="#">Link 1</a>
+            <!-- <li class="nav-item">
+                <label class="nav-link greenish" for="a_Slider_ctx">a:</label>
+                <input type="range" class="custom-range pl-1 pr-1 greenish" id="a_Slider_ctx" value="0" min="1" max="300" step="1">
+            </li> -->
+            <a class="dropdown-item" href="#">Link 2</a>
+            <a class="dropdown-item" href="#">Link 3</a>
+        </div>
+    </div>
+
+    <!-- ========================== Tooltip ========================== -->
+    <span id='info' style="position:absolute;display:none;background-color:#ffb;border:1px solid black;padding:0.1em;font:0.9em monospace;">tooltip</span>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap.native/2.0.23/bootstrap-native-v4.min.js" integrity="sha256-4ITt997uLxXYjs5kgacUSOF0E1G1ai/U2dKy3Fq/wqA="
+        crossorigin="anonymous"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" 
+        crossorigin="anonymous"></script> -->
+    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
+        crossorigin="anonymous"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.js"></script> -->
+
+
+    <script src="./scripts/g2.js"></script>
+    <script src="./scripts/mec2.js"></script>
+    <script src="./scripts/g2.ext.js"></script>
+    <script src="./scripts/g2.lib.js"></script>
+    <script src="./scripts/g2.editor.js"></script>
+    <script src="./scripts/mec.slider.mod.js"></script>
+    <script src="./scripts/mixin.js"></script>
+    <!-- <script src="./app.js"></script> -->
+    <script src="./main.js"></script>
+
+
+</body>
+
+</html>

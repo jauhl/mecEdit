@@ -1,0 +1,205 @@
+/*
+ * Base structure
+ */
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+    /* padding-top: 56px; */
+}
+
+#wrapper {
+    padding-top: 56px;
+    background-color: #ffffff;
+}
+
+#c {
+    padding: 0px;
+    background-color: #344c6b;
+}
+
+#instructions {
+    position: absolute;
+    bottom: 35px;
+    right: 5px;
+    color: white;
+    text-align: right;
+}
+
+#actuators-container {
+    position: absolute;
+    bottom: 35px;
+    width: 100%;
+    height: auto;
+}
+
+.mec-slider {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.custom-range {
+    min-width: 300px
+}
+
+/* open dropdown on hover in addition to clicking */
+/* .dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 2;
+ } */
+
+.vec_btn {
+    max-width: 100%;
+    height: auto;
+}
+
+.btn-nohalo:focus {
+    box-shadow: none;
+}
+
+.greenish {
+    background-color: #005454;
+    color: white;
+}
+
+.fitlineheight {
+    line-height: .65em !important;
+    /* lg=1em, 2x=.65em */
+}
+
+/* img scaling in flex-container is bugged in chrome, this fixes it without <span class="fl-w">. see: https://github.com/philipwalton/flexbugs/issues/225 for workaround */
+/* .btn-group .vec_btn{
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+} */
+
+/* class for additional containers due to bugged img scaling in chrome */
+.fl-w{
+    flex: 0 1 25%;
+    max-width: 25%;
+    background-color: white;
+    border: 1px solid #343a40;
+}
+
+/* disable horizontal scrolling here because it is inconsistent in sb classes */
+.simplebar-content{
+    overflow-x: hidden !important;
+}
+
+#contextMenu {
+    position: absolute;
+    display: none;
+}
+
+.statbar {
+    bottom: 0;
+    margin-top: -6px; /*no margin padding etc in sight but still needed to get rid of gap between canvas...*/
+    width: 100%;
+    padding: 0px;
+    /* Set the fixed height of the footer here */
+    height: 30px;
+    line-height: 30px;
+    /* Vertically center the text there */
+    background-color: #f5f5f5;
+    overflow: hidden;
+}
+
+.label {
+    display:inline-block;
+    color: #fff;
+    background-color: #007bff;
+    width: inherit;
+}
+
+/* better alternative? */
+.sb-l, .sb-r {
+    /* max-height: calc(100vh - 22px) !important; */
+    /* max-height: calc(100vh - 56px) !important; */
+    overflow-y: auto;
+    height: inherit !important;
+    background-color: #343a40;
+    /* overflow-x: hidden !important;    */   /* works only on .sb-r ... */
+}
+
+.main-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: inherit !important;
+    /* max-height: calc(100vh - 56px) !important; */
+    /* width: 150px !important; */
+}
+
+.content {
+    height: calc(100vh - 56px) !important;
+}
+
+/*
+ * Typography
+*/
+
+h1 {
+    margin-bottom: 20px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid #eee;
+}
+
+/* make canvas responsive */
+
+/* canvas {
+    width: 100%;
+    height: auto; 
+} */
+
+/*
+   * Sidebar
+   */
+
+/* .sidebar {
+    position: fixed;
+    top: 51px;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    padding: 20px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-right: 1px solid #eee;
+  } */
+
+/* Sidebar navigation */
+
+.sidebar {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.sidebar .nav {
+    margin-bottom: 20px;
+}
+
+.sidebar .nav-item {
+    width: 100%;
+}
+
+.sidebar .nav-item+.nav-item {
+    margin-left: 0;
+}
+
+.sidebar .nav-link {
+    border-radius: 0;
+}
+
+/*
+   * Dashboard
+   */
+
+/* Placeholders */
+
+.placeholders {
+    padding-bottom: 3rem;
+}
+
+.placeholder img {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
