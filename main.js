@@ -331,7 +331,7 @@ window.onload = () => {
 
     // sidebar handler
     document.getElementById(`sb-l`).addEventListener(`click`, (e) => { // bind to parent
-        if (e.target && e.target.className == `vec_btn`) app.edit = { mode: e.target.id }; app.instruct.innerHTML = `select second node`; // check for children
+        if (e.target && e.target.className == `vec_btn`) app.edit = { mode: e.target.id }; app.instruct.innerHTML = `select first node`; // check for children
         if (e.target && e.target.id == `addnode` || e.target.id == `addframenode`) { app.edit = { mode: e.target.id }; app.instruct.innerHTML = `left-click on the canvas to place a new node`; };
         if (e.target && e.target.id == `viewreset`) { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify(`render`); };
     })
