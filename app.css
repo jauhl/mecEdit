@@ -1,6 +1,12 @@
 /*
  * Base structure
  */
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+    /* padding-top: 56px; */
+}
+
 #wrapper {
     padding-top: 56px;
     background-color: #ffffff;
@@ -21,18 +27,28 @@
 
 #actuators-container {
     position: absolute;
+    left: 0px;
     bottom: 35px;
     width: 100%;
-    height: auto;
+    /* height: auto; */
+    /* flex-wrap: wrap; */
 }
 
-.mec-slider {
-    margin-left: 10px;
-    margin-right: 10px;
+/* styled via bootstrap spacing classes in main.js */
+.mec-slider { 
+    /* margin-left: 10px;
+    margin-right: 5px; */
+    /* margin-top: 1px; */
 }
 
 .custom-range {
-    min-width: 300px
+    min-width: 300px;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+output.badge {
+    margin-left: 1px;
 }
 
 /* open dropdown on hover in addition to clicking */

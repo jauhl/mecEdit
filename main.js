@@ -61,8 +61,8 @@ const App = {
                 nodes: [
                     { id: 'A0', x: 100, y: 100, m: 'infinite' },
                     { id: 'A', x: 100, y: 150, m: 1 },
-                    // { id: 'B', x: 300, y: 200, m: 1 },
-                    // { id: 'B0', x: 300, y: 100, m: 'infinite' }
+                    { id: 'B', x: 300, y: 200, m: 1 },
+                    { id: 'B0', x: 300, y: 100, m: 'infinite' }
                     // { id: 'B', x: 300, y: 150, m: 1 },
                     // { id: 'B0', x: 300, y: 100, m: 'infinite' },
                     // { id: 'B', x: 300, y: 150, m: 1 },
@@ -73,7 +73,7 @@ const App = {
                     { id: 'a', type: 'ctrl', p1: 'A0', p2: 'A', r: 50, get w() { return app.model.phi }, for: 'phi' }, // controlled var must be readable (hence 'for') to dynamically add inputs to DOM
                     // { id: 'b', type: 'rot', p1: 'A', p2: 'B'},
                     // { id: 'c', type: 'rot', p1: 'B0', p2: 'B'}
-                    // { id: 'b', type: 'ctrl', p1: 'B0', p2: 'B', r: 50, get w() { return app.model.psi }, for: 'psi' },
+                    { id: 'b', type: 'ctrl', p1: 'B0', p2: 'B', r: 100, get w() { return app.model.psi }, for: 'psi' },
                     // { id: 'c', type: 'free', p1: 'A', p2: 'B' },
                     // { id: 'd', type: 'ctrl', p1: 'C0', p2: 'C', r: 150, get w() { return app.model.theta }, for: 'theta' }
                 ],
@@ -160,7 +160,7 @@ const App = {
                 if (this.model.constraints[constraint].type === 'ctrl') this.model.actcount++
             }
             // calculate range-input witdth
-            let rangewidth = (this.model.actcount > 1) ? actcontainer.clientWidth / 2 - 50 : actcontainer.clientWidth - 50; // subtract space for controls & output
+            let rangewidth = (this.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
 
             for (let constraint in this.model.constraints) {
                 if (this.model.constraints[constraint].type === 'ctrl') {
@@ -170,7 +170,7 @@ const App = {
                     actcontainer.appendChild(this.createActuatorElm(actuated, rangewidth));
                     let elm = document.getElementById(`${actuated}`);
                     // document.getElementById(`${actuated}_Slider`).initEventHandling(this, `${actuated}_Slider`, () => this.model.deg(`${actuated}`), (q) => { this.model.actuated = q; });
-                    mecSlider.manuallyRegisterElm(elm);
+                    mecSlider.RegisterElm(elm);
                     elm.initEventHandling(this, `${actuated}`, () => { return this.model[`${actuated}`] / pi * 180 }, (q) => { this.model[`${actuated}`] = q / 180 * pi; this.notify(`${actuated}`, q); this.dirty = true; });
                 }
             }
@@ -192,7 +192,7 @@ const App = {
 
         createActuatorElm(actuated, width) {
             let template = document.createElement('template')
-            template.innerHTML = `<mec-slider id="${actuated}" class="mec-slider d-inline-flex align-items-center" width="${width}" min="0" max="360" step="1" value="" valstr="${actuated}={value}°"></mec-slider>`
+            template.innerHTML = `<mec-slider id="${actuated}" class="mec-slider d-inline-flex nowrap ml-2 mr-1 mt-1" width="${width}" min="0" max="360" step="1" value="" valstr="${actuated}={value}°"></mec-slider>`
             return template.content.firstChild;
         },
 
@@ -342,8 +342,8 @@ window.onload = () => {
     //         app.notify('render');
     //     };
     // })
-    document.getElementById(`import`).addEventListener(`change`, (e) => app.fromJSON(e.target.files));
-    document.getElementById(`export`).addEventListener(`click`, () => app.toJSON());
+    document.getElementById(`import`).addEventListener(`change`, (e) => app.fromJSON(e.target.files))
+    document.getElementById(`export`).addEventListener(`click`, () => app.toJSON())
 
 }
 
@@ -355,9 +355,12 @@ window.onresize = () => {
     c.height = main.clientHeight - 30;
 
     let actcontainer = document.getElementById(`actuators-container`);
+
+    if (actcontainer.clientWidth > 1000) {
+        console.log(true)
     let mecsliders = document.querySelectorAll(`.mec-slider`);
     let rangesliders = document.querySelectorAll(`.custom-range`);
-    let rangewidth = (app.model.actcount > 1) ? actcontainer.clientWidth / 2 - 50 : actcontainer.clientWidth - 50; // subtract space for controls & output
+    let rangewidth = (app.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
 
     // lagging
     // let rangewidth;
@@ -371,9 +374,9 @@ window.onresize = () => {
     //     rangewidth = Math.trunc(actcontainer.clientWidth - 50);
     // }
 
-    mecsliders.forEach(slider => { slider.width = `${rangewidth}`; slider.style.width = `${rangewidth}px` })
+    mecsliders.forEach(slider => { slider.width = `${rangewidth}`; })
     rangesliders.forEach(slider => { slider.style.width = `${rangewidth}px` })
-
+    }
 
     app.dirty = true;
 }

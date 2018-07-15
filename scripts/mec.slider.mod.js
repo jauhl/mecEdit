@@ -18,7 +18,7 @@ mecSlider.prototype = {
         this.frac = Math.max(0,Math.ceil(-Math.log10(this.step)))
         this.anistep = this.step; // (max - min)/step > 240 ? ((max - min)/240) : step
         this.innerHTML = this.html
-        this.setAttribute('style',(this.getAttribute('style') || "")+this.css)
+        this.setAttribute('style',(this.getAttribute('style') || "")+this.css) // style.width kills flex nowrap 
         this.slider = this.querySelector('input')
         this.output = this.querySelector('output')
         this.forward = this.querySelector('.forward')
@@ -27,13 +27,18 @@ mecSlider.prototype = {
     fwdsym: '&#9655;',
     revsym: '&#9665;',
     stopsym: '&#9744;',
-    get html() { return `<span id="${this.id+'_rev'}" class="reverse" style="cursor:pointer;">${this.revsym}</span>
+    get html() { return `<span id="${this.id+'_rev'}" class="reverse badge badge-primary" style="cursor:pointer;">${this.revsym}</span>
 <input type="range" class="custom-range" style="width:${this.width}px;" min="${this.min}" max="${this.max}" value="${this.value}" step="${this.step}" />
-<span id="${this.id+'_fwd'}" class="forward" style="cursor:pointer;">${this.fwdsym}</span>
-<output style="width:4em; text-align:right;">${this.valstr(this.value)}</output>`
+<span id="${this.id+'_fwd'}" class="forward badge badge-primary" style="cursor:pointer;">${this.fwdsym}</span>
+<output class="badge badge-light ml-1" style="cursor:default">${this.valstr(this.value)}</output>`
     },
+//     get html() { return `<span id="${this.id+'_rev'}" class="reverse badge badge-primary" style="cursor:pointer;">${this.revsym}</span>
+// <input type="range" class="custom-range" style="width:${this.width}px;" min="${this.min}" max="${this.max}" value="${this.value}" step="${this.step}" />
+// <span id="${this.id+'_fwd'}" class="forward badge badge-primary" style="cursor:pointer;">${this.fwdsym}</span>
+// <output class="badge badge-light" style="cursor:default">${this.valstr(this.value)}</output>`
+//     },
     // get css() { return `display:inline-flex; width:${this.width}px; align-items:center;` },
-    get css() { return `width:${this.width}px;` }, // flex properties managed by bootstrap via classes (see edit.js)
+    get css() { return /*`width:${this.width}px;`*/ }, // flex properties managed by bootstrap via classes (see main.js)
     valstr: function(q) { return this.getAttribute("valstr").replace('{value}', (q || this.value).toFixed(this.frac)); },
     setSlider: function(q) {
 //        console.log('set slider:'+q)
@@ -64,7 +69,8 @@ mecSlider.prototype = {
             this.forward.removeEventListener("click", this.startForwardPtr, false);
             this.forward.innerHTML = this.stopsym;
             this.forward.addEventListener("click", this.endForwardPtr, false);
-            this.reverse.style.color = "gray";
+            // this.reverse.style.color = "gray"; // non bootrap
+            this.reverse.classList.add("text-muted"); // bootstrap 4.1
             this.reverse.removeEventListener("click", this.startReversePtr, false);
             this.observer.on('step',this.fwdStepPtr)
             this.value += 0;  // starting mainLoop (initially setting potential dirty flag) ...
@@ -74,7 +80,8 @@ mecSlider.prototype = {
         this.forward.removeEventListener("click", this.endForwardPtr, false);
         this.forward.innerHTML = this.fwdsym;
         this.forward.addEventListener("click", this.startForwardPtr, false);
-        this.reverse.style.color = "black";
+        // this.reverse.style.color = "black"; // non bootrap
+        this.reverse.classList.remove("text-muted"); // bootstrap 4.1
         this.reverse.addEventListener("click", this.startReversePtr, false);
         this.observer.remove('step',this.fwdStepPtr);
         this.value += 0;  // continuing mainLoop (setting potential dirty flag one more time) ...
@@ -91,7 +98,8 @@ mecSlider.prototype = {
             this.reverse.removeEventListener("click", this.startReversePtr, false);
             this.reverse.innerHTML = this.stopsym;
             this.reverse.addEventListener("click",  this.endReversePtr, false);
-            this.forward.style.color = "gray";
+            // this.forward.style.color = "gray"; // non bootrap
+            this.forward.classList.add("text-muted"); // bootstrap 4.1
             this.forward.removeEventListener("click", this.startForwardPtr, false);
             this.observer.on('step',this.revStepPtr)
             this.value += 0;  // starting mainLoop (initially setting potential dirty flag) ...
@@ -101,7 +109,8 @@ mecSlider.prototype = {
         this.reverse.removeEventListener("click", this.endReversePtr, false);
         this.reverse.innerHTML = this.revsym;
         this.reverse.addEventListener("click", this.startReversePtr, false);
-        this.forward.style.color = "black";
+        // this.forward.style.color = "black"; // non bootrap
+        this.forward.classList.remove("text-muted"); // bootstrap 4.1
         this.forward.addEventListener("click", this.startForwardPtr, false);
         this.observer.remove('step',this.revStepPtr);
         this.value += 0;  // continuing mainLoop (setting potential dirty flag one more time) ...
@@ -115,12 +124,12 @@ mecSlider.prototype = {
     }
 }
 
-mecSlider.manuallyRegisterElm = function(elm) {
+mecSlider.RegisterElm = function(elm) {
     Object.setPrototypeOf(mecSlider.prototype, HTMLElement.prototype);
     mecSlider(Object.setPrototypeOf(elm,mecSlider.prototype));
 }
 
-mecSlider.registerElement = function() {
+mecSlider.initialize = function() {
     let register = () => {
         Object.setPrototypeOf(mecSlider.prototype, HTMLElement.prototype);
         for (let elms = document.getElementsByTagName('mec-slider'), i=0; i < elms.length; i++)
