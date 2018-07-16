@@ -45,37 +45,28 @@ const App = {
                 id: 'crank',
                 phi: pi / 2,
                 psi: pi / 2,
-                theta: pi / 2,
-                // get phideg() { return this.phi / pi * 180 },
-                // set phideg(q) { this.phi = q / 180 * pi; app.notify('phi', q); app.dirty = true; },
-                // get psideg() { return this.psi / pi * 180 },
-                // set psideg(q) { this.psi = q / 180 * pi; app.notify('psi', q); app.dirty = true; },
-
-                // get [this.constraints[constraint].for]() { return this[this.constraints[constraint].for] / pi * 180 },
-                // set [this.constraints[constraint].for](q) { this[this.constraints[constraint].for] = q / 180 * pi; app.notify(this[this.constraints[constraint].for], q); app.dirty = true; },
-
-                // get [x](x) {  return this[x] / pi * 180 }, // call x as string
-
-                // set [this.deg](q) { this[x] = q / 180 * pi; app.notify(x, q); app.dirty = true; },
-
+                theta: pi,
                 nodes: [
                     { id: 'A0', x: 100, y: 100, m: 'infinite' },
-                    { id: 'A', x: 100, y: 150, m: 1 },
+                    { id: 'A', x: 100, y:200, m: 1 },
                     { id: 'B', x: 300, y: 200, m: 1 },
-                    { id: 'B0', x: 300, y: 100, m: 'infinite' }
-                    // { id: 'B', x: 300, y: 150, m: 1 },
-                    // { id: 'B0', x: 300, y: 100, m: 'infinite' },
-                    // { id: 'B', x: 300, y: 150, m: 1 },
-                    // { id: 'C0', x: 200, y: 200, m: 'infinite' },
-                    // { id: 'C', x: 200, y: 350, m: 1 }
+                    { id: 'B0', x: 400, y: 100, m: 'infinite' },
+                    { id: 'C', x: 300, y: 200, m: 1 },
+                    { id: 'C0', x: 250, y: 400, m: 'infinite' },
+                    { id: 'D', x: 200, y: 200, m: 1 },
+                    { id: 'E', x: 300, y: 200, m: 1 },
+                    { id: 'F', x: 250, y: 300, m: 1 }
                 ],
                 constraints: [
-                    { id: 'a', type: 'ctrl', p1: 'A0', p2: 'A', r: 50, get w() { return app.model.phi }, for: 'phi' }, // controlled var must be readable (hence 'for') to dynamically add inputs to DOM
-                    // { id: 'b', type: 'rot', p1: 'A', p2: 'B'},
-                    // { id: 'c', type: 'rot', p1: 'B0', p2: 'B'}
-                    { id: 'b', type: 'ctrl', p1: 'B0', p2: 'B', r: 100, get w() { return app.model.psi }, for: 'psi' },
-                    // { id: 'c', type: 'free', p1: 'A', p2: 'B' },
-                    // { id: 'd', type: 'ctrl', p1: 'C0', p2: 'C', r: 150, get w() { return app.model.theta }, for: 'theta' }
+                    { id: 'a', type: 'ctrl', p1: 'A0', p2: 'A', r: 80, get w() { return app.model.phi }, for: 'phi' }, // controlled var must be readable (hence 'for') to dynamically add inputs to DOM
+                    { id: 'b', type: 'ctrl', p1: 'B0', p2: 'B', r: 80, get w() { return app.model.psi }, for: 'psi' },
+                    { id: 'c', type: 'ctrl', p1: 'C0', p2: 'C', r: 80, get w() { return app.model.theta }, for: 'theta' },
+                    { id: 'd', type: 'rot', p1: 'A', p2: 'D'},
+                    // { id: 'e', type: 'rot', p1: 'B', p2: 'E'},
+                    { id: 'f', type: 'rot', p1: 'C', p2: 'F'},
+                    { id: 'g', type: 'rot', p1: 'D', p2: 'E'},
+                    { id: 'h', type: 'rot', p1: 'E', p2: 'F'},
+                    { id: 'i', type: 'rot', p1: 'F', p2: 'D'},
                 ],
             }
 
