@@ -45,28 +45,26 @@ const App = {
                 id: 'crank',
                 phi: pi / 2,
                 psi: pi / 2,
-                theta: pi,
+                theta: pi / 2,
+
                 nodes: [
                     { id: 'A0', x: 100, y: 100, m: 'infinite' },
-                    { id: 'A', x: 100, y:200, m: 1 },
+                    { id: 'A', x: 100, y: 150, m: 1 },
                     { id: 'B', x: 300, y: 200, m: 1 },
-                    { id: 'B0', x: 400, y: 100, m: 'infinite' },
-                    { id: 'C', x: 300, y: 200, m: 1 },
-                    { id: 'C0', x: 250, y: 400, m: 'infinite' },
-                    { id: 'D', x: 200, y: 200, m: 1 },
-                    { id: 'E', x: 300, y: 200, m: 1 },
-                    { id: 'F', x: 250, y: 300, m: 1 }
+                    { id: 'B0', x: 300, y: 100, m: 'infinite' }
+                    // { id: 'B', x: 300, y: 150, m: 1 },
+                    // { id: 'B0', x: 300, y: 100, m: 'infinite' },
+                    // { id: 'B', x: 300, y: 150, m: 1 },
+                    // { id: 'C0', x: 200, y: 200, m: 'infinite' },
+                    // { id: 'C', x: 200, y: 350, m: 1 }
                 ],
                 constraints: [
-                    { id: 'a', type: 'ctrl', p1: 'A0', p2: 'A', r: 80, get w() { return app.model.phi }, for: 'phi' }, // controlled var must be readable (hence 'for') to dynamically add inputs to DOM
-                    { id: 'b', type: 'ctrl', p1: 'B0', p2: 'B', r: 80, get w() { return app.model.psi }, for: 'psi' },
-                    { id: 'c', type: 'ctrl', p1: 'C0', p2: 'C', r: 80, get w() { return app.model.theta }, for: 'theta' },
-                    { id: 'd', type: 'rot', p1: 'A', p2: 'D'},
-                    // { id: 'e', type: 'rot', p1: 'B', p2: 'E'},
-                    { id: 'f', type: 'rot', p1: 'C', p2: 'F'},
-                    { id: 'g', type: 'rot', p1: 'D', p2: 'E'},
-                    { id: 'h', type: 'rot', p1: 'E', p2: 'F'},
-                    { id: 'i', type: 'rot', p1: 'F', p2: 'D'},
+                    { id: 'a', type: 'ctrl', p1: 'A0', p2: 'A', get w() { return app.model.phi }, for: 'phi' }, // controlled var must be readable (hence 'for') to dynamically add inputs to DOM
+                    { id: 'b', type: 'rot', p1: 'A', p2: 'B' },
+                    { id: 'c', type: 'rot', p1: 'B0', p2: 'B'}
+                    // { id: 'b', type: 'ctrl', p1: 'B0', p2: 'B', r: 100, get w() { return app.model.psi }, for: 'psi' },
+                    // { id: 'c', type: 'free', p1: 'A', p2: 'B' },
+                    // { id: 'd', type: 'ctrl', p1: 'C0', p2: 'C', r: 150, get w() { return app.model.theta }, for: 'theta' }
                 ],
             }
 
@@ -211,19 +209,29 @@ const App = {
             this.instruct.innerHTML = ``;
         },
 
+        deleteNode(node) {
+            // delete adjacent constraints from model
+            const adjConstraints = node.getAdjConstrIDs();
+            let modelidx = [];
+            adjConstraints.forEach(el => modelidx.push(this.model.constraints.indexOf(this.model.constraintById(el))));
+            for (let i = modelidx.length - 1; i >= 0; i--) { // splice backwards so modelidx values stas valid
+                this.model.constraints.splice(modelidx[i], 1);
+            }
+
+            // todo: delete node
+            //       delete stuff from graphics queue
+
+        },
+
         addConstraint() {
-            if(!this.edit.firstnode) {
-                //first invocation
-                console.log(`first call`)
+            if (!this.edit.firstnode) { // first invocation
                 if (this.curElm.hasOwnProperty("m")) { // node clicked
                     this.edit.firstnode = this.curElm;
                     this.instruct.innerHTML = `select second node`
                 } else { // no node clicked
                     return; // next clickevent invokes function again
-                };                    
-            } else {
-                //second invocation
-                console.log(`second call`)
+                };
+            } else { // second invocation
                 if (this.curElm.hasOwnProperty("m")) { // node clicked
                     let secondnode = this.curElm;
                     let constraint = {
@@ -236,18 +244,18 @@ const App = {
                         // get [](): 
                     };
                     let type;
-                    console.log(typeof(constraint.type))
+                    console.log(typeof (constraint.type))
                     switch (constraint.type) {
                         case `free`: this.model.addConstraint(mec.constraint.free.extend(constraint)); break;
                         case `tran`: this.model.addConstraint(mec.constraint.tran.extend(constraint)); break;
-                        case `rot`:  this.model.addConstraint(mec.constraint.rot.extend(constraint)); break;
+                        case `rot`: this.model.addConstraint(mec.constraint.rot.extend(constraint)); break;
                         case `ctrl`: this.model.addConstraint(mec.constraint.ctrl.extend(constraint)); break;
                         default: console.log(`something went wrong while adding constraint...`); break;
                     }
                     // this.model.addConstraint(type.extend(constraint));
                     constraint.init();
                     this.g.ins(constraint);
-                    
+
                 } else { // no node clicked
                     return; // next clickevent invokes function again
                 };
@@ -260,7 +268,7 @@ const App = {
             let charArr = [];
             let name;
             let obj;
-            let maxChar; 
+            let maxChar;
             x === `node` ? (obj = this.model.nodes, name = `node`, maxChar = 90) : (obj = this.model.constraints, name = `constraint`, maxChar = 122); // 90 = Z, 122 = z
             for (let i = 0; i < obj.length; i++) {
                 charArr.push(obj[i].id.charCodeAt(0)) // push charcodes from first letter of node ids
@@ -278,7 +286,7 @@ const App = {
             this.notify("render");
         },
 
-        fromJSON(files) {
+        loadFromJSON(files) {
             let file = files[0]
             let fr = new FileReader();
 
@@ -291,9 +299,9 @@ const App = {
             fr.readAsText(file);
         },
 
-        toJSON() {
+        saveToJSON() {
             let a = document.createElement("a");
-            let file = new Blob([JSON.stringify(app.model)], { type: "application/json" });
+            let file = new Blob([JSON.stringify(this.model)], { type: "application/json" }); // model now has toJSON (constraints not fully implemented) which gets automazically invoked by stringify
             a.href = URL.createObjectURL(file);
             a.download = "linkage.json";
             document.body.appendChild(a); // Firefox needs the element to be added to the DOM for this to work, Chrome & Edge ¯\_(ツ)_/¯
@@ -333,8 +341,8 @@ window.onload = () => {
     //         app.notify('render');
     //     };
     // })
-    document.getElementById(`import`).addEventListener(`change`, (e) => app.fromJSON(e.target.files))
-    document.getElementById(`export`).addEventListener(`click`, () => app.toJSON())
+    document.getElementById(`import`).addEventListener(`change`, (e) => app.loadFromJSON(e.target.files))
+    document.getElementById(`export`).addEventListener(`click`, () => app.saveToJSON())
 
 }
 
@@ -349,24 +357,24 @@ window.onresize = () => {
 
     if (actcontainer.clientWidth > 1000) {
         console.log(true)
-    let mecsliders = document.querySelectorAll(`.mec-slider`);
-    let rangesliders = document.querySelectorAll(`.custom-range`);
-    let rangewidth = (app.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
+        let mecsliders = document.querySelectorAll(`.mec-slider`);
+        let rangesliders = document.querySelectorAll(`.custom-range`);
+        let rangewidth = (app.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
 
-    // lagging
-    // let rangewidth;
-    // if (app.model.actcount > 1) {
-    //     if (actcontainer.clientWidth < 600) {
-    //         rangewidth = 200;
-    //     } else {
-    //         rangewidth = Math.trunc(actcontainer.clientWidth / 2 - 50);
-    //     }
-    // } else {
-    //     rangewidth = Math.trunc(actcontainer.clientWidth - 50);
-    // }
+        // lagging
+        // let rangewidth;
+        // if (app.model.actcount > 1) {
+        //     if (actcontainer.clientWidth < 600) {
+        //         rangewidth = 200;
+        //     } else {
+        //         rangewidth = Math.trunc(actcontainer.clientWidth / 2 - 50);
+        //     }
+        // } else {
+        //     rangewidth = Math.trunc(actcontainer.clientWidth - 50);
+        // }
 
-    mecsliders.forEach(slider => { slider.width = `${rangewidth}`; })
-    rangesliders.forEach(slider => { slider.style.width = `${rangewidth}px` })
+        mecsliders.forEach(slider => { slider.width = `${rangewidth}`; })
+        rangesliders.forEach(slider => { slider.style.width = `${rangewidth}px` })
     }
 
     app.dirty = true;

@@ -108,6 +108,7 @@ g2.editor.prototype = {
     elementDragEnd(elm) {
         elm.state ^= g2.DRAG;
         this.draggable = false;
+        elm.updAdjConstr();
     },
     elementEdit(elm) { 
         if ('handles' in elm) {
