@@ -8,7 +8,7 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/MECedit
 + hovered element now belongs to editor namespace -> `editor.curElm`
 
 ### mec2.js:
-+ actuators-controls now adopt to new angle when dragging node with actuated constraint
++ actuator-controls now adopt to new angle when dragging node with actuated constraint
 
 ### main.js
 + fully implemented `deleteNode()`
