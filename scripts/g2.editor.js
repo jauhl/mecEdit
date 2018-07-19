@@ -54,6 +54,7 @@ g2.editor.prototype = {
             else {
                 for (let elm=false, i=commands.length; i && !elm; i--)  // stop after first hit .. starting from list end !
                     elm = this.hit(commands[i-1].a)
+                    
             }
             this.evt = false;
         }
@@ -63,7 +64,7 @@ g2.editor.prototype = {
         return this;
     },
     hit(elm) {
-        app.curElm = elm; // specific variable name!
+        this.curElm = elm; // provide element pointed at to api
         const {type,x,y,dx,dy} = this.evt;
         if (!elm) {  // commands without arguments object .. !
             return false;

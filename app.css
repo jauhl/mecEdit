@@ -71,6 +71,11 @@ output.badge {
     color: white;
 }
 
+/* trashcan red when hover parentbutton */
+#deletenode:hover i{
+    color:crimson;
+}
+
 .fitlineheight {
     line-height: .65em !important;
     /* lg=1em, 2x=.65em */

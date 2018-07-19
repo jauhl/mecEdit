@@ -77,12 +77,20 @@
                             <i class="fas fa-plus"></i> add node:</label>
                         <div class="text-center m-1">
                             <div class="btn-group btn-group-justified" role="group" aria-label="nodebuttons">
-                                <button type="button" id="addframenode" class="btn btn-info">
-                                    <i class="fas fa-circle"></i> frame</button>
+                                <button type="button" id="addbasenode" class="btn btn-info">
+                                    <i class="fas fa-circle"></i> base</button>
                                 <button type="button" id="addnode" class="btn btn-info">
                                     <i class="far fa-circle"></i> normal</button>
                             </div>
                         </div>
+                    </li>
+
+                    <li class="nav-item mb-1">
+                        <label class="nav-link greenish m-0">
+                            <i class="fas fa-minus"></i> delete node:</label>
+                        <button type="button" id="deletenode" class="btn btn-info btn-block btn-nohalo mt-1">
+                            <i class="fas fa-trash-alt fa-lg"></i> delete node
+                        </button>
                     </li>
 
                     <li class="nav-item">
@@ -142,7 +150,7 @@
                     <li class="nav-item mb-1">
                         <label class="nav-link greenish m-0 font-weight-bold">
                             <i class="fas fa-wrench"></i> Settings:</label>
-                        <button type="button" id="viewreset" class="btn btn-primary btn-block btn-nohalo mt-1">
+                        <button type="button" id="resetview" class="btn btn-primary btn-block btn-nohalo mt-1">
                             <i class="fas fa-expand-arrows-alt fa-lg"></i> reset editor-view
                         </button>
                     </li>

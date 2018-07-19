@@ -43,9 +43,20 @@ const App = {
         constructor() {
             this.model = {
                 id: 'crank',
-                phi: pi / 2,
-                psi: pi / 2,
-                theta: pi / 2,
+                // phi: pi / 2,
+                // psi: pi / 2,
+                // theta: pi / 2,
+                // get phideg() { return this.phi / pi * 180 },
+                // set phideg(q) { this.phi = q / 180 * pi; app.notify('phi', q); app.dirty = true; },
+                // get psideg() { return this.psi / pi * 180 },
+                // set psideg(q) { this.psi = q / 180 * pi; app.notify('psi', q); app.dirty = true; },
+
+                // get [this.constraints[constraint].for]() { return this[this.constraints[constraint].for] / pi * 180 },
+                // set [this.constraints[constraint].for](q) { this[this.constraints[constraint].for] = q / 180 * pi; app.notify(this[this.constraints[constraint].for], q); app.dirty = true; },
+
+                // get [x](x) {  return this[x] / pi * 180 }, // call x as string
+
+                // set [this.deg](q) { this[x] = q / 180 * pi; app.notify(x, q); app.dirty = true; },
 
                 nodes: [
                     { id: 'A0', x: 100, y: 100, m: 'infinite' },
@@ -71,7 +82,7 @@ const App = {
             this.dirty = true
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
-            this.curElm = undefined; // current element from editor.hit(elm)
+            // this.curElm = undefined; // current element from editor.hit(elm)
             this.view = { x: 50, y: 50, scl: 1, cartesian: true };
             this.cnv = document.getElementById('c');
             this.ctx = this.cnv.getContext('2d');
@@ -114,15 +125,18 @@ const App = {
                 .on(['buttonup', 'click'], (e) => {             // hide tooltip info
                     tooltip.style.display = 'none';
                 })
-
+                .on('keyboarddown', (e) => {
+                    alert(e);
+                })
                 .on('click', () => {
                     if (this.edit) {
                         // console.log(editor)
-                        if (this.edit.mode == "addnode" || this.edit.mode == "addframenode") this.addNode();
-                        if (this.edit.mode == "free" || this.edit.mode == "tran" || this.edit.mode == "rot" || this.edit.mode == "ctrl") this.addConstraint();
+                        if (this.edit.mode == "addnode" || this.edit.mode == "addbasenode") this.addNode();
+                        if (this.edit.mode == "deletenode") this.deleteNode(editor.curElm);
+                        // if (this.edit.mode == "free" || this.edit.mode == "tran" || this.edit.mode == "rot" || this.edit.mode == "ctrl") this.addConstraint();
+                        if (["free","tran","rot","ctrl"].includes(this.edit.mode)) this.addConstraint();
                     }
                 })
-
                 .on('render', () => this.g.exe(editor).exe(this.ctx))      // redraw
                 .on('step', () => this.model.asm())
                 .startTimer() // startTimer ...             // start synchronized ticks
@@ -155,12 +169,13 @@ const App = {
                 if (this.model.constraints[constraint].type === 'ctrl') {
                     // actindx.push(constraint);
                     let actuated = this.model.constraints[constraint].for // string matching actuated variable
+                    this.model[actuated] =  pi/2; // add matching angle property to model and initialize to pi/2 for now
                     // console.log(this.model[`${actuated}`])
                     actcontainer.appendChild(this.createActuatorElm(actuated, rangewidth));
                     let elm = document.getElementById(`${actuated}`);
                     // document.getElementById(`${actuated}_Slider`).initEventHandling(this, `${actuated}_Slider`, () => this.model.deg(`${actuated}`), (q) => { this.model.actuated = q; });
                     mecSlider.RegisterElm(elm);
-                    elm.initEventHandling(this, `${actuated}`, () => { return this.model[`${actuated}`] / pi * 180 }, (q) => { this.model[`${actuated}`] = q / 180 * pi; this.notify(`${actuated}`, q); this.dirty = true; });
+                    elm.initEventHandling(this, `${actuated}`, () => { return this.model[`${actuated}`]/pi*180 }, (q) => { this.model[`${actuated}`] = q/180*pi; this.notify(`${actuated}`, q); this.dirty = true; });
                 }
             }
             // document.getElementById('phi_Slider').initEventHandling(this, 'phi_Slider', () => { return this.model.phi / pi * 180 }, (q) => { this.model.phi = q / 180 * pi; this.notify('phi', q); this.dirty = true; }); // needs to be generalized
@@ -168,6 +183,12 @@ const App = {
             (this.mainLoop.ptr || (this.mainLoop.ptr = this.mainLoop.bind(this)))(this.mainLoop.t0 = performance.now());
             this.startTimer() // startTimer ...             // start synchronized ticks 
                 .notify('render');                          // send 'render' event
+        },
+
+        createActuatorElm(actuated, width) {
+            let template = document.createElement('template')
+            template.innerHTML = `<mec-slider id="${actuated}" class="mec-slider d-inline-flex nowrap ml-2 mr-1 mt-1" width="${width}" min="0" max="360" step="1" value="" valstr="${actuated}={value}°"></mec-slider>`
+            return template.content.firstChild;
         },
 
         mainLoop(t) {
@@ -179,72 +200,79 @@ const App = {
             requestAnimationFrame(this.mainLoop.ptr);
         },
 
-        createActuatorElm(actuated, width) {
-            let template = document.createElement('template')
-            template.innerHTML = `<mec-slider id="${actuated}" class="mec-slider d-inline-flex nowrap ml-2 mr-1 mt-1" width="${width}" min="0" max="360" step="1" value="" valstr="${actuated}={value}°"></mec-slider>`
-            return template.content.firstChild;
+        updateg() {
+            this.g = g2().clr()
+                .view(this.view)
+                .grid({ color: "rgba(255, 255, 255, 0.1)", size: 100 })
+                .grid({ color: "rgba(255, 255, 255, 0.1)", size: 20 })
+                .p() // mark origin
+                .m({ x: () => -this.view.x / this.view.scl, y: 0 })
+                .l({ x: () => (this.cnv.width - this.view.x) / this.view.scl, y: 0 })
+                .m({ x: 0, y: () => -this.view.y / this.view.scl })
+                .l({ x: 0, y: () => (this.cnv.height - this.view.y) / this.view.scl })
+                .z()
+                .stroke({ ls: "rgba(255, 255, 255, 0.3)", lw: 2 })
+
+            this.model.draw(this.g);
         },
 
         addNode() {
-            // if (!editor.draggable) { // not intended for this, better way to check ?
-            if (this.curElm === undefined || !this.curElm.hasOwnProperty("m")) { // objects with a mass are considered nodes // bug: triggers dragging of existing node
-                // if (this.curElm === undefined || !this.curElm.isSolid) { // also works but throws type-error over empty space
+            if (editor.curElm === undefined || !editor.curElm.hasOwnProperty("m")) { // objects with a mass are considered nodes
+                // if (editor.curElm === undefined || !editor.curElm.isSolid) { // also works but throws type-error over empty space
                 let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
                 let node = {
                     id: this.getNewChar(),
                     x: x,
                     y: y,
-                    m: this.edit.mode == 'addframenode' ? Number.POSITIVE_INFINITY : 1
+                    m: this.edit.mode == 'addbasenode' ? Number.POSITIVE_INFINITY : 1
                 };
-                console.log(node);
-                // this.model.nodes.push(mec.node.extend(node));
-                // node.draw(this.g)
                 this.model.addNode(mec.node.extend(node)); // inherit prototype methods (extend) and add to model via model.addnode
-                this.g.ins(node); // add node to graphics queue
+                this.updateg() // update graphics
             } else {
                 console.log(`node already exists at this coordinates ...`);
-                this.curElm.drag = false;
+                editor.curElm.drag = false;
             }
-            app.edit = false; // reset state
-            this.instruct.innerHTML = ``;
+            app.edit = false; // reset appstate
+            this.instruct.innerHTML = ``; // reset instructions
         },
 
         deleteNode(node) {
-            // delete adjacent constraints from model
+            // remove adjacent constraints from model
             const adjConstraints = node.getAdjConstrIDs();
             let modelidx = [];
-            adjConstraints.forEach(el => modelidx.push(this.model.constraints.indexOf(this.model.constraintById(el))));
+            adjConstraints.forEach(el => {
+                modelidx.push(this.model.constraints.indexOf(this.model.constraintById(el)));
+                if (this.model.constraintById(el).hasOwnProperty("for")) {delete this.model[this.model.constraintById(el).for]}; // remove actuator angle from model if constraint is actuated
+            });
             for (let i = modelidx.length - 1; i >= 0; i--) { // splice backwards so modelidx values stas valid
                 this.model.constraints.splice(modelidx[i], 1);
-            }
-
-            // todo: delete node
-            //       delete stuff from graphics queue
-
+            };
+            this.model.nodes.splice(this.model.nodes.indexOf(node),1); // remove node from model
+            this.updateg() // update graphics
+            app.edit = false; // reset appstate
+            this.instruct.innerHTML = ``; // reset instructions
         },
 
         addConstraint() {
             if (!this.edit.firstnode) { // first invocation
-                if (this.curElm.hasOwnProperty("m")) { // node clicked
-                    this.edit.firstnode = this.curElm;
+                if (!!editor.curElm && editor.curElm.hasOwnProperty("m")) { // node clicked
+                    this.edit.firstnode = editor.curElm;
                     this.instruct.innerHTML = `select second node`
                 } else { // no node clicked
                     return; // next clickevent invokes function again
                 };
             } else { // second invocation
-                if (this.curElm.hasOwnProperty("m")) { // node clicked
-                    let secondnode = this.curElm;
+                if (!!editor.curElm && editor.curElm.hasOwnProperty("m")) { // node clicked
                     let constraint = {
                         id: this.getNewChar(`constraint`),
                         type: this.edit.mode,
                         p1: this.edit.firstnode.id,
-                        p2: secondnode.id
+                        p2: editor.curElm.id
                         // r:
                         // for:
                         // get [](): 
                     };
-                    let type;
-                    console.log(typeof (constraint.type))
+                    // console.log(typeof (constraint.type))
                     switch (constraint.type) {
                         case `free`: this.model.addConstraint(mec.constraint.free.extend(constraint)); break;
                         case `tran`: this.model.addConstraint(mec.constraint.tran.extend(constraint)); break;
@@ -254,13 +282,12 @@ const App = {
                     }
                     // this.model.addConstraint(type.extend(constraint));
                     constraint.init();
-                    this.g.ins(constraint);
-
+                    this.updateg(); // update graphics
                 } else { // no node clicked
                     return; // next clickevent invokes function again
                 };
                 this.edit = false;
-                this.instruct.innerHTML = ``
+                this.instruct.innerHTML = `` // reset instructions
             };
         },
 
@@ -323,26 +350,21 @@ window.onload = () => {
     c.width = main.clientWidth;
     c.height = main.clientHeight - 30;
 
-    // app = App.create(); // create instance
-    // app.build();        // assemble mechanism
-
     (app = App.create()).init();
 
+    // non-editor events
     // sidebar handler
     document.getElementById(`sb-l`).addEventListener(`click`, (e) => { // bind to parent
-        if (e.target && e.target.className == `vec_btn`) app.edit = { mode: e.target.id }; app.instruct.innerHTML = `select first node`; // check for children
-        if (e.target && e.target.id == `addnode` || e.target.id == `addframenode`) { app.edit = { mode: e.target.id }; app.instruct.innerHTML = `left-click on the canvas to place a new node`; };
-        if (e.target && e.target.id == `viewreset`) { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify(`render`); };
-    })
-    // document.getElementById(`sb-l`).addEventListener(`input`, (e) => { // bind to parent
-    //     if (e.target && e.target.id == `phi_Slider`) { // check for children
-    //         app.model.phi = (+e.target.value) / 180 * Math.PI;
-    //         app.model.asm();
-    //         app.notify('render');
-    //     };
-    // })
-    document.getElementById(`import`).addEventListener(`change`, (e) => app.loadFromJSON(e.target.files))
-    document.getElementById(`export`).addEventListener(`click`, () => app.saveToJSON())
+        if (e.target && e.target.className == `vec_btn`) {app.edit = { mode: e.target.id }; app.instruct.innerHTML = `select first node; &lt;Esc&gt; to abort`; }; // check for children
+        if (e.target && e.target.id == `addnode` || e.target.id == `addbasenode`) { app.edit = { mode: e.target.id }; app.instruct.innerHTML = `left-click on the canvas to place a new node; &lt;Esc&gt; to abort`; };
+        if (e.target && e.target.id == `deletenode`) { app.edit = { mode: e.target.id }; app.instruct.innerHTML = `left-click on a node to delete it and all its adjacent constraints; &lt;Esc&gt; to abort`; };
+        if (e.target && e.target.id == `resetview`) { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify(`render`); };
+    });
+    document.getElementById(`import`).addEventListener(`change`, (e) => app.loadFromJSON(e.target.files));
+    document.getElementById(`export`).addEventListener(`click`, () => app.saveToJSON());
+    document.addEventListener(`keydown`, (e) => { // keyboard handler
+        if(e.key === `Escape` && app.edit) { app.edit = false; app.instruct.innerHTML = ``; }; // reset app.edit-state on escapekey 
+    });
 
 }
 
@@ -356,7 +378,6 @@ window.onresize = () => {
     let actcontainer = document.getElementById(`actuators-container`);
 
     if (actcontainer.clientWidth > 1000) {
-        console.log(true)
         let mecsliders = document.querySelectorAll(`.mec-slider`);
         let rangesliders = document.querySelectorAll(`.custom-range`);
         let rangewidth = (app.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output

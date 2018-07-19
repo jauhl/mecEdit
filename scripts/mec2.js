@@ -118,7 +118,7 @@ mec.constraint = {
         this.p1 = this.model.nodeById(this.p1.id);
         this.p2 = this.model.nodeById(this.p2.id);
         //        console.log(this.type+':'+this.p1+','+this.p2)
-        return this.init_ang().init_rad("update");
+        return this.init_ang("update").init_rad("update");
     },
     pos() {
         let res = this.pos_ang();
@@ -137,7 +137,7 @@ mec.constraint = {
 
 // angular interface ... angular motion is considered frozen, referenced or driven
 mec.constraint.angular = {
-    init_ang() {
+    init_ang(flag) {
         if (typeof this.w === 'object') {
             const w = Object.assign(this.w)
             this._w = Object.assign(this.w)
@@ -187,6 +187,9 @@ mec.constraint.angular = {
                 else
                     this.w0 = this.w;
         */
+        if (flag === "update") { // workaround... maybe rather implement setter for w...?
+            document.getElementById(`${this.for}`).value = Math.atan2(this.ay, this.ax)*180/Math.PI;
+        }
         return this;
     },
     pos_ang() {
