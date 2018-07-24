@@ -32,7 +32,6 @@ const mixin = {
             elm.addEventListener("mousemove", this, false);
             elm.addEventListener("mousedown", this, false);
             elm.addEventListener("mouseup", this, false);
-            elm.addEventListener("contextmenu", this, false);
             elm.addEventListener("mouseenter", this, false);
             elm.addEventListener("mouseleave", this, false);
             elm.addEventListener("wheel", this, false);
@@ -44,8 +43,7 @@ const mixin = {
         handleEvent(e) {
             if (e.type in this) {  // can I handle events of type e.type .. ?
                 let evt = this.getEventData(e);
-                if (this.isDefaultPreventer(e.type, e.btn))
-                console.log("prevent");
+                if (this.isDefaultPreventer(e.type))
                     e.preventDefault();
                 this[e.type](evt);  // handle it .. ?
                 if (!this.tick) {   // not controlled by timer ... !
@@ -69,7 +67,6 @@ const mixin = {
                 x,
                 y: this.cartesian ? this.height - y : y,
                 dx: 0, dy: 0,
-                clientX: e.clientX, clientY: e.clientY,
                 btn: e.buttons !== undefined ? e.buttons : e.button || e.which,
                 delta: Math.max(-1,Math.min(1,e.deltaY||e.wheelDelta)) || 0
             }
@@ -79,10 +76,8 @@ const mixin = {
             e.dy = e.y - this.evt.yi;
             e.type = e.btn !== 0 ? (this.dragging ? 'drag' : 'pan') : 'pointer';
         },
-        // mousedown(e) { e.btn === 2 ? e.type='contextmenu' : e.type='buttondown'; },
-        mousedown(e) { e.type='buttondown'; },
+        mousedown(e) { e.type='buttondown' },
         mouseup(e) { e.type = this.evt.dx===0 && this.evt.dy===0 ? 'click' : 'buttonup' },
-        // contextmenu(e) { e.type ='rightclick' },
         mouseenter(e) { e.type='pointerenter' },
         mouseleave(e) { e.type='pointerleave' },
         wheel(e) { e.type='wheel' },
@@ -98,8 +93,6 @@ const mixin = {
             this.evt.basetype = e.basetype;
             this.evt.dx = e.dx; 
             this.evt.dy = e.dy;
-            this.evt.clientX = e.clientX; 
-            this.evt.clientY = e.clientY;
             this.evt.x = this.evt.xi = e.x; 
             this.evt.y = this.evt.yi = e.y;
             this.evt.dbtn = e.btn - this.evt.btn;  // watch for inconsistencies .. !
@@ -117,8 +110,8 @@ const mixin = {
                 this.evt.unused = true;
             }
         },
-        isDefaultPreventer(type,btn) {
-            return ['touchstart','touchend','touchmove'].includes(type) || btn === 2;
+        isDefaultPreventer(type) {
+            return ['touchstart','touchend','touchmove'].includes(type);
         }
     },
     tickTimer: {

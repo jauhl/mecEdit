@@ -42,71 +42,61 @@ g2.editor.prototype = {
                 if (this.evt.type === 'click') {           // something selected ..
                     for (let cmd of commands)      
                         if (cmd.a && cmd.a.state)
-                            // cmd.a.state = g2.NONE;
-                            delete cmd.a.state;
-                        this.handles.del();
-                } else {
+                            cmd.a.state = g2.NONE;
+                    this.handles.del();
+                }
+                else {
                     for (let cmd of this.handles.commands)  // treat handles interactivity !
                         if (cmd.c === 'handle')
                             this.hit(cmd.a);
                 }
-            } else {
+            }
+            else {
                 for (let elm=false, i=commands.length; i && !elm; i--)  // stop after first hit .. starting from list end !
-                    elm = this.hit(commands[i-1].a)    
+                    elm = this.hit(commands[i-1].a)
+                    
             }
             this.evt = false;
         }
     },
-    on({type,x,y,dx,dy,btn,clientX,clientY}) {
-        this.evt = {type,x,y,dx,dy,btn,eps:1.2,clientX,clientY};
+    on({type,x,y,dx,dy,btn}) {
+        this.evt = {type,x,y,dx,dy,btn,eps:2};
         return this;
     },
     hit(elm) {
         this.curElm = elm; // provide element pointed at to api
         const {type,x,y,dx,dy} = this.evt;
-        // console.log(this.evt);
         if (!elm) {  // commands without arguments object .. !
             return false;
         }
-        else if (elm.state & g2.EDIT) {                                 // in EDIT mode
-            if (type === 'click') {                                     // leave EDIT mode ..
+        else if (elm.state & g2.EDIT) {                               // in EDIT mode
+            if (type === 'click')                                     // leave EDIT mode ..
                 elm.state ^= g2.EDIT;
-                let ctxMenuStyle = document.getElementById('contextMenu').style;
-                if (ctxMenuStyle.display === 'block')       // ctxmenu is shown
-                    ctxMenuStyle.display = 'none';          // hide ctxmenu
-            }
         }
-        else if (!(elm.state & g2.OVER)) {                              // not in OVER mode
-            if (type === 'pointer' && this.elementHit(elm,this.evt)) {  // enter OVER mode ..
+        else if (!(elm.state & g2.OVER)) {                            // not in OVER mode
+            if (type === 'pointer' && this.elementHit(elm,this.evt))  // enter OVER mode ..
                 elm.state |= g2.OVER;
-                // document.body.style.cursor = "grab";
-            }
         }
-        else if ((elm.state & g2.DRAG) && !app.build) {                 // in DRAG mode
-            if (type === 'drag' && elm.drag)                            // drag element ..
+        else if ((elm.state & g2.DRAG) && !app.edit) {                // in DRAG mode
+            if (type === 'drag' && elm.drag)                          // drag element ..
                 elm.drag({x,y,dx,dy});
-            else if (type === 'buttonup')                               // leave DRAG mode ..
+            else if (type === 'buttonup')                             // leave DRAG mode ..
                 this.elementDragEnd(elm);
-            else if (type === 'click' && !app.build)                    // enter EDIT mode .. // dont set EDIT when building mechanism
-                // if (true) 
-                //     this.elementDragEnd(elm); // dragging mode is usually active at this point due to nature of mouseevents: click = mousedown -> click -> inevitable mouseup mousedown sets drag flag
-                this.elementEdit(elm);                                
+            else if (type === 'click') 
+                this.elementEdit(elm);                                // enter EDIT mode ..
         }
-        else if (elm.state & g2.OVER) {                                 // in OVER mode
-            if (type === 'pointer' && !this.elementHit(elm,this.evt)) { // leave OVER mode ..
+        else if (elm.state & g2.OVER) {                               // in OVER mode
+            if (type === 'pointer' && !this.elementHit(elm,this.evt)) // leave OVER mode ..
                 elm.state ^= g2.OVER;
-                // document.body.style.cursor = "default";
-            } else if (type === 'buttondown' && !app.build)             // enter DRAG mode .. // dont set DRAG when building mechanism
+            else if (type === 'buttondown' && !app.edit)                           // enter DRAG mode ..
                 this.elementDragBeg(elm);
         }
         else
             console.log('what state .. '+g2.editor.state[elm.state]);
 
-        this.curState = elm && elm.state || g2.NONE;
+        this.curState = elm && elm.state || 0;
 
-        if (elm.state === g2.NONE) delete elm.state;
-
-        return elm.state && elm;
+        return elm.state && elm;  // why this way ?
     },
     elementHit(elm,{x,y,eps}) { 
         return elm.isSolid ? elm.hitInner && elm.hitInner({x,y,eps})
@@ -115,23 +105,17 @@ g2.editor.prototype = {
     elementDragBeg(elm) {
         elm.state |= g2.DRAG;
         this.draggable = elm;
-        // document.body.style.cursor = "grabbing";
     },
     elementDragEnd(elm) {
         elm.state ^= g2.DRAG;
         this.draggable = false;
-        // document.body.style.cursor = "grab";
         // elm.updAdjConstr();
     },
     elementEdit(elm) { 
-        // if ('handles' in elm) {
-            // console.log(elm.state)
-            if(elm.state === 3) elm.state = elm.state ^ g2.DRAG; // remove DRAG state
+        if ('handles' in elm) {
             elm.state = elm.state ^ g2.OVER | g2.EDIT;
-            elm.type ? app.modConstraint(elm) : app.modNode(elm);
-            // console.log(elm.state)
-            // elm.handles(this.handles);
-        // }
+            elm.handles(this.handles);
+        }
     },
 };
 

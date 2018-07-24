@@ -5,6 +5,7 @@
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
     /* padding-top: 56px; */
+    overflow: hidden;
 }
 
 #wrapper {
@@ -99,6 +100,23 @@ output.badge {
 /* disable horizontal scrolling here because it is inconsistent in sb classes */
 .simplebar-content{
     overflow-x: hidden !important;
+}
+
+.card-header, .card-body {
+    padding: .25rem .75rem !important;
+}
+
+.card-header:hover, .input-group-text:hover {
+    cursor: grab;
+}
+
+.custom-select {
+    width: auto !important;
+    height: auto !important;
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+    padding-right: 1.25rem !important;
+    padding-left: .25rem !important;
 }
 
 #contextMenu {

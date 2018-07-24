@@ -318,22 +318,20 @@ g2.canvasHdl.prototype = {
             img.src = uri;
             return img;
         }
-
-        let args = arguments[0], 
-            img = args._image || (args._image = getImg(uri,false)),
-            sw = w ? Math.sin(w) : 0, 
-            cw = w ? Math.cos(w) : 1,
-            b =  img && img.width || 20,
-            h =  img && img.height || 20;
-
+        scl = scl || 1;
+        const args = arguments[0], 
+              img = args._image || (args._image = getImg(uri,false)),
+              sw = w ? scl*Math.sin(w) : 0, 
+              cw = w ? scl*Math.cos(w) : scl,
+              b = img && img.width || 20,
+              h = img && img.height || 20;
         x = x || 0; y = y || 0; xoff = xoff || 0; yoff = yoff || 0;
-        this.setTrf(this.isCartesian ? [cw,sw,sw,-cw,x-sw*(h-yoff),y+cw*(h-yoff)]
+        this.setTrf(this.isCartesian ? [cw,sw,sw,-cw,x-cw*xoff-sw*(h-yoff),y-sw*xoff+cw*(h-yoff)]
                                      : [cw,sw,-sw,cw,x-xoff,y-yoff]);
         if (img.complete)
            this.ctx.drawImage(img,0,0);
         else // broken image ..
            this.ctx.drawImage(getImg("data:image/gif;base64,R0lGODlhHgAeAKIAAAAAmWZmmZnM/////8zMzGZmZgAAAAAAACwAAAAAHgAeAEADimi63P5ryAmEqHfqPRWfRQF+nEeeqImum0oJQxUThGaQ7hSs95ezvB4Q+BvihBSAclk6fgKiAkE0kE6RNqwkUBtMa1OpVlI0lsbmFjrdWbMH5Tdcu6wbf7J8YM9H4y0YAE0+dHVKIV0Efm5VGiEpY1A0UVMSBYtPGl1eNZhnEBGEck6jZ6WfoKmgCQA7"),0,0);
-
         this.resetTrf();
     },
     use({grp}) {

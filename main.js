@@ -1,30 +1,11 @@
-g2.prototype.v2 = function ({ p1, p2, ls, ls2, lw, type, id, idloc }) { return this.addCommand({ c: 'v2', a: arguments[0] }); }
-g2.prototype.v2.prototype = {
-    g2: function () {
-        let { p1, p2, ls, ls2, lw, type, id, idloc } = this,
-            lam = idloc || 0.5, xid = p1.x + lam * (p2.x - p1.x), yid = p1.y + lam * (p2.y - p1.y),
-            arrow = (type === 1) ? 'M0,0 8,0M10,-4 10,4M15,-4 15,4M18,0 37,0M48,0 39,-3 40,0 39,3 Z'
-                : (type === 2) ? 'M12,0 10,6 12,0 10,-6Z M0,0 9,0M15,0 37,0M48,0 39,-3 40,0 39,3 Z'
-                    : (type === 4) ? 'M0,0 27,0 M38,0 29,-3 30,0 29,3 Z M48,0 39,-3 40,0 39,3 Z'
-                        : (type === 5) ? 'M12,0 10,6 12,0 10,-6Z M0,0 9,0M15,0 37,0M38,0 29,-3 30,0 29,3 Z M48,0 39,-3 40,0 39,3 Z'
-                            : (type === 6) ? 'M0,0 8,0M11,-4 11,4M15,-4 15,4M18,0 37,0M38,0 29,-3 30,0 29,3 Z M48,0 39,-3 40,0 39,3 Z'
-                                : 'M0,0 37,0M48,0 39,-3 40,0 39,3 Z';
-
-        return g2().beg({ x: p1.x, y: p1.y, w: Math.atan2(p2.y - p1.y, p2.x - p1.x), scl: 1, lw, ls: ls2, fs: '@ls', lc: 'round' })
-            .stroke({ d: `M50,0 ${Math.hypot(p2.x - p1.x, p2.y - p1.y)},0`, ls, lw: lw + 1 })     // not supported by ...
-            .drw({ d: arrow })                                                          // ... ms edge yet.
-            .end()
-            .cir({ x: xid, y: yid, r: 8, ls: "#666", fs: "snow" })
-            .txt({ str: id || '?', x: xid, y: yid, thal: 'center', tval: 'middle' })
-    }
-}
+/*  ---  appversion alpha 4.7.1  ---  */
 
 const tooltip = document.getElementById('info'),
     statusbar = document.getElementById('statbar'),
-    nodestyle = {
-        r: 5, ls: '#333', fs: '#eee',
-        _info() { return `x:${this.x}<br>y:${this.y}` }  // tooltip info ...
-    }
+//     nodestyle = {
+//         r: 5, ls: '#333', fs: '#eee',
+//         _info() { return `x:${this.x}<br>y:${this.y}` }  // tooltip info ...
+//     }
 //      nod1 = {x:40,y:30,...nodestyle}, nod2 = {x:240,y:50,...nodestyle},  // ms Edge can't handle this yet ...
 // nod1 = Object.assign({ x: 40, y: 30 }, nodestyle), nod2 = Object.assign({ x: 240, y: 50 }, nodestyle),  // ... but that.
 editor = g2.editor(),
@@ -43,81 +24,64 @@ const App = {
         constructor() {
             this.model = {
                 id: 'crank',
+                dt: 2 / 360,
+                dirty: true,
                 // phi: pi / 2,
                 // psi: pi / 2,
                 // theta: pi / 2,
-                // get phideg() { return this.phi / pi * 180 },
-                // set phideg(q) { this.phi = q / 180 * pi; app.notify('phi', q); app.dirty = true; },
-                // get psideg() { return this.psi / pi * 180 },
-                // set psideg(q) { this.psi = q / 180 * pi; app.notify('psi', q); app.dirty = true; },
-
-                // get [this.constraints[constraint].for]() { return this[this.constraints[constraint].for] / pi * 180 },
-                // set [this.constraints[constraint].for](q) { this[this.constraints[constraint].for] = q / 180 * pi; app.notify(this[this.constraints[constraint].for], q); app.dirty = true; },
-
-                // get [x](x) {  return this[x] / pi * 180 }, // call x as string
-
-                // set [this.deg](q) { this[x] = q / 180 * pi; app.notify(x, q); app.dirty = true; },
-
                 nodes: [
                     { id: 'A0', x: 100, y: 100, m: 'infinite' },
                     { id: 'A', x: 100, y: 150, m: 1 },
-                    { id: 'B', x: 300, y: 200, m: 1 },
-                    { id: 'B0', x: 300, y: 100, m: 'infinite' }
-                    // { id: 'B', x: 300, y: 150, m: 1 },
-                    // { id: 'B0', x: 300, y: 100, m: 'infinite' },
-                    // { id: 'B', x: 300, y: 150, m: 1 },
-                    // { id: 'C0', x: 200, y: 200, m: 'infinite' },
-                    // { id: 'C', x: 200, y: 350, m: 1 }
+                    { id: 'B', x: 350, y: 220, m: 1 },
+                    { id: 'B0', x: 300, y: 100, m: 'infinite' },
                 ],
                 constraints: [
-                    { id: 'a', type: 'ctrl', p1: 'A0', p2: 'A', get w() { return app.model.phi }, for: 'phi' }, // controlled var must be readable (hence 'for') to dynamically add inputs to DOM
-                    { id: 'b', type: 'rot', p1: 'A', p2: 'B' },
-                    { id: 'c', type: 'rot', p1: 'B0', p2: 'B'}
-                    // { id: 'b', type: 'ctrl', p1: 'B0', p2: 'B', r: 100, get w() { return app.model.psi }, for: 'psi' },
-                    // { id: 'c', type: 'free', p1: 'A', p2: 'B' },
-                    // { id: 'd', type: 'ctrl', p1: 'C0', p2: 'C', r: 150, get w() { return app.model.theta }, for: 'theta' }
-                ],
-            }
+                    { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
+                    { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
+                    { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } }
+                ]
+            };
 
-            this.dirty = true
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
-            // this.curElm = undefined; // current element from editor.hit(elm)
             this.view = { x: 50, y: 50, scl: 1, cartesian: true };
+
             this.cnv = document.getElementById('c');
             this.ctx = this.cnv.getContext('2d');
-            this.edit = false;
-            this.instruct = document.getElementById(`instructions`);
-            this.imported = {};
+            this.build = false;
+            this.instruct = document.getElementById('instructions');
+            this.ctxmenu = document.getElementById('contextMenu');
+            this.ctxmenuheader = document.getElementById("contextMenuHeader");
+            this.ctxmenubody = document.getElementById("contextMenuBody");
+            this.imported = {}; // here goes the imported JSON model
 
-            // this.updateModel = false;
             this.g = g2().clr()
                 .view(this.view)
-                .grid({ color: "rgba(255, 255, 255, 0.1)", size: 100 })
-                .grid({ color: "rgba(255, 255, 255, 0.1)", size: 20 })
+                .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 100 })
+                .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 20 })
                 .p() // mark origin
                 .m({ x: () => -this.view.x / this.view.scl, y: 0 })
                 .l({ x: () => (this.cnv.width - this.view.x) / this.view.scl, y: 0 })
                 .m({ x: 0, y: () => -this.view.y / this.view.scl })
                 .l({ x: 0, y: () => (this.cnv.height - this.view.y) / this.view.scl })
                 .z()
-                .stroke({ ls: "rgba(255, 255, 255, 0.3)", lw: 2 })
+                .stroke({ ls: 'rgba(255, 255, 255, 0.3)', lw: 2 })
 
             this.registerEventsFor(this.ctx.canvas)
                 .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], (e) => { this.g.exe(editor.on(this.pntToUsr(Object.assign({}, e)))) })  // apply events to g2 ...
                 .on(['pointer', 'drag', 'pan', 'fps', 'buttondown', 'buttonup', 'click', 'pointerenter', 'pointerleave'], () => this.showStatus())
-                .on('drag', (e) => {       // update tooltip info
-                    tooltip.style.left = (e.x + 5) + 'px';
-                    tooltip.style.top = (this.cartesian ? this.height - (e.y + 30) : e.y - 30) + 'px';
+                .on('drag', (e) => {       // update tooltip info // kills performance (bug: lag but fps stiil max) and is basically redundant due to statbar. maybe disable tooltip
+                    tooltip.style.left = ((e.clientX) + 15) + 'px';
+                    tooltip.style.top = (e.clientY - 50) + 'px';
                     tooltip.innerHTML = editor.dragInfo;
                 })
                 .on('pan', (e) => {
                     this.pan(e);
                 })
                 .on('buttondown', (e) => {                     // show tooltip info
-                    if (editor.dragInfo) {
-                        tooltip.style.left = (e.x + 5) + 'px';
-                        tooltip.style.top = (this.cartesian ? this.height - (e.y + 30) : e.y - 30) + 'px';
+                    if (editor.dragInfo && !document.getElementById('inversekin').checked) {
+                        tooltip.style.left = ((e.clientX) + 15) + 'px';
+                        tooltip.style.top = (e.clientY - 50) + 'px';
                         tooltip.innerHTML = editor.dragInfo;
                         tooltip.style.display = 'inline';
                     }
@@ -125,20 +89,17 @@ const App = {
                 .on(['buttonup', 'click'], (e) => {             // hide tooltip info
                     tooltip.style.display = 'none';
                 })
-                .on('keyboarddown', (e) => {
-                    alert(e);
-                })
                 .on('click', () => {
-                    if (this.edit) {
+                    if (this.build) {
                         // console.log(editor)
-                        if (this.edit.mode == "addnode" || this.edit.mode == "addbasenode") this.addNode();
-                        if (this.edit.mode == "deletenode") this.deleteNode(editor.curElm);
-                        // if (this.edit.mode == "free" || this.edit.mode == "tran" || this.edit.mode == "rot" || this.edit.mode == "ctrl") this.addConstraint();
-                        if (["free","tran","rot","ctrl"].includes(this.edit.mode)) this.addConstraint();
+                        if (['addnode', 'addbasenode'].includes(this.build.mode)) this.addNode();
+                        if (this.build.mode === 'deletenode') this.deleteNode(editor.curElm);
+                        if (['free', 'tran', 'rot'].includes(this.build.mode)) this.addConstraint();
+                        if (this.build.mode === 'drive') this.addActuator(editor.curElm);
                     }
                 })
-                .on('render', () => this.g.exe(editor).exe(this.ctx))      // redraw
-                .on('step', () => this.model.asm())
+                .on('render', () => this.g.exe(editor).exe(this.ctx))      // redraw // why .exe(editor)? works without...
+                .on('step', () => this.model.pre().itr().post())
                 .startTimer() // startTimer ...             // start synchronized ticks
                 .notify('render')   // send 'render' event
         }, // constructor
@@ -154,32 +115,28 @@ const App = {
 
         init() { // evaluate how many actuators and add init add controlled properties to model instead of typing them there
             mec.model.extend(this.model);
-            this.model.init()
-                .draw(this.g);
+            this.model.init().asm().draw(this.g);
 
             this.model.actcount = 0; // add counter to model
-            let actcontainer = document.getElementById(`actuators-container`);
+            let actcontainer = document.getElementById('actuators-container');
             for (let constraint in this.model.constraints) { // get amount of actuators in model
                 if (this.model.constraints[constraint].type === 'ctrl') this.model.actcount++
             }
             // calculate range-input witdth
             let rangewidth = (this.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
 
-            for (let constraint in this.model.constraints) {
-                if (this.model.constraints[constraint].type === 'ctrl') {
-                    // actindx.push(constraint);
-                    let actuated = this.model.constraints[constraint].for // string matching actuated variable
-                    this.model[actuated] =  pi/2; // add matching angle property to model and initialize to pi/2 for now
-                    // console.log(this.model[`${actuated}`])
-                    actcontainer.appendChild(this.createActuatorElm(actuated, rangewidth));
-                    let elm = document.getElementById(`${actuated}`);
-                    // document.getElementById(`${actuated}_Slider`).initEventHandling(this, `${actuated}_Slider`, () => this.model.deg(`${actuated}`), (q) => { this.model.actuated = q; });
-                    mecSlider.RegisterElm(elm);
-                    elm.initEventHandling(this, `${actuated}`, () => { return this.model[`${actuated}`]/pi*180 }, (q) => { this.model[`${actuated}`] = q/180*pi; this.notify(`${actuated}`, q); this.dirty = true; });
-                }
-            }
-            // document.getElementById('phi_Slider').initEventHandling(this, 'phi_Slider', () => { return this.model.phi / pi * 180 }, (q) => { this.model.phi = q / 180 * pi; this.notify('phi', q); this.dirty = true; }); // needs to be generalized
-            // document.getElementById('psi').initEventHandling(this, 'psi', () => this.model.psideg, (q) => { this.model.psideg = q; });
+            // for (let constraint in this.model.constraints) {
+            //     if (this.model.constraints[constraint].type === 'ctrl') {
+            //         let actuated = this.model.constraints[constraint].for // string matching actuated variable
+            //         this.model[actuated] = pi / 2; // add matching angle property to model and initialize to pi/2 for now
+            //         // console.log(this.model[`${actuated}`])
+            //         actcontainer.appendChild(this.createActuatorElm(actuated, rangewidth));
+            //         let elm = document.getElementById(`${actuated}`);
+            //         mecSlider.RegisterElm(elm);
+            //         elm.initEventHandling(this, `${actuated}`, () => { return this.model[`${actuated}`] / pi * 180 }, (q) => { this.model[`${actuated}`] = q / 180 * pi; this.notify(`${actuated}`, q); this.dirty = true; });
+            //     }
+            // }
+
             (this.mainLoop.ptr || (this.mainLoop.ptr = this.mainLoop.bind(this)))(this.mainLoop.t0 = performance.now());
             this.startTimer() // startTimer ...             // start synchronized ticks 
                 .notify('render');                          // send 'render' event
@@ -191,9 +148,17 @@ const App = {
             return template.content.firstChild;
         },
 
+        createActuatorElm2(actuated, width) {
+            let template = document.createElement('template')
+            // template.innerHTML = `<mec-slider id="${actuated}" class="mec-slider d-inline-flex nowrap ml-2 mr-1 mt-1" width="${width}" min="0" max="360" step="1" value="" valstr="${actuated}={value}°"></mec-slider>`
+            template.innerHTML = `<actuator><input id="${actuated}" type="range" style="min-width:${width}px;margin:0;" min="0" max="2" value="0" step="0.0055555"/><output id="${actuated}_out" style="width:4em; text-align:right;"></output></actuator>`
+            console.log(template.content.firstChild);
+            return template.content.firstChild;
+        },
+
         mainLoop(t) {
-            if (this.dirty) {
-                this.dirty = false
+            if (this.model.dirty) { // model.dirty for inverse
+                this.model.dirty = false;
                 this.notify('step');
                 this.notify('render');
             }
@@ -203,100 +168,119 @@ const App = {
         updateg() {
             this.g = g2().clr()
                 .view(this.view)
-                .grid({ color: "rgba(255, 255, 255, 0.1)", size: 100 })
-                .grid({ color: "rgba(255, 255, 255, 0.1)", size: 20 })
+                .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 100 })
+                .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 20 })
                 .p() // mark origin
                 .m({ x: () => -this.view.x / this.view.scl, y: 0 })
                 .l({ x: () => (this.cnv.width - this.view.x) / this.view.scl, y: 0 })
                 .m({ x: 0, y: () => -this.view.y / this.view.scl })
                 .l({ x: 0, y: () => (this.cnv.height - this.view.y) / this.view.scl })
                 .z()
-                .stroke({ ls: "rgba(255, 255, 255, 0.3)", lw: 2 })
+                .stroke({ ls: 'rgba(255, 255, 255, 0.3)', lw: 2 })
 
             this.model.draw(this.g);
         },
 
+        resetApp() {
+            app.build = false; // reset appstate
+            this.instruct.innerHTML = ''; // reset instructions
+        },
+
         addNode() {
-            if (editor.curElm === undefined || !editor.curElm.hasOwnProperty("m")) { // objects with a mass are considered nodes
+            if (editor.curElm === undefined || !editor.curElm.hasOwnProperty('m')) { // objects with a mass are considered nodes
                 // if (editor.curElm === undefined || !editor.curElm.isSolid) { // also works but throws type-error over empty space
                 let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
                 let node = {
                     id: this.getNewChar(),
                     x: x,
                     y: y,
-                    m: this.edit.mode == 'addbasenode' ? Number.POSITIVE_INFINITY : 1
+                    m: this.build.mode == 'addbasenode' ? Number.POSITIVE_INFINITY : 1
                 };
                 this.model.addNode(mec.node.extend(node)); // inherit prototype methods (extend) and add to model via model.addnode
                 this.updateg() // update graphics
             } else {
-                console.log(`node already exists at this coordinates ...`);
+                console.log('node already exists at this coordinates ...');
                 editor.curElm.drag = false;
             }
-            app.edit = false; // reset appstate
-            this.instruct.innerHTML = ``; // reset instructions
+            document.body.style.cursor = 'default';
+            this.resetApp();
         },
 
         deleteNode(node) {
             // remove adjacent constraints from model
-            const adjConstraints = node.getAdjConstrIDs();
+            const adjConstraints = node.adjConstraintIds();
             let modelidx = [];
             adjConstraints.forEach(el => {
                 modelidx.push(this.model.constraints.indexOf(this.model.constraintById(el)));
-                if (this.model.constraintById(el).hasOwnProperty("for")) {delete this.model[this.model.constraintById(el).for]}; // remove actuator angle from model if constraint is actuated
+                // if (this.model.constraintById(el).hasOwnProperty('for')) { delete this.model[this.model.constraintById(el).for] }; // remove actuator angle from model if constraint is actuated // "for" does not exist anymore
             });
             for (let i = modelidx.length - 1; i >= 0; i--) { // splice backwards so modelidx values stas valid
                 this.model.constraints.splice(modelidx[i], 1);
             };
-            this.model.nodes.splice(this.model.nodes.indexOf(node),1); // remove node from model
+            this.model.nodes.splice(this.model.nodes.indexOf(node), 1); // remove node from model
             this.updateg() // update graphics
-            app.edit = false; // reset appstate
-            this.instruct.innerHTML = ``; // reset instructions
+
+            document.body.style.cursor = 'default';
+            this.resetApp();
         },
 
         addConstraint() {
-            if (!this.edit.firstnode) { // first invocation
-                if (!!editor.curElm && editor.curElm.hasOwnProperty("m")) { // node clicked
-                    this.edit.firstnode = editor.curElm;
-                    this.instruct.innerHTML = `select second node`
+            if (!this.build.firstnode) { // first invocation
+                if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
+                    this.build.firstnode = editor.curElm;
+                    this.instruct.innerHTML = 'select second node'
                 } else { // no node clicked
                     return; // next clickevent invokes function again
                 };
             } else { // second invocation
-                if (!!editor.curElm && editor.curElm.hasOwnProperty("m")) { // node clicked
-                    let constraint = {
-                        id: this.getNewChar(`constraint`),
-                        type: this.edit.mode,
-                        p1: this.edit.firstnode.id,
-                        p2: editor.curElm.id
-                        // r:
-                        // for:
-                        // get [](): 
-                    };
-                    // console.log(typeof (constraint.type))
-                    switch (constraint.type) {
-                        case `free`: this.model.addConstraint(mec.constraint.free.extend(constraint)); break;
-                        case `tran`: this.model.addConstraint(mec.constraint.tran.extend(constraint)); break;
-                        case `rot`: this.model.addConstraint(mec.constraint.rot.extend(constraint)); break;
-                        case `ctrl`: this.model.addConstraint(mec.constraint.ctrl.extend(constraint)); break;
-                        default: console.log(`something went wrong while adding constraint...`); break;
+                if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
+
+                    // build template
+                    let tmplen = false;
+                    let tmpori = false;
+                    switch (this.build.mode) {
+                        case 'free': break; // no need to set smth
+                        case 'tran': tmpori = { type: 'const' }; break;
+                        case 'rot': tmplen = { type: 'const' }; break;
+                        // case 'drive': tmpori = {type:'drive'}; tmplen = {type:'drive'}; break; // todo: somehow flag for forced editing or make add drive function to add drives to constraints
+                        default: console.log('something went wrong while adding constraint...'); break;
                     }
+
+                    let constraint = {
+                        id: this.getNewChar('constraint'),
+                        p1: this.build.firstnode.id,
+                        p2: editor.curElm.id,
+                    };
+
+                    if (tmplen) constraint.len = tmplen;
+                    if (tmpori) constraint.ori = tmpori;
+
+                    this.model.addConstraint(mec.constraint.extend(constraint));
+
+                    // console.log(typeof (constraint.type))
+                    // switch (constraint.type) {
+                    //     case 'free': this.model.addConstraint(mec.constraint.free.extend(constraint)); break;
+                    //     case 'tran': this.model.addConstraint(mec.constraint.tran.extend(constraint)); break;
+                    //     case 'rot': this.model.addConstraint(mec.constraint.rot.extend(constraint)); break;
+                    //     case 'ctrl': this.model.addConstraint(mec.constraint.ctrl.extend(constraint)); break;
+                    //     default: console.log('something went wrong while adding constraint...'); break;
+                    // }
                     // this.model.addConstraint(type.extend(constraint));
-                    constraint.init();
+                    constraint.init(this.model);
                     this.updateg(); // update graphics
                 } else { // no node clicked
                     return; // next clickevent invokes function again
                 };
-                this.edit = false;
-                this.instruct.innerHTML = `` // reset instructions
+                this.resetApp();
             };
         },
 
-        getNewChar(x = `node`) { // returns @type {string}
+        getNewChar(x = 'node') { // returns @type {string} todo: bug: adding a constraint with no constraints in model returns id "constraint" and not "a", which it should
             let charArr = [];
             let name;
             let obj;
             let maxChar;
-            x === `node` ? (obj = this.model.nodes, name = `node`, maxChar = 90) : (obj = this.model.constraints, name = `constraint`, maxChar = 122); // 90 = Z, 122 = z
+            x === 'node' ? (obj = this.model.nodes, name = 'node', maxChar = 90) : (obj = this.model.constraints, name = 'constraint', maxChar = 122); // 90 = Z, 122 = z
             for (let i = 0; i < obj.length; i++) {
                 charArr.push(obj[i].id.charCodeAt(0)) // push charcodes from first letter of node ids
             }
@@ -307,10 +291,89 @@ const App = {
             return (potChar <= maxChar) ? String.fromCharCode(potChar) : `${name}${obj.length + 1}`;   // choose one higher than highest charCode or assign numbers when running out of characters
         },
 
-        build() {
-            this.model = mec.model.extend(this.model);
-            this.model.init().draw(this.g);
-            this.notify("render");
+        // build() { // rename if needed again
+        //     this.model = mec.model.extend(this.model);
+        //     this.model.init().draw(this.g);
+        //     this.notify('render');
+        // },
+
+        addActuator(elm) { // todo: can check type of passed object.. if it's a node, let choose second node and add a driven rot (most common) constraint 
+            console.log(elm);
+            if (elm.type === 'ctrl') {
+                this.instruct.innerHTML = 'this constraint is already actuated. select a different one or press &lt;ESC&gt to cancel'
+            }
+            let actuator = {
+                id: elm.id,
+                p1: elm.p1.id,
+                p2: elm.p2.id,
+            };
+            switch (elm.type) { // todo: generalize in- and outputs
+                case 'rot':
+                    actuator.ori = {type:'drive',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'};
+                    actuator.len = {type:'const'};
+                    break;
+                case 'tran':
+                    console.log('coming soon ...');
+                    // actuator.ori = {type:'const'};
+                    // actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'};
+                    break;
+                case 'free':
+                    console.log('coming soon ...');
+                    // actuator.ori = {type:'drive',Dt:2,Dw:2*pi,input:'slider1',output:'slider_out1'};
+                    // actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider2',output:'slider_out2'};
+            }
+
+            // if (elm.type === 'rot') {
+            //     actuator.ori = {type:'drive',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'};
+            //     actuator.len = {type:'const'};
+            // };
+            // if (elm.type === 'tran') {
+            //     actuator.ori = {type:'const'};
+            //     actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'};
+            // };
+            // if (elm.type === 'free') { // todo: 
+            //     console.log('constraint type not supported yet ...');
+            //     // actuator.ori = {type:'drive',Dt:2,Dw:2*pi,input:'slider1',output:'slider_out1'};
+            //     // actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider2',output:'slider_out2'};
+            // };
+
+            // replace old with new constraint in model and flag for rebuild
+            this.model.constraints.splice(this.model.constraints.indexOf(this.model.constraintById(elm.id)), 1) // get index of passed constraint and delete it from the model 
+            // this.model.constraints.push(actuator); // add new contraint to model
+            // this.model.dirty = true;
+
+            this.model.addConstraint(mec.constraint.extend(actuator));
+            actuator.init(this.model); 
+
+            this.updateg(); // update graphics
+
+            this.resetApp(); // reset state and instructions
+        },
+
+        modConstraint(elm) { // todo: remember to add option for drive func
+            // let { x, y } = this.pntToUsr({ x: document.documentElement.clientWidth - this.cnv.width + this.evt.x, y: document.documentElement.clientHeight - this.evt.y + 18 });
+            // console.log(`x. ${this.evt.clientX}, y: ${this.evt.clientX}`);
+            // document.documentElement.clientHeight - this.cnv.height
+
+            this.ctxmenuheader.innerHTML = `<div class="input-group"><label class="input-group-text">id: ${elm.id} type: </label><select class="custom-select" id="sel">
+            <option value="free" ${(elm.type === 'free' ? 'selected' : '')}>free</option>
+            <option value="tran" ${(elm.type === 'tran' ? 'selected' : '')}>tran</option>
+            <option value="rot" ${(elm.type === 'rot' ? 'selected' : '')}>rot</option>
+            <option value="ctrl" ${(elm.type === 'ctrl' ? 'selected' : '')}>ctrl</option>
+          </select></div>`
+
+            // template
+            // if(elm.len)
+
+            this.ctxmenu.style.display = 'block'
+            this.ctxmenu.style.left = `${this.evt.clientX}px`;
+            this.ctxmenu.style.top = `${this.evt.clientY}px`;
+            console.log(elm);
+            
+        },
+
+        modNode(elm) {
+            console.log('coming soon');
         },
 
         loadFromJSON(files) {
@@ -327,10 +390,10 @@ const App = {
         },
 
         saveToJSON() {
-            let a = document.createElement("a");
-            let file = new Blob([JSON.stringify(this.model)], { type: "application/json" }); // model now has toJSON (constraints not fully implemented) which gets automazically invoked by stringify
+            let a = document.createElement('a');
+            let file = new Blob([JSON.stringify(this.model)], { type: 'application/json' }); // model now has toJSON (constraints not fully implemented) which gets automazically invoked by stringify
             a.href = URL.createObjectURL(file);
-            a.download = "linkage.json";
+            a.download = 'linkage.json';
             document.body.appendChild(a); // Firefox needs the element to be added to the DOM for this to work, Chrome & Edge ¯\_(ツ)_/¯
             a.click();
             document.body.removeChild(a);
@@ -344,8 +407,8 @@ const App = {
 let app;
 
 window.onload = () => {
-    let c = document.getElementById(`c`),
-        main = document.getElementById(`main`);
+    let c = document.getElementById('c'),
+        main = document.getElementById('main');
 
     c.width = main.clientWidth;
     c.height = main.clientHeight - 30;
@@ -354,32 +417,53 @@ window.onload = () => {
 
     // non-editor events
     // sidebar handler
-    document.getElementById(`sb-l`).addEventListener(`click`, (e) => { // bind to parent
-        if (e.target && e.target.className == `vec_btn`) {app.edit = { mode: e.target.id }; app.instruct.innerHTML = `select first node; &lt;Esc&gt; to abort`; }; // check for children
-        if (e.target && e.target.id == `addnode` || e.target.id == `addbasenode`) { app.edit = { mode: e.target.id }; app.instruct.innerHTML = `left-click on the canvas to place a new node; &lt;Esc&gt; to abort`; };
-        if (e.target && e.target.id == `deletenode`) { app.edit = { mode: e.target.id }; app.instruct.innerHTML = `left-click on a node to delete it and all its adjacent constraints; &lt;Esc&gt; to abort`; };
-        if (e.target && e.target.id == `resetview`) { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify(`render`); };
+    document.getElementById('sb-l').addEventListener('click', (e) => { // bind to parent
+        // if (e.target && e.target.className == 'vec_btn') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
+        if (e.target && ['free', 'tran', 'rot'].includes(e.target.id)) { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
+        if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select a constraint to add an actuator to; &lt;ESC&gt; to cancel'; };
+        if (e.target && e.target.id === 'addnode' || e.target.id == 'addbasenode') {
+            app.build = { mode: e.target.id };
+            app.instruct.innerHTML = 'left-click on the canvas to place a new node; &lt;ESC&gt; to cancel';
+            document.body.style.cursor = 'crosshair';
+        };
+        if (e.target && e.target.id === 'deletenode') {
+            app.build = { mode: e.target.id };
+            app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
+            document.body.style.cursor = 'crosshair';
+        };
+        if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
     });
-    document.getElementById(`import`).addEventListener(`change`, (e) => app.loadFromJSON(e.target.files));
-    document.getElementById(`export`).addEventListener(`click`, () => app.saveToJSON());
-    document.addEventListener(`keydown`, (e) => { // keyboard handler
-        if(e.key === `Escape` && app.edit) { app.edit = false; app.instruct.innerHTML = ``; }; // reset app.edit-state on escapekey 
+    document.getElementById('import').addEventListener('change', (e) => app.loadFromJSON(e.target.files));
+    document.getElementById('export').addEventListener('click', () => app.saveToJSON());
+    document.addEventListener('keydown', (e) => { // keyboard handler
+        if (e.key === 'Escape') {
+            if (app.build) {
+                // reset app.build-state on escapekey
+                app.resetApp();
+                document.body.style.cursor = 'default';
+            }
+            // todo: make editor & element state resetable
+        };
     });
 
+    const _draggableCtxMenu = new Draggabilly(document.getElementById('contextMenu'), {
+        containment: '.main-container',
+        handle: '.card-header'
+    });    
 }
 
 window.onresize = () => {
-    let c = document.getElementById(`c`),
-        main = document.getElementById(`main`);
+    let c = document.getElementById('c'),
+        main = document.getElementById('main');
 
     c.width = main.clientWidth;
     c.height = main.clientHeight - 30;
 
-    let actcontainer = document.getElementById(`actuators-container`);
+    let actcontainer = document.getElementById('actuators-container');
 
     if (actcontainer.clientWidth > 1000) {
-        let mecsliders = document.querySelectorAll(`.mec-slider`);
-        let rangesliders = document.querySelectorAll(`.custom-range`);
+        let mecsliders = document.querySelectorAll('.mec-slider');
+        let rangesliders = document.querySelectorAll('.custom-range');
         let rangewidth = (app.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
 
         // lagging
@@ -398,5 +482,5 @@ window.onresize = () => {
         rangesliders.forEach(slider => { slider.style.width = `${rangewidth}px` })
     }
 
-    app.dirty = true;
+    app.model.dirty = true;
 }

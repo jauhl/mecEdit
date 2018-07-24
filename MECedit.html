@@ -7,15 +7,18 @@
 
     <title>MECedit</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
-        crossorigin="anonymous">
-    <!-- Custom styles -->
+    <!-- stylesheets -->
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
+        crossorigin="anonymous"> -->
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.css"> -->
+    <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
+        crossorigin="anonymous"> -->
+
+    <!-- local -->
+    <link rel="stylesheet" href="./vendor/bootstrap.min.css">
+    <link rel="stylesheet" href="./vendor/ti-ta-toggle.mod.min.css">
     <link rel="stylesheet" href="./app.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.css">
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
-        crossorigin="anonymous">
+    <link rel="stylesheet" href="./vendor/fontawesome/css/all.min.css">
 
 
 </head>
@@ -25,13 +28,13 @@
     <!-- ========================== navbar ========================== -->
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
         <a class="navbar-brand" href="#">MECedit - A Lightweight Editor for Planar Mechanisms</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault"
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navcollapse" aria-controls="navcollapse"
             aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
 
-        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <div class="collapse navbar-collapse" id="navcollapse">
             <ul class="navbar-nav mr-auto">
                 <!-- <li class="nav-item">
                     <a class="nav-link" href="#">Home
@@ -53,10 +56,30 @@
                     </div>
                 </li>
                 <!-- <li class="nav-item">
-                    <a class="nav-link" data-toggle="collapse" href="#collapseExample">toogle Sidebar
-                        <span class="sr-only"></span>
-                    </a>
+                        <a class="nav-link">inverse kinematics:
+                                <input type="checkbox" id="inversekin" checked>
+                                <span class="text-muted" data-toggle="tooltip" data-original-title="disable to change constraints by dragging nodes">?</span>
+                        </a>
                 </li> -->
+                <li class="nav-item">
+                    <!-- <span class="text-white nav-link">inverse kinematics:
+                        <input type="checkbox" id="inversekin" checked>
+                        <span id="popover-inverse" class="text-muted" data-toggle="popover" data-placement="bottom" data-content="disable this option to change constraint dimensions by dragging nodes">
+                            <i class="fas fa-question"></i>
+                        </span>
+                    </span> -->
+                    <span class="text-white nav-link ">
+                        <div class="checkbox-slider--b pl-1"> <!-- class: form-check -->
+                            <label class="mb-0">
+                                <input type="checkbox" id="inversekin" checked>
+                                <span>inverse kinematics</span>
+                            </label>
+                            <span id="popover-inverse" class="text-muted" data-toggle="popover" data-placement="bottom" data-content="disable this option to change constraint dimensions by dragging nodes">
+                                <i class="fas fa-question"></i>
+                            </span>
+                        </div>
+                    </span>
+                </li>
             </ul>
         </div>
     </nav>
@@ -102,16 +125,16 @@
                                 <label for="free">free</label>
                             </span>
                             <span class="fl-w">
-                                <input type="image" id="tran" class="vec_btn" src="./img/rot.png">
+                                <input type="image" id="tran" class="vec_btn" src="./img/trn.png">
                                 <label for="tran">tran</label>
                             </span>
                             <span class="fl-w">
-                                <input type="image" id="rot" class="vec_btn" src="./img/trn.png">
+                                <input type="image" id="rot" class="vec_btn" src="./img/rot.png">
                                 <label for="rot">rot</label>
                             </span>
                             <span class="fl-w">
-                                <input type="image" id="ctrl" class="vec_btn" src="./img/trnrot.png">
-                                <label for="ctrl">ctrl</label>
+                                <input type="image" id="drive" class="vec_btn" src="./img/trnrot.png">
+                                <label for="drive">drive</label>
                             </span>
                         </div>
                     </li>
@@ -206,19 +229,28 @@
     </div>
 
     <!-- ========================== Custom ContextMenu ========================== -->
-    <div id="contextMenu" class="dropdown clearfix">
-        <div class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;">
-            <a class="dropdown-item" href="#">Link 1</a>
+    <div id="contextMenu" class=" draggable clearfix"> <!-- class: dropdown clearfix needed when floating items? -->
+        <div class="card bg-light d-inline-flex">
+                <div id="contextMenuHeader" class="card-header"></div>
+                <div id="contextMenuBody" class="card-body">
+                  <h5 class="card-title">editing options</h5>
+                  <p class="card-text">coming soon ...</p>
+                </div>
+              </div>
+        <!-- <div class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;">
+            <a class="dropdown-item" href="#">Link 1</a> -->
             <!-- <li class="nav-item">
                 <label class="nav-link greenish" for="a_Slider_ctx">a:</label>
                 <input type="range" class="custom-range pl-1 pr-1 greenish" id="a_Slider_ctx" value="0" min="1" max="300" step="1">
             </li> -->
-            <a class="dropdown-item" href="#">Link 2</a>
+            <!-- <a class="dropdown-item" href="#">Link 2</a>
             <a class="dropdown-item" href="#">Link 3</a>
-        </div>
+        </div> -->
     </div>
 
     <!-- ========================== Tooltip ========================== -->
+    <!-- id="popover-inverse" class="text-muted"  data-placement="bottom"  data-toggle="popover" data-content="disable this option to change constraint dimensions by dragging nodes" -->
+    <!-- <span id='info' data-toggle="popover" data-content="placeholder"></span> -->
     <span id='info' style="position:absolute;display:none;background-color:#ffb;border:1px solid black;padding:0.1em;font:0.9em monospace;">tooltip</span>
 
 
@@ -227,8 +259,8 @@
     <!-- Placed at the end of the document so the pages load faster -->
 
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap.native/2.0.23/bootstrap-native-v4.min.js" integrity="sha256-4ITt997uLxXYjs5kgacUSOF0E1G1ai/U2dKy3Fq/wqA="
-        crossorigin="anonymous"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap.native/2.0.23/bootstrap-native-v4.min.js" integrity="sha256-4ITt997uLxXYjs5kgacUSOF0E1G1ai/U2dKy3Fq/wqA="
+        crossorigin="anonymous"></script> -->
     <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" 
         crossorigin="anonymous"></script> -->
@@ -236,15 +268,17 @@
         crossorigin="anonymous"></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.js"></script> -->
 
+    <script src="./vendor/bootstrap-native-v4.min.js"></script>
+    <script src="./vendor/draggabilly.pkgd.min.js"></script>
 
     <script src="./scripts/g2.js"></script>
     <script src="./scripts/mec2.js"></script>
+    <script src="./scripts/mec.constraint.js"></script>
     <script src="./scripts/g2.ext.js"></script>
     <script src="./scripts/g2.lib.js"></script>
     <script src="./scripts/g2.editor.js"></script>
     <script src="./scripts/mec.slider.mod.js"></script>
     <script src="./scripts/mixin.js"></script>
-    <!-- <script src="./app.js"></script> -->
     <script src="./main.js"></script>
 
 

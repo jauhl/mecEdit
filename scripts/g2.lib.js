@@ -56,6 +56,24 @@ g2 = Object.assign(g2, {
             dot = dx*dx2 + dy*dy2, perp = dx*dy2 - dy*dx2, len = Math.hypot(dx,dy), epslen = eps*len;
         return -epslen < perp && perp < epslen && -epslen < dot && dot < len*(len+eps);
     },
+
+    // isPntOnLin({x,y},p1,p2,eps=Number.EPSILON) {
+    //         if (!( (p1.x <= x && x <= p2.x) || (p2.x <= x && x <= p1.x) )) {
+    //           // test point not in x-range
+    //           return false;
+    //         }
+    //         if (!( (p1.y <= y && y <= p2.y) || (p2.y <= y && y <= p1.y) )) {
+    //           // test point not in y-range
+    //           return false;
+    //         }
+    //         let dx1 = p2.x - p1.x;
+    //         let dy1 = p2.y - p1.y;
+    //         let epslen = 0.015 * (dx1 * dx1 + dy1 * dy1);
+
+    //         let perpdot = Math.abs( (p1.x - x) * (p2.y - y) - (p1.y - y) * (p2.x - x));
+    //         // console.log(perpdot < epslen);
+    //         return ( perpdot < epslen );
+    // },
     /**
      * Test, if point is located on circle circumference. 
      * @param {x,y} point to test.
