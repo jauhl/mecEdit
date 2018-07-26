@@ -102,12 +102,42 @@ output.badge {
     overflow-x: hidden !important;
 }
 
+
+
+/* Contextmenu styles */
+#contextMenu {
+    position: absolute;
+    display: none;
+}
+
 .card-header, .card-body {
     padding: .25rem .75rem !important;
 }
 
-.card-header:hover, .input-group-text:hover {
-    cursor: grab;
+.card-header:hover, .card-header.input-group-text:hover {
+    cursor: move;
+}
+
+.card-header {
+    background-color: rgba(0,0,0,.15);
+}
+
+.input-group-text {
+    padding-top: 0.1rem !important;
+    padding-right: 0.3rem !important;
+    padding-bottom: 0.1rem !important;
+    padding-left: 0.2rem !important;
+}
+
+#contextMenuBody .section-divider:not(:first-child) {
+    height: 0;
+    margin-top: 0.3rem;
+    overflow: hidden;
+    border-top: 1px solid #e9ecef;
+}
+
+#contextMenuBody:last-child {
+    margin-bottom: 0.3rem;
 }
 
 .custom-select {
@@ -117,12 +147,36 @@ output.badge {
     padding-bottom: 1px !important;
     padding-right: 1.25rem !important;
     padding-left: .25rem !important;
+    margin-right: 0.2rem;
 }
 
-#contextMenu {
-    position: absolute;
-    display: none;
+.ctxm-section-title {
+    padding-left: 0.75rem !important;
+    background-color: inherit !important;
+    border: none !important;
 }
+
+.ctxm-input-label {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+    padding-top: 0.1rem;
+    padding-right: 0.3rem;
+    padding-bottom: 0.1rem;
+    padding-left: 0.2rem;
+    margin-bottom: 0;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    text-align: center;
+    white-space: nowrap;
+    background-color: inherit !important;
+    border: none !important;
+    border-radius: 0.25rem;
+}
+
 
 .statbar {
     bottom: 0;
