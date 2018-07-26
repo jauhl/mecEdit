@@ -246,11 +246,11 @@ mec.constraint = {
             if (this.len)
                 obj.len = {type:this.len.type};
             if (this.len.type === 'ref')
-                obj.len.ref = this.len.ref;
+                obj.len.ref = this.len.ref.id;
             if (this.ori)
                 obj.ori = {type:this.ori.type};
             if (this.ori.type === 'ref')
-                obj.ori.ref = this.ori.ref;
+                obj.ori.ref = this.ori.ref.id;
 
             return obj;
         },

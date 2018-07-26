@@ -130,7 +130,7 @@ g2.editor.prototype = {
             // console.log(elm.state)
             if(elm.state === 3) elm.state = elm.state ^ g2.DRAG; // remove DRAG state
             elm.state = elm.state ^ g2.OVER | g2.EDIT;
-            elm.type ? app.modConstraint(elm) : app.modNode(elm);
+            app.initCtxm(elm);
             // console.log(elm.state)
             // elm.handles(this.handles);
         // }
