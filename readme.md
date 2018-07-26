@@ -2,7 +2,26 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/MECedit
 
 # Changelog
 
-## v4.7.2 - modifying constraints
+## v0.4.7.3 - modifying constraints & nodes
+
+### general:
++ version numbers have now a leading 0 to better indicate the development status of the app
+
+### app.js
++ implemented fully dynamic contextmenu (styling still unfinished) to modify selected nodes and constraints -> all changes are applied when the contextmenu is closed
++ updated the global changehandler of the contextmenu
+
+### ctxm-templates.js:
++ added templates for referenced constraints
++ added templates for all node properties
++ various minor changes
+
+### mec2.js, mec.constraint.js & g2.editor.js
++ various minor changes
+
+---
+
+## alpha v4.7.1 - modifying constraints
 
 ### general:
 + `main.js` is now called `app.js`
@@ -18,7 +37,7 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/MECedit
 
 ---
 
-## v4.7.1 - actuators, streamlining & bugfixing
+## alpha v4.7.1 - actuators, streamlining & bugfixing
 
 ### general:
 + clicking the contraint-type 'ctrl' lets the user add an actuator to an existing constraint. for now this only works with constraints of type 'rot' and only for a single actuator
@@ -44,7 +63,7 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/MECedit
 
 ---
 
-## v4.7 - inverse kinematics mode & merged changes from @goessner libraries (20.07.18)
+## alpha v4.7 - inverse kinematics mode & merged changes from @goessner libraries (20.07.18)
 
 ### general:
 + implemented mode-switching (for now via a checkbox) between inverse kinematics and constraint-editing when dragging a node
@@ -58,7 +77,7 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/MECedit
 
 ---
 
-## v4.6 - nodes can now be deleted
+## alpha v4.6 - nodes can now be deleted
 
 ### g2.editor.js: 
 + hovered element now belongs to editor namespace -> `editor.curElm`
@@ -75,7 +94,7 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/MECedit
 
 ---
 
-## v4.5.9 - node dragging is now permanent
+## alpha v4.5.9 - node dragging is now permanent
 
 ### g2.editor.js: 
 + updates adjacent constraints to new node coordinates when dragging ends

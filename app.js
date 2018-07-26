@@ -1,16 +1,9 @@
 const tooltip = document.getElementById('info'),
-    statusbar = document.getElementById('statbar'),
-//     nodestyle = {
-//         r: 5, ls: '#333', fs: '#eee',
-//         _info() { return `x:${this.x}<br>y:${this.y}` }  // tooltip info ...
-//     }
-//      nod1 = {x:40,y:30,...nodestyle}, nod2 = {x:240,y:50,...nodestyle},  // ms Edge can't handle this yet ...
-// nod1 = Object.assign({ x: 40, y: 30 }, nodestyle), nod2 = Object.assign({ x: 240, y: 50 }, nodestyle),  // ... but that.
-editor = g2.editor(),
-    //      edgeTyp = {BAS:0,ROT:1,TRN:2},
-    edgeType = ['bas', 'trn', 'rot', 'trn+rot'];
-
-const pi = Math.PI;
+      statusbar = document.getElementById('statbar'),
+      editor = g2.editor(),
+    //   edgeTyp = {BAS:0,ROT:1,TRN:2},
+      edgeType = ['bas', 'trn', 'rot', 'trn+rot'],
+      pi = Math.PI;
 
 const App = {
     create() {
@@ -32,13 +25,16 @@ const App = {
                     { id: 'A', x: 100, y: 150, m: 1 },
                     { id: 'B', x: 350, y: 220, m: 1 },
                     { id: 'B0', x: 300, y: 100, m: 'infinite' },
-                    { id: 'C', x: 450, y: 100, m: 1 },
+                    { id: 'C', x: 450, y: 200, m: 1 },
+                    { id: 'C0', x: 450, y: 100, m: 1},
                 ],
                 constraints: [
                     { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
                     { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
                     { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
                     { id: 'd', p1: 'B', p2: 'C', len: { type: 'const' } },
+                    { id: 'e', p1: 'C0', p2: 'C', len: { type: 'const' } },
+                    // { id: 'd', p1: 'B', p2: 'C', len: { type: 'const' }, ori: { type: 'ref', ref: 'b'} },
                     // { id: 'e', p1: 'B0', p2: 'C', len: { type: 'const' }, ori: { type: 'ref', ref: 'd'} },
                 ]
             };
@@ -100,7 +96,7 @@ const App = {
                         if (this.build.mode === 'drive') this.addActuator(editor.curElm);
                     }
                 })
-                .on('render', () => this.g.exe(editor).exe(this.ctx))      // redraw // why .exe(editor)? works without...
+                .on('render', () => this.g.exe(this.ctx))      // redraw
                 .on('step', () => this.model.pre().itr().post())
                 .startTimer() // startTimer ...             // start synchronized ticks
                 .notify('render')   // send 'render' event
@@ -188,6 +184,14 @@ const App = {
             this.instruct.innerHTML = ''; // reset instructions
         },
 
+        replaceNode(oldN,newN) { // todo: bug: this function does not set the new mass in p1/p2 of adjacent constraints!!
+            this.model.nodes.splice(this.model.nodes.indexOf(oldN), 1); // remove old node from model
+            this.model.addNode(mec.node.extend(newN));
+            newN.init(this.model);
+            this.model.nodeById(newN.id).updAdjConstraints();
+            this.updateg(); // update graphics
+        },
+
         addNode() {
             if (editor.curElm === undefined || !editor.curElm.hasOwnProperty('m')) { // objects with a mass are considered nodes
                 // if (editor.curElm === undefined || !editor.curElm.isSolid) { // also works but throws type-error over empty space
@@ -224,6 +228,13 @@ const App = {
 
             document.body.style.cursor = 'default';
             this.resetApp();
+        },
+
+        replaceConstraint(oldC,newC) {
+            this.model.constraints.splice(app.model.constraints.indexOf(app.model.constraintById(oldC.id)), 1); // remove old
+            this.model.addConstraint(mec.constraint.extend(newC)); // add new
+            newC.init(this.model);
+            this.updateg(); // update graphics
         },
 
         addConstraint() {
@@ -325,20 +336,6 @@ const App = {
                     // actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider2',output:'slider_out2'};
             }
 
-            // if (elm.type === 'rot') {
-            //     actuator.ori = {type:'drive',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'};
-            //     actuator.len = {type:'const'};
-            // };
-            // if (elm.type === 'tran') {
-            //     actuator.ori = {type:'const'};
-            //     actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'};
-            // };
-            // if (elm.type === 'free') { // todo: 
-            //     console.log('constraint type not supported yet ...');
-            //     // actuator.ori = {type:'drive',Dt:2,Dw:2*pi,input:'slider1',output:'slider_out1'};
-            //     // actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider2',output:'slider_out2'};
-            // };
-
             // replace old with new constraint in model and flag for rebuild
             this.model.constraints.splice(this.model.constraints.indexOf(this.model.constraintById(elm.id)), 1) // get index of passed constraint and delete it from the model 
             // this.model.constraints.push(actuator); // add new contraint to model
@@ -352,7 +349,7 @@ const App = {
             this.resetApp(); // reset state and instructions
         },
 
-        changeConstraintType(elm, newtype) {
+        changeConstraintType(elm, newtype) { // todo: check if still needed, guess is not...
             console.log(newtype);
             let newConstraint = {
                 id: elm.id,
@@ -388,6 +385,16 @@ const App = {
             this.updateg(); // update graphics
         },
 
+        initCtxm(elm) { // todo: remember to add option for drive func
+            console.log(elm.type);
+            this.tempElm = {};  // save elm for eventlistener & state-check
+            this.tempElm.type = (!!elm.type && ['free','rot','tran','ctrl'].includes(elm.type)) ? 'constraint' : 'node'; // check elm type
+            this.tempElm.old = elm.toJSON();
+            // app.tempElm.old = JSON.parse(JSON.stringify(elm));
+            this.updateCtxm(this.tempElm.old,this.tempElm.type);
+            this.showCtxm();
+        },
+
         showCtxm() {
             this.ctxmenu.style.display = 'block'
             this.ctxmenu.style.left = `${this.evt.clientX}px`;
@@ -396,40 +403,42 @@ const App = {
 
         hideCtxm() {
             this.ctxmenu.style.display = 'none'
+            if (!!this.tempElm.new)
+                this.tempElm.type === 'constraint' ? this.replaceConstraint(this.tempElm.old,this.tempElm.new) : this.replaceNode(this.tempElm.old,this.tempElm.new);
         },
 
-        updateCtxm(elm) {
+        updateCtxm(elm,type) {
+            console.log(elm);
+
+            // delete old bodyelements of the ctxm to append updated ones
+            while (this.ctxmenubody.hasChildNodes()) {
+                this.ctxmenubody.removeChild(this.ctxmenubody.lastChild);
+            };
+
             // template ctxmenu
-            //header
-            this.ctxmenuheader.innerHTML = ctxm.header(elm);
-            this.ctxmenubody.innerHTML = ctxm.constraintType(elm);
 
-            //body
-            if(elm.type === 'rot') { // select ori-type
+            //replace header
+            this.ctxmenuheader.innerHTML = ctxm.header(elm,type);
+
+            //append new body
+            if (type === 'constraint') { // constraint
+                this.ctxmenubody.innerHTML += ctxm.nodes(elm);
+                this.ctxmenubody.innerHTML += ctxm.sectionTitle('orientation');
                 this.ctxmenubody.innerHTML += ctxm.oriType(elm);
-            };
-
-            if(elm.type === 'ctrl') {
-                this.ctxmenubody.innerHTML += ctxm.ref(elm);
-            };
-            
-            if(elm.type === 'tran') { // select len-type
+                if(elm.ori.type === 'ref') {
+                    const oriRefId = !!elm.ori.ref ? elm.ori.ref : app.model.constraints[0].id;
+                    this.ctxmenubody.innerHTML += ctxm.ref(elm,'ori',oriRefId);
+                };
+                this.ctxmenubody.innerHTML += ctxm.sectionTitle('lenght');
                 this.ctxmenubody.innerHTML += ctxm.lenType(elm);
+                if(elm.len.type === 'ref') {
+                    const lenRefId = !!elm.len.ref ? elm.len.ref : app.model.constraints[0].id
+                    this.ctxmenubody.innerHTML += ctxm.ref(elm,'len',lenRefId);
+                };
+            } else { // node
+                this.ctxmenubody.innerHTML += ctxm.nodeCoordinates(elm);
+                this.ctxmenubody.innerHTML += ctxm.nodeMass(elm);
             };
-        },
-
-        modConstraint(elm) { // todo: remember to add option for drive func
-            // this.tempElm = { old: elm.toJSON() }; // save elm for eventlistener
-            this.tempElm = {};
-            this.tempElm.old = Object.assign({},elm)
-            // this.tempElm.old = {...elm}
-            console.log(this.tempElm);
-            this.updateCtxm(elm);
-            this.showCtxm();
-        },
-
-        modNode(elm) {
-            console.log('coming soon');
         },
 
         loadFromJSON(files) {
@@ -504,18 +513,24 @@ window.onload = () => {
 
     // contextmenu handler
     document.getElementById('contextMenu').addEventListener('change',(e) => {
-
-        if (e.target && e.target.id === 'select-type') {app.changeConstraintType(app.tempElm.old, e.target.value);};
-        if (e.target && e.target.id === 'select-ori-type') {
-            if(!app.tempElm.new) 
-                app.tempElm.new = Object.assign({},app.tempElm.old);
-                // app.tempElm.new = {...app.tempElm.old};
-            app.tempElm.new.ori.type = document.getElementById('select-ori-type').value;
+        if(!app.tempElm.new) // declare new temporary constraint template if not done already
+                app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
             console.log(app.tempElm);
-        };
-        if (e.target && e.target.id === 'select-len-type') {  };
-        if (e.target && e.target.id === 'select-ref') {  };
-        app.updateCtxm(app.tempElm.new);
+
+        if (e.target && e.target.id === 'select-p1') { app.tempElm.new.p1 = e.target.value; ctxmdirty = true;}; // todo: prevent applying same p1 & p2 when updating model
+        if (e.target && e.target.id === 'select-p2') { app.tempElm.new.p2 = e.target.value; ctxmdirty = true;};
+        if (e.target && e.target.id === 'select-ori-type') { app.tempElm.new.ori.type = e.target.value; ctxmdirty = true;};
+        if (e.target && e.target.id === 'select-len-type') { app.tempElm.new.len.type = e.target.value; ctxmdirty = true;};
+        if (e.target && e.target.id === 'select-ori-ref') { app.tempElm.new.ori.ref = e.target.value; ctxmdirty = true;};
+        if (e.target && e.target.id === 'select-len-ref') { app.tempElm.new.len.ref = e.target.value; ctxmdirty = true;};
+
+        if (e.target && e.target.id === 'node-x') { app.tempElm.new.x = e.target.value; ctxmdirty = true;};
+        if (e.target && e.target.id === 'node-y') { app.tempElm.new.y = e.target.value; ctxmdirty = true;};
+        if (e.target && e.target.id === 'node-mass') { e.target.checked ? app.tempElm.new.m = 'infinite' : app.tempElm.new.m = 1; ctxmdirty = true;};
+
+        if (ctxmdirty)
+            // todo: check for consistency issues and maybe mark with red border
+            app.updateCtxm(app.tempElm.new,app.tempElm.type);
     });
 
     const _draggableCtxMenu = new Draggabilly(document.getElementById('contextMenu'), {
