@@ -72,8 +72,10 @@ g2.editor.prototype = {
             if (type === 'click') {                                     // leave EDIT mode ..
                 elm.state ^= g2.EDIT;
                 let ctxMenuStyle = document.getElementById('contextMenu').style;
-                if (ctxMenuStyle.display === 'block')       // ctxmenu is shown
-                    ctxMenuStyle.display = 'none';          // hide ctxmenu
+                if (ctxMenuStyle.display === 'block') {     // ctxmenu is shown
+                    app.hideCtxm()                          // hide ctxmenu
+                    app.tempElm = false;                    // reset
+                }
             }
         }
         else if (!(elm.state & g2.OVER)) {                              // not in OVER mode

@@ -237,6 +237,23 @@ mec.constraint = {
             for (const key in getters)
                 Object.defineProperty(this, key, { get: getters[key], enumerable: true, configurable: true });
         },
+        toJSON() { // todo: finish
+            const obj = {
+                id: this.id,
+                p1: this.p1.id,
+                p2: this.p2.id
+            };
+            if (this.len)
+                obj.len = {type:this.len.type};
+            if (this.len.type === 'ref')
+                obj.len.ref = this.len.ref;
+            if (this.ori)
+                obj.ori = {type:this.ori.type};
+            if (this.ori.type === 'ref')
+                obj.ori.ref = this.ori.ref;
+
+            return obj;
+        },
         g2() {
             let { p1, p2, w, r, type, ls, ls2, lw, id, idloc } = this,
                 lam = idloc || 0.5, xid = p1.x + 20 * Math.cos(w) - 10 * Math.sin(w), yid = p1.y + 20 * Math.sin(w) + 10 * Math.cos(w);
