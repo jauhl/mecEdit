@@ -2,6 +2,15 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/MECedit
 
 # Changelog
 
+## v0.4.7.4 - partitioned mec2 libraries
+
+### general:
++ this version merges the restructured mec2.js library which was has been split into additional, more specific sub-libraries
++ additionally, mec.shape.js, mec.drive.js and mec.load.js are now available
++ renamed app from MECedit to mecEdit
+
+---
+
 ## v0.4.7.3 - modifying constraints & nodes
 
 ### general:

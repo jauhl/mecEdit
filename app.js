@@ -185,11 +185,16 @@ const App = {
         },
 
         replaceNode(oldN,newN) { // todo: bug: this function does not set the new mass in p1/p2 of adjacent constraints!!
-            this.model.nodes.splice(this.model.nodes.indexOf(oldN), 1); // remove old node from model
-            this.model.addNode(mec.node.extend(newN));
-            newN.init(this.model);
-            this.model.nodeById(newN.id).updAdjConstraints();
-            this.updateg(); // update graphics
+            // this.model.nodes.splice(this.model.nodes.indexOf(oldN), 1); // remove old node from model
+            // this.model.addNode(mec.node.extend(newN));
+            // newN.init(this.model);
+            // this.model.nodeById(newN.id).updAdjConstraints();
+            // this.updateg(); // update graphics
+
+            if (!(oldN.x === newN.x)) this.model.nodeById(oldN.id).x = newN.x;
+            if (!(oldN.y === newN.y)) this.model.nodeById(oldN.id).y = newN.y;
+            if (!(oldN.m === newN.m)) this.model.nodeById(oldN.id).m = newN.m;
+            this.model.dirty = true;
         },
 
         addNode() {
@@ -524,9 +529,9 @@ window.onload = () => {
         if (e.target && e.target.id === 'select-ori-ref') { app.tempElm.new.ori.ref = e.target.value; ctxmdirty = true;};
         if (e.target && e.target.id === 'select-len-ref') { app.tempElm.new.len.ref = e.target.value; ctxmdirty = true;};
 
-        if (e.target && e.target.id === 'node-x') { app.tempElm.new.x = e.target.value; ctxmdirty = true;};
-        if (e.target && e.target.id === 'node-y') { app.tempElm.new.y = e.target.value; ctxmdirty = true;};
-        if (e.target && e.target.id === 'node-mass') { e.target.checked ? app.tempElm.new.m = 'infinite' : app.tempElm.new.m = 1; ctxmdirty = true;};
+        if (e.target && e.target.id === 'node-x') { app.tempElm.new.x = e.target.valueAsNumber; ctxmdirty = true;};
+        if (e.target && e.target.id === 'node-y') { app.tempElm.new.y = e.target.valueAsNumber; ctxmdirty = true;};
+        if (e.target && e.target.id === 'node-mass') { e.target.checked ? app.tempElm.new.m = Number.POSITIVE_INFINITY : app.tempElm.new.m = 1; ctxmdirty = true;};
 
         if (ctxmdirty)
             // todo: check for consistency issues and maybe mark with red border
