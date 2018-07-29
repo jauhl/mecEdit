@@ -1,4 +1,4 @@
-currently unlisted but available @[Github Pages](https://jauhl.github.io/MECedit/MECedit.html "MECedit")
+currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit/mecEdit.html "mecEdit")
 
 # Changelog
 
