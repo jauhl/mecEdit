@@ -80,6 +80,6 @@ ctxm = {
     nodeMass: (elm) => `<li class="input-group">
                             <label class="ctxm-input-label">basenode: </label>
                             <input type="checkbox" id="node-mass" ${((elm.m === 'infinite' || elm.m === Number.POSITIVE_INFINITY) ? 'checked' : '')}>
-                            <div class="ctxm-right"><i id="node-trash" class="fas fa-trash-alt fa-lg"></i></div> 
+                            <div id="node-trash" class="ctxm-right"><i class="fas fa-trash-alt fa-lg"></i></div> 
                         </li>`
 };
