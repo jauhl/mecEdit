@@ -34,6 +34,9 @@ mec.node = {
             this.m = this.m === 'infinite' ? Number.POSITIVE_INFINITY : (this.m || 1);
             this.im = 1/this.m;
             this.Qx = 0; this.Qy = this.model.hasGravity ? -1000 : 0;
+            this.xt = this.yt = 0;  // resetting derivatives is obligatory for reinitialization
+            this.xtt = this.ytt = 0;
+            this.dxt = this.dyt = 0;
         },
         // kinematics
         // current velocity state .. only used during iteration.
@@ -109,7 +112,7 @@ mec.node = {
         drag({x,y}) { 
             this.x = x; this.y = y;
             // this.model.dirty = true;
-            document.getElementById('inversekin').checked ? this.model.dirty = true : this.updAdjConstraints(); // checkbox flags mode
+            app.inversekinematics ? this.model.dirty = true : this.updAdjConstraints(); // checkbox flags mode
         },
         // graphics ...
         get r() { return mec.node.radius; },
