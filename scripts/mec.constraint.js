@@ -83,13 +83,15 @@ mec.constraint = {
                      : false;
 
             // pre-calculate both constraint mass components
-            const mc = 1/(this.p1.im + this.p2.im);
-            this.mc1 = this.p1.im * mc;
-            this.mc2 = this.p2.im * mc;
+            // const mc = 1/(this.p1.im + this.p2.im);
+            // this.mc1 = this.p1.im * mc;
+            // this.mc2 = this.p2.im * mc;
             // lagrange identifiers
             this.lambda_r = this.dlambda_r = 0;
             this.lambda_w = this.dlambda_w = 0;
         },
+        get mc1() { return this.p1.im / (this.p1.im + this.p2.im) },
+        get mc2() { return this.p2.im / (this.p1.im + this.p2.im) },
         get initialized() { return typeof this.p1 === 'object' },
         get dof() {
             return (this.ori.type === 'free' ? 1 : 0) + (this.len.type === 'free' ? 1 : 0);
