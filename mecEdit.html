@@ -30,7 +30,7 @@
 
     <!-- ========================== navbar ========================== -->
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-        <a class="navbar-brand" href="#">mecEdit</a>
+        <a class="navbar-brand" >mecEdit</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navcollapse" aria-controls="navcollapse"
             aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -45,7 +45,7 @@
                     </a>
                 </li> -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         File
                     </a>
@@ -55,25 +55,77 @@
                             <input type="file" id="import" style="display: none;" accept="application/json">
                         </label>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" id="export" href="#">Export linkage as *.JSON</a>
+                        <a class="dropdown-item" id="export">Export linkage as *.JSON</a>
                     </div>
                 </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+                        Edit
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" id="inversekinematics">toggle drag mode</a>
+                        <!-- <label class="dropdown-item">Import linkage from *.JSON<input type="file" hidden></label> -->
+                    </div>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+                        View
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <div class="btn-group dropright d-block hoverexpand">
+                                    <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                      toogle labels
+                                    </a>
+                                    <div class="dropdown-menu m-0">
+                                        <a class="dropdown-item" id="toggleNodeLabels">nodes</a>
+                                        <a class="dropdown-item" id="toggleConstraintLabels">constraints</a>
+                                        <a class="dropdown-item" id="toggleLoadLabels">loads</a>
+                                    </div>
+                            </div>
+                            
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" id="resetview">reset editor-view</a>
+                    </div>
+                    <!-- <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" id="toggleNodeLabels" href="#">toogle node labels</a>
+                            <a class="dropdown-item" id="toggleConstraintLabels" href="#">toogle constraint labels</a>
+                            <a class="dropdown-item" id="toggleConstraintLabels" href="#">toogle load labels</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" id="resetview" href="#">reset editor-view</a>
+                    </div> -->
+                </li>
+                </ul>
+                <div class="navbar-nav ml-auto">
+       
+                <div class="nav-item">
+                    <a class="nav-link pb-0 pt-0 nav-svg-logo" href="https://github.com/jauhl/mecEdit" target="_blank" rel="noopener" aria-label="mecEdit GitHub">
+                        <svg class="navbar-nav-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 499.36" focusable="false">
+                            <title>mecEdit GitHub</title>
+                            <path d="M256 0C114.64 0 0 114.61 0 256c0 113.09 73.34 209 175.08 242.9 12.8 2.35 17.47-5.56 17.47-12.34 0-6.08-.22-22.18-.35-43.54-71.2 15.49-86.2-34.34-86.2-34.34-11.64-29.57-28.42-37.45-28.42-37.45-23.27-15.84 1.73-15.55 1.73-15.55 25.69 1.81 39.21 26.38 39.21 26.38 22.84 39.12 59.92 27.82 74.5 21.27 2.33-16.54 8.94-27.82 16.25-34.22-56.84-6.43-116.6-28.43-116.6-126.49 0-27.95 10-50.8 26.35-68.69-2.63-6.48-11.42-32.5 2.51-67.75 0 0 21.49-6.88 70.4 26.24a242.65 242.65 0 0 1 128.18 0c48.87-33.13 70.33-26.24 70.33-26.24 14 35.25 5.18 61.27 2.55 67.75 16.41 17.9 26.31 40.75 26.31 68.69 0 98.35-59.85 120-116.88 126.32 9.19 7.9 17.38 23.53 17.38 47.41 0 34.22-.31 61.83-.31 70.23 0 6.85 4.61 14.81 17.6 12.31C438.72 464.97 512 369.08 512 256.02 512 114.62 397.37 0 256 0z" fill="currentColor" fill-rule="evenodd" />
+                        </svg>
+                    </a>
+                </div>
+          
                 <!-- <li class="nav-item">
                         <a class="nav-link">inverse kinematics:
                                 <input type="checkbox" id="inversekin" checked>
                                 <span class="text-muted" data-toggle="tooltip" data-original-title="disable to change constraints by dragging nodes">?</span>
                         </a>
                 </li> -->
-                <li class="nav-item">
+                <!-- <li class="nav-item"> -->
                     <!-- <span class="text-white nav-link">inverse kinematics:
                         <input type="checkbox" id="inversekin" checked>
                         <span id="popover-inverse" class="text-muted" data-toggle="popover" data-placement="bottom" data-content="disable this option to change constraint dimensions by dragging nodes">
                             <i class="fas fa-question"></i>
                         </span>
                     </span> -->
-                    <span class="text-white nav-link ">
-                        <div class="checkbox-slider--b pl-1"> <!-- class: form-check -->
-                            <label class="mb-0">
+                <!--    <span class="text-white nav-link ">
+                        <div class="checkbox-slider  -->  <!--   --b pl-1"> -->
+                            <!-- <label class="mb-0">
                                 <input type="checkbox" id="inversekin" checked>
                                 <span>inverse kinematics</span>
                             </label>
@@ -82,8 +134,8 @@
                             </span>
                         </div>
                     </span>
-                </li>
-            </ul>
+                </li> -->
+            </div>
         </div>
     </nav>
 
@@ -92,121 +144,156 @@
         <div class="row content">
 
             <!-- ========================== left sidebar ========================== -->
-            <nav id="sb-l" class="col-sm-5 col-md-4 col-lg-3 col-xl-2 hidden-xs-down bg-faded sidebar sb-l">
+            <nav id="sb-l" class="col sidebar sb-l">
                 <!-- add class "data-simplebar" for pretty scrollbar-->
-                <ul class="nav nav-pills flex-column">
-                    <label class="nav-link greenish mb-1 font-weight-bold">
-                        <i class="fas fa-toolbox"></i> Components:</label>
+                <ul class="nav nav-pills flex-column text-center">
+                    <!-- <label class="nav-link greenish mb-1 font-weight-bold">
+                        <i class="fas fa-toolbox"></i> Components:</label> -->
 
-                    <li class="nav-itemmb-1">
-                        <label class="nav-link greenish m-0" for="btn-group">
-                            <i class="fas fa-plus"></i> add node:</label>
-                        <div class="text-center m-1">
-                            <div class="btn-group btn-group-justified" role="group" aria-label="nodebuttons">
-                                <button type="button" id="addbasenode" class="btn btn-info">
-                                    <i class="fas fa-circle"></i> base</button>
-                                <button type="button" id="addnode" class="btn btn-info">
-                                    <i class="far fa-circle"></i> normal</button>
-                            </div>
-                        </div>
+                    <li class="nav-item mb-1">
+                        <!-- <label class="nav-link greenish m-0" for="btn-group">
+                            <i class="fas fa-plus"></i> add node:</label> -->
+                        <!-- <div class="text-center m-1"> -->
+                            <!-- <div class="btn-group btn-group-justified" role="group" aria-label="nodebuttons"> -->
+                                <button type="button" id="addbasenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="base node">
+                                    <i class="fas fa-circle"></i></button>
+                                <!-- <button type="button" id="addnode" class="btn btn-dark">
+                                    <i class="far fa-circle"></i> normal</button> -->
+                            <!-- </div> -->
+                        <!-- </div> -->
+                    <!-- </li>
+
+                    <li class="nav-item mb-1"> -->
+                                <button type="button" id="addnode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="node">
+                                    <i class="far fa-circle"></i></button>
+                            <!-- </div> -->
+                        <!-- </div> -->
                     </li>
 
                     <li class="nav-item mb-1">
-                        <label class="nav-link greenish m-0">
-                            <i class="fas fa-minus"></i> delete node:</label>
-                        <button type="button" id="deletenode" class="btn btn-info btn-block btn-nohalo mt-1">
-                            <i class="fas fa-trash-alt fa-lg"></i> delete node
-                        </button>
+                        <!-- <label class="nav-link greenish m-0">
+                            <i class="fas fa-minus"></i> purge node:</label> -->
+                        <button type="button" id="purgenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="purge node">
+                            <i class="fas fa-trash-alt fa-lg"></i></button>
                     </li>
 
-                    <li class="nav-item">
-                        <label class="nav-link greenish m-0" for="btn-group">
-                            <i class="fas fa-plus"></i> add constraint:</label>
-                        <div id="vec-container" class="btn-group flex-row flex-wrap mb-1" role="group">
-                            <span class="fl-w">
-                                <input type="image" id="free" class="vec_btn" src="./img/bas.png">
-                                <label for="free">free</label>
-                            </span>
-                            <span class="fl-w">
-                                <input type="image" id="tran" class="vec_btn" src="./img/trn.png">
-                                <label for="tran">tran</label>
-                            </span>
-                            <span class="fl-w">
-                                <input type="image" id="rot" class="vec_btn" src="./img/rot.png">
-                                <label for="rot">rot</label>
-                            </span>
-                            <span class="fl-w">
-                                <input type="image" id="drive" class="vec_btn" src="./img/trnrot.png">
-                                <label for="drive">drive</label>
-                            </span>
-                        </div>
+                    <li class="nav-item mb-1">
+                            <!-- <span class="fl-w"> -->
+                                <button type="button" id="free" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="free">
+                                    <svg viewBox="-10 -20 60 60"> 
+                                        <path d='M8,6 
+                                                 C 12 2, 12 -2, 8 -6'
+                                              stroke="white"
+                                              stroke-width="2"
+                                              fill="transparent"
+                                              stroke-linecap="round"
+                                              transform="translate(0,30) rotate(-45) scale(1.2)"/>
+                                        <path d='M 0,0 
+                                                 L 8,0
+                                                 M 15,0
+                                                 L 18,0
+                                                 M 22,0
+                                                 L 24,0
+                                                 M 28,0
+                                                 L 35,0
+                                                                                  M 45,0
+                                                 L 36,-3
+                                                 C 37 -1, 37 1, 36 3
+                                                    Z' 
+                                              stroke="white"
+                                              stroke-width="2" 
+                                              fill="white"
+                                              stroke-linecap="round"
+                                              stroke-miterlimit="5"
+                                              stroke-linejoin="miter"
+                                              transform="translate(0,30) rotate(-45) scale(1.2)"/>
+                                    </svg>
+                                </button>
+                                    <button type="button" id="tran" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="tran">
+                                        <svg viewBox="-10 -20 60 60"> 
+                                            <path d='M 0,0 
+                                                     L 12,0
+                                             
+                                                     M 16,0
+                                                     L 18,0
+                                             
+                                                     M 22,0
+                                                     L 24,0
+                                             
+                                                     M 28,0
+                                                     L 35,0
+                                             
+                                                     M 45,0
+                                                     L 36,-3
+                                                     C 37 -1, 37 1, 36 3
+                                                     Z' 
+                                                  stroke="white"
+                                                  stroke-width="2"
+                                                  fill="white"
+                                                  stroke-linecap="round"
+                                                  stroke-miterlimit="5"
+                                                  stroke-linejoin="miter"
+                                                  transform="translate(0,30) rotate(-45) scale(1.2)"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button" id="rot" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="rot">
+                                        <svg viewBox="-10 -20 60 60"> 
+                                            <path d='M8,6 
+                                                     C 12 2, 12 -2, 8 -6'
+                                                  stroke="white"
+                                                  stroke-width="2"
+                                                  fill="transparent"
+                                                  stroke-linecap="round"
+                                                  transform="translate(0,30) rotate(-45) scale(1.2)"/>
+                                            <path d='M 0,0 
+                                                     L 8,0
+                                                     M 15,0
+                                                     L 35,0
+                                             
+                                                     M 45,0
+                                                     L 36,-3
+                                                     C 37 -1, 37 1, 36 3
+                                                     Z' 
+                                                  stroke="white"
+                                                  stroke-width="2"
+                                                  fill="white"
+                                                  stroke-linecap="round"
+                                                  stroke-miterlimit="5"
+                                                  stroke-linejoin="miter"
+                                                  transform="translate(0,30) rotate(-45) scale(1.2)"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button" id="drive" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="add drive">
+                                        <i class="fas fa-cogs"></i>
+                                    </button>
+                                <!-- <input type="image" id="free" class="vec_btn" src="./img/bas.png" data-toggle="popover" data-placement="right" data-content="free"> -->
+                                <!-- <label for="free">free</label> -->
+                            <!-- </span>
+                            <span class="fl-w"> -->
+                                <!-- <input type="image" id="tran" class="vec_btn" src="./img/trn.png" data-toggle="popover" data-placement="right" data-content="tran"> -->
+                                <!-- <label for="tran">tran</label> -->
+                            <!-- </span>
+                            <span class="fl-w"> -->
+                                <!-- <input type="image" id="rot" class="vec_btn" src="./img/rot.png" data-toggle="popover" data-placement="right" data-content="rot"> -->
+                                <!-- <label for="rot">rot</label> -->
+                            <!-- </span>
+                            <span class="fl-w"> -->
+                                <!-- <input type="image" id="drive" class="vec_btn" src="./img/trnrot.png" data-toggle="popover" data-placement="right" data-content="add drive"> -->
+                                <!-- <label for="drive">drive</label> -->
+                            <!-- </span> -->
                     </li>
 
-
-                    <!-- <li class="nav-item">
-                        <label class="nav-link greenish" for="a_Slider">a:</label>
-                        <input type="range" class="custom-range pl-1 pr-1" id="a_Slider" value="0" min="1" max="300" step="1">
-                    </li> -->
-                    <!-- <li class="nav-item">
-                        <label class="nav-link greenish" for="c2">some function (clipped):</label>
-                        <canvas id="c2" width=inherit height=inherit></canvas>
-                    </li> -->
                 </ul>
 
-                <!-- <ul class="nav nav-pills flex-column">
-                    <label class="nav-link greenish mb-1 font-weight-bold">
-                        <i class="fas fa-cogs"></i> Actuators:</label>
-                    <li class="nav-item">
-                        <label class="nav-link greenish" for="phi">φ:</label>
-                        <span class="d-flex ml-1 mr-1"> -->
-                <!-- <mec-slider id="phi" width="600" min="0" max="360" step="1" value="" valstr="φ={value}°"></mec-slider> -->
-                <!-- <span class="btn btn-outline-light btn-sm">
-                                <i class="fas fa-caret-left fa-2x fitlineheight"></i>
-                            </span>
-                            <input type="range" class="custom-range pl-1 pr-1 mt-1" id="phi_Slider" value="90" min="0" max="359" step="1">
-                            <span class="btn btn-outline-light btn-sm">
-                                <i class="fas fa-caret-right fa-2x fitlineheight"></i>
-                            </span> -->
-                <!-- </span>
-
-                    </li>
-                </ul> -->
-
-                <ul class="nav nav-pills flex-column">
-                    <li class="nav-item mb-1">
-                        <label class="nav-link greenish m-0 font-weight-bold">
-                            <i class="fas fa-wrench"></i> Settings:</label>
-                        <button type="button" id="resetview" class="btn btn-primary btn-block btn-nohalo mt-1">
-                            <i class="fas fa-expand-arrows-alt fa-lg"></i> reset editor-view
-                        </button>
-                    </li>
-
-                    <!-- <li class="nav-item mb-1">
-                        <button type="button" class="btn btn-secondary btn-block btn-nohalo">
-                            'secondary' Button
-                        </button>
-                    </li> -->
-
-                    <!-- <li class="nav-item">
-                            <a id="addnode" class="nav-link greenish" href="#">add node</a>
-                        </li> -->
-                    <!-- <li class="nav-item mb-1">
-                        <button type="button" id="testbutton" name="button-name" class="btn btn-success btn-block btn-nohalo">'success' Button</button>
-                    </li>
-                    <li class="nav-item mb-1">
-                        <button type="button" class="btn btn-warning btn-block btn-nohalo">'warning' Button</button>
-                    </li>
-                    <li class="nav-item mb-1">
-                        <button type="button" class="btn btn-danger btn-block btn-nohalo">'danger' Button 3</button>
-                    </li> -->
-                </ul>
             </nav>
 
             <!-- ========================== canvas ========================== -->
-            <main id="main" class="col-sm-7 col-md-8 col-lg-9 col-xl-10 p-0 main-container">
+            <main id="main" class="col p-0 main-container">
                 <!-- <main class="col p-0 main-container"> -->
                 <!-- <canvas-area id="ca" width="1200" height="820" cartesian="true" resizable="both"> -->
-                <canvas id="c" class="canvas" width="1200" height="820"></canvas>
+                <div id="canvas-container" class="p-0">
+                    <canvas id="c" class="canvas" width="1200" height="820"></canvas>
+                </div>
                 <!-- </canvas-area> -->
                 <div id="instructions"></div>
 
@@ -293,7 +380,7 @@
     
     <script src="./scripts/mixin.js"></script>
     <script src="./scripts/ctxm-templates.js"></script>
-    <script src="./app.js"></script>
+    <script src="./app0476.js"></script>
 
 
 </body>

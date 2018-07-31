@@ -1,9 +1,51 @@
 const tooltip = document.getElementById('info'),
-      statusbar = document.getElementById('statbar'),
-      editor = g2.editor(),
+    statusbar = document.getElementById('statbar'),
+    editor = g2.editor(),
     //   edgeTyp = {BAS:0,ROT:1,TRN:2},
-      edgeType = ['bas', 'trn', 'rot', 'trn+rot'],
-      pi = Math.PI;
+    // edgeType = ['bas', 'trn', 'rot', 'trn+rot'],
+    pi = Math.PI;
+
+const origin = g2().beg({ lc: 'round', lj: 'round', ls:'silver', fs: 'darkgray' })
+                        .p()
+                            .m({ x: 21, y: 0 })
+                            .l({ x: 0, y: 0 })
+                            .l({ x: 0, y: 21 })
+                        .stroke()
+                        .p()
+                            .m({ x: 35, y: 0 })
+                            .l({ x: 21, y: -2.6 })
+                            .a({ dw: pi/3, x: 21, y: 2.6 })
+                        .z()
+                            .m({ x: 0, y: 35 })
+                            .l({ x: 2.6, y: 21 })
+                            .a({ dw: pi/3, x: -2.6, y: 21 })
+                        .z()
+                        .drw()
+                        .cir({ x: 0, y: 0, r: 2.5, fs: '#ccc' })
+                    .end()
+                    .beg({ ls:'silver', font: '14px roboto'})
+                        .txt({str:'x', x: 38, y: 4})
+                        .txt({str:'y', x: 6, y: 30})
+                    .end();
+                    
+const gravvec = (cartesian = true) => {
+    const sgn = cartesian ? - 1 : 1;
+    return g2().beg({ w: sgn*pi/2, lw: 2, ls:'silver', fs: 'darkgray'})
+               .p()
+                   .m({ x: 0, y: 0 })
+                   .l({ x: 50, y: 0 })
+               .stroke()
+               .p()
+                   .m({ x: 50, y: 0 })
+                   .l({ x: 50 - 17.5, y: -3.5 })
+                   .a({ dw: pi/3, x: 50 - 17.5, y: 3.5 })
+               .z()
+               .drw()
+            .end()
+            .beg({ ls:'silver', font: '14px roboto'})
+                .txt({str:'g', x: -15, y: sgn*20})
+            .end();
+}
 
 const App = {
     create() {
@@ -17,6 +59,7 @@ const App = {
                 id: 'crank',
                 dt: 2 / 360,
                 dirty: true,
+                gravity: true,
                 // phi: pi / 2,
                 // psi: pi / 2,
                 // theta: pi / 2,
@@ -25,15 +68,15 @@ const App = {
                     { id: 'A', x: 100, y: 150, m: 1 },
                     { id: 'B', x: 350, y: 220, m: 1 },
                     { id: 'B0', x: 300, y: 100, m: 'infinite' },
-                    { id: 'C', x: 450, y: 200, m: 1 },
-                    { id: 'C0', x: 450, y: 100, m: 1},
+                    // { id: 'C', x: 450, y: 200, m: 1 },
+                    // { id: 'C0', x: 450, y: 100, m: 1 },
                 ],
                 constraints: [
                     { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
                     { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
-                    { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
-                    { id: 'd', p1: 'B', p2: 'C', len: { type: 'const' } },
-                    { id: 'e', p1: 'C0', p2: 'C', len: { type: 'const' } },
+                    // { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
+                    // { id: 'd', p1: 'B', p2: 'C', len: { type: 'const' } },
+                    // { id: 'e', p1: 'C0', p2: 'C', len: { type: 'const' } },
                     // { id: 'd', p1: 'B', p2: 'C', len: { type: 'const' }, ori: { type: 'ref', ref: 'b'} },
                     // { id: 'e', p1: 'B0', p2: 'C', len: { type: 'const' }, ori: { type: 'ref', ref: 'd'} },
                 ]
@@ -52,18 +95,28 @@ const App = {
             this.ctxmenuheader = document.getElementById("contextMenuHeader");
             this.ctxmenubody = document.getElementById("contextMenuBody");
             this.imported = {}; // here goes the imported JSON model
+            this.inversekinematics = true;
 
             this.g = g2().clr()
-                .view(this.view)
-                .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 100 })
-                .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 20 })
-                .p() // mark origin
-                .m({ x: () => -this.view.x / this.view.scl, y: 0 })
-                .l({ x: () => (this.cnv.width - this.view.x) / this.view.scl, y: 0 })
-                .m({ x: 0, y: () => -this.view.y / this.view.scl })
-                .l({ x: 0, y: () => (this.cnv.height - this.view.y) / this.view.scl })
-                .z()
-                .stroke({ ls: 'rgba(255, 255, 255, 0.3)', lw: 2 })
+                // .view(this.view)
+                // .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 100 })
+                // .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 20 })
+                // .p() // mark origin
+                // .m({ x: () => -this.view.x / this.view.scl, y: 0 })
+                // .l({ x: () => (this.cnv.width - this.view.x) / this.view.scl, y: 0 })
+                // .m({ x: 0, y: () => -this.view.y / this.view.scl })
+                // .l({ x: 0, y: () => (this.cnv.height - this.view.y) / this.view.scl })
+                // .z()
+                // .stroke({ ls: 'rgba(255, 255, 255, 0.3)', lw: 2 })
+            //     // if (()=>this.view.cartesian) / can always be shown
+            //     .use({grp:origin,x: () => (10 - this.view.x)/this.view.scl, y: () => (10 - this.view.y)/this.view.scl, scl: () => this.view.scl})
+            //     if(()=>this.model.hasGravity) {
+            //         if(this.cartesian) {
+            //             this.g.use({grp:gravvec(true),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (this.cnv.height - 15 - this.view.y)/this.view.scl, scl: () => this.view.scl})
+            //         } else {
+            //             this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (- this.view.y + 65 )/this.view.scl, scl: () => this.view.scl})
+            //         }
+            //     }
 
             this.registerEventsFor(this.ctx.canvas)
                 .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], (e) => { this.g.exe(editor.on(this.pntToUsr(Object.assign({}, e)))) })  // apply events to g2 ...
@@ -77,7 +130,7 @@ const App = {
                     this.pan(e);
                 })
                 .on('buttondown', (e) => {                     // show tooltip info
-                    if (editor.dragInfo && !document.getElementById('inversekin').checked) {
+                    if (editor.dragInfo && !this.inversekinematics) {
                         tooltip.style.left = ((e.clientX) + 15) + 'px';
                         tooltip.style.top = (e.clientY - 50) + 'px';
                         tooltip.innerHTML = editor.dragInfo;
@@ -91,7 +144,7 @@ const App = {
                     if (this.build) {
                         // console.log(editor)
                         if (['addnode', 'addbasenode'].includes(this.build.mode)) this.addNode();
-                        if (this.build.mode === 'deletenode') this.deleteNode(editor.curElm);
+                        if (this.build.mode === 'purgenode') this.deleteNode(editor.curElm);
                         if (['free', 'tran', 'rot'].includes(this.build.mode)) this.addConstraint();
                         if (this.build.mode === 'drive') this.addActuator(editor.curElm);
                     }
@@ -108,7 +161,7 @@ const App = {
 
         showStatus() {  // poor man's status bar
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
-            statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}`
+            statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.inversekinematics?'move':'edit'}, dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}`
         },
 
         init() { // evaluate how many actuators and add init add controlled properties to model instead of typing them there
@@ -175,6 +228,15 @@ const App = {
                 .l({ x: 0, y: () => (this.cnv.height - this.view.y) / this.view.scl })
                 .z()
                 .stroke({ ls: 'rgba(255, 255, 255, 0.3)', lw: 2 })
+                // if (()=>this.view.cartesian) / can always be shown
+                .use({grp:origin,x: () => (10 - this.view.x)/this.view.scl, y: () => (10 - this.view.y)/this.view.scl, scl: () => this.view.scl})
+                if(this.model.hasGravity) {
+                    if(this.cartesian) {
+                        this.g.use({grp:gravvec(true),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (this.cnv.height - 15 - this.view.y)/this.view.scl, scl: () => this.view.scl})
+                    } else {
+                        this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (- this.view.y + 14 )/this.view.scl, scl: () => this.view.scl})
+                    }
+                }
 
             this.model.draw(this.g);
         },
@@ -184,7 +246,7 @@ const App = {
             this.instruct.innerHTML = ''; // reset instructions
         },
 
-        replaceNode(oldN,newN) { // todo: bug: this function does not set the new mass in p1/p2 of adjacent constraints!!
+        replaceNode(oldN, newN) { // todo: bug: this function does not set the new mass in p1/p2 of adjacent constraints!!
             // this.model.nodes.splice(this.model.nodes.indexOf(oldN), 1); // remove old node from model
             // this.model.addNode(mec.node.extend(newN));
             // newN.init(this.model);
@@ -208,7 +270,8 @@ const App = {
                     m: this.build.mode == 'addbasenode' ? Number.POSITIVE_INFINITY : 1
                 };
                 this.model.addNode(mec.node.extend(node)); // inherit prototype methods (extend) and add to model via model.addnode
-                this.updateg() // update graphics
+                this.model.nodeById(node.id).init(this.model);
+                this.updateg(); // update graphics
             } else {
                 console.log('node already exists at this coordinates ...');
                 editor.curElm.drag = false;
@@ -218,24 +281,26 @@ const App = {
         },
 
         deleteNode(node) {
-            // remove adjacent constraints from model
-            const adjConstraints = node.adjConstraintIds(); // fetch ids of adjacent constraints
-            let modelidx = [];
-            adjConstraints.forEach(el => {  // fetch index of all adj. constraints in their array model.constraints
-                modelidx.push(this.model.constraints.indexOf(this.model.constraintById(el)));
-                // if (this.model.constraintById(el).hasOwnProperty('for')) { delete this.model[this.model.constraintById(el).for] }; // remove actuator angle from model if constraint is actuated // "for" does not exist anymore
-            });
-            for (let i = modelidx.length - 1; i >= 0; i--) { // delete adj. constraints; splice from back so modelidx values stay valid
-                this.model.constraints.splice(modelidx[i], 1);
-            };
-            this.model.nodes.splice(this.model.nodes.indexOf(node), 1); // remove node from model
-            this.updateg() // update graphics
+            if (!!node && node.hasOwnProperty('m')) { // check if a node was clicked
+                 // remove adjacent constraints from model // todo: also remove other dependencies
+                const adjConstraints = node.adjConstraintIds(); // fetch ids of adjacent constraints
+                let modelidx = [];
+                adjConstraints.forEach(el => {  // fetch index of all adj. constraints in their array model.constraints
+                    modelidx.push(this.model.constraints.indexOf(this.model.constraintById(el)));
+                    // if (this.model.constraintById(el).hasOwnProperty('for')) { delete this.model[this.model.constraintById(el).for] }; // remove actuator angle from model if constraint is actuated // "for" does not exist anymore
+                });
+                for (let i = modelidx.length - 1; i >= 0; i--) { // delete adj. constraints; splice from back so modelidx values stay valid
+                    this.model.constraints.splice(modelidx[i], 1);
+                };
+                this.model.nodes.splice(this.model.nodes.indexOf(node), 1); // remove node from model
+                this.updateg() // update graphics
 
-            document.body.style.cursor = 'default';
-            this.resetApp();
+                document.body.style.cursor = 'default';
+                this.resetApp();
+            };           
         },
 
-        replaceConstraint(oldC,newC) {
+        replaceConstraint(oldC, newC) {
             this.model.constraints.splice(app.model.constraints.indexOf(app.model.constraintById(oldC.id)), 1); // remove old
             this.model.addConstraint(mec.constraint.extend(newC)); // add new
             newC.init(this.model);
@@ -246,7 +311,7 @@ const App = {
             if (!this.build.firstnode) { // first invocation
                 if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
                     this.build.firstnode = editor.curElm;
-                    this.instruct.innerHTML = 'select second node'
+                    this.instruct.innerHTML = 'select second node; &lt;ESC&gt; to cancel'
                 } else { // no node clicked
                     return; // next clickevent invokes function again
                 };
@@ -327,8 +392,8 @@ const App = {
             };
             switch (elm.type) { // todo: generalize in- and outputs
                 case 'rot':
-                    actuator.ori = {type:'drive',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'};
-                    actuator.len = {type:'const'};
+                    actuator.ori = { type: 'drive', Dt: 2, Dw: 2 * pi, input: 'slider', output: 'slider_out' };
+                    actuator.len = { type: 'const' };
                     break;
                 case 'tran':
                     console.log('coming soon ...');
@@ -337,8 +402,8 @@ const App = {
                     break;
                 case 'free':
                     console.log('coming soon ...');
-                    // actuator.ori = {type:'drive',Dt:2,Dw:2*pi,input:'slider1',output:'slider_out1'};
-                    // actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider2',output:'slider_out2'};
+                // actuator.ori = {type:'drive',Dt:2,Dw:2*pi,input:'slider1',output:'slider_out1'};
+                // actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider2',output:'slider_out2'};
             }
 
             // replace old with new constraint in model and flag for rebuild
@@ -347,7 +412,7 @@ const App = {
             // this.model.dirty = true;
 
             this.model.addConstraint(mec.constraint.extend(actuator));
-            actuator.init(this.model); 
+            actuator.init(this.model);
 
             this.updateg(); // update graphics
 
@@ -365,15 +430,15 @@ const App = {
 
             switch (newtype) { // todo: generalize in- and outputs
                 case 'rot':
-                    newConstraint.len = {type:'const'};
+                    newConstraint.len = { type: 'const' };
                     break;
                 case 'tran':
-                    newConstraint.ori = {type:'const'};
+                    newConstraint.ori = { type: 'const' };
                     break;
                 case 'ctrl': // assume ori 'ref', not 'drive'. drive has to be added elsewhere, // maybe dont set stuff here but open second menu or form/modal to distinguish ori/len ref
-                    newConstraint.len = {type:'const'};
+                    newConstraint.len = { type: 'const' };
                     newConstraint.ori = {
-                        type:'ref',
+                        type: 'ref',
                         ref: elm.p1.adjConstraintIds()[0] // reference the first found constraint of p1 for now ...
                     }; // todo: make select ref
             }
@@ -393,10 +458,10 @@ const App = {
         initCtxm(elm) { // todo: remember to add option for drive func
             console.log(elm.type);
             this.tempElm = {};  // save elm for eventlistener & state-check
-            this.tempElm.type = (!!elm.type && ['free','rot','tran','ctrl'].includes(elm.type)) ? 'constraint' : 'node'; // check elm type
+            this.tempElm.type = (!!elm.type && ['free', 'rot', 'tran', 'ctrl'].includes(elm.type)) ? 'constraint' : 'node'; // check elm type
             this.tempElm.old = elm.toJSON();
             // app.tempElm.old = JSON.parse(JSON.stringify(elm));
-            this.updateCtxm(this.tempElm.old,this.tempElm.type);
+            this.updateCtxm(this.tempElm.old, this.tempElm.type);
             this.showCtxm();
         },
 
@@ -409,10 +474,10 @@ const App = {
         hideCtxm() {
             this.ctxmenu.style.display = 'none'
             if (!!this.tempElm.new)
-                this.tempElm.type === 'constraint' ? this.replaceConstraint(this.tempElm.old,this.tempElm.new) : this.replaceNode(this.tempElm.old,this.tempElm.new);
+                this.tempElm.type === 'constraint' ? this.replaceConstraint(this.tempElm.old, this.tempElm.new) : this.replaceNode(this.tempElm.old, this.tempElm.new);
         },
 
-        updateCtxm(elm,type) {
+        updateCtxm(elm, type) {
             console.log(elm);
 
             // delete old bodyelements of the ctxm to append updated ones
@@ -423,23 +488,25 @@ const App = {
             // template ctxmenu
 
             //replace header
-            this.ctxmenuheader.innerHTML = ctxm.header(elm,type);
+            this.ctxmenuheader.innerHTML = ctxm.header(elm, type);
 
             //append new body
             if (type === 'constraint') { // constraint
-                this.ctxmenubody.innerHTML += ctxm.nodes(elm);
                 this.ctxmenubody.innerHTML += ctxm.sectionTitle('orientation');
                 this.ctxmenubody.innerHTML += ctxm.oriType(elm);
-                if(elm.ori.type === 'ref') {
+                if (elm.ori.type === 'ref') {
                     const oriRefId = !!elm.ori.ref ? elm.ori.ref : app.model.constraints[0].id;
-                    this.ctxmenubody.innerHTML += ctxm.ref(elm,'ori',oriRefId);
+                    this.ctxmenubody.innerHTML += ctxm.ref(elm, 'ori', oriRefId);
                 };
                 this.ctxmenubody.innerHTML += ctxm.sectionTitle('lenght');
                 this.ctxmenubody.innerHTML += ctxm.lenType(elm);
-                if(elm.len.type === 'ref') {
+                if (elm.len.type === 'ref') {
                     const lenRefId = !!elm.len.ref ? elm.len.ref : app.model.constraints[0].id
-                    this.ctxmenubody.innerHTML += ctxm.ref(elm,'len',lenRefId);
+                    this.ctxmenubody.innerHTML += ctxm.ref(elm, 'len', lenRefId);
                 };
+                this.ctxmenubody.innerHTML += ctxm.sectionTitle('nodes');
+                this.ctxmenubody.innerHTML += ctxm.nodes(elm);
+                this.ctxmenubody.innerHTML += ctxm.removeConstraintButton();
             } else { // node
                 this.ctxmenubody.innerHTML += ctxm.nodeCoordinates(elm);
                 this.ctxmenubody.innerHTML += ctxm.nodeMass(elm);
@@ -479,33 +546,54 @@ let app;
 window.onload = () => {
     let c = document.getElementById('c'),
         main = document.getElementById('main');
+    
+    
 
+    (app = App.create()).init(); 
+    app.updateg(); // fill graphics queue
+
+    // fit canvas
     c.width = main.clientWidth;
     c.height = main.clientHeight - 30;
 
-    (app = App.create()).init();
+    app.notify('render');
 
-    // non-editor events
-    // sidebar handler
+    // define non-editor events
+    /*********************************  sidebar click handler  ****************************************/ 
     document.getElementById('sb-l').addEventListener('click', (e) => { // bind to parent
+        console.log(e);
         // if (e.target && e.target.className == 'vec_btn') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
         if (e.target && ['free', 'tran', 'rot'].includes(e.target.id)) { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
         if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select a constraint to add an actuator to; &lt;ESC&gt; to cancel'; };
-        if (e.target && e.target.id === 'addnode' || e.target.id == 'addbasenode') {
+        if (e.target && (e.target.id === 'addnode' || e.target.id == 'addbasenode')) {
             app.build = { mode: e.target.id };
             app.instruct.innerHTML = 'left-click on the canvas to place a new node; &lt;ESC&gt; to cancel';
             document.body.style.cursor = 'crosshair';
         };
-        if (e.target && e.target.id === 'deletenode') {
+        if (e.target && e.target.id === 'purgenode') {
             app.build = { mode: e.target.id };
             app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
             document.body.style.cursor = 'crosshair';
         };
-        if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
+        // if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
     });
+
+    /*********************************  navbar click handler  ****************************************/ 
+    document.getElementById('navcollapse').addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'export') { app.saveToJSON(); };
+        if (e.target && e.target.id === 'inversekinematics') { app.inversekinematics = !app.inversekinematics; };
+        if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
+        if (e.target && e.target.id === 'toggleNodeLabels') { mec.showNodeLabels = !mec.showNodeLabels; app.notify('render'); };
+        if (e.target && e.target.id === 'toggleConstraintLabels') { mec.showConstraintLabels = !mec.showConstraintLabels; app.notify('render'); };
+        if (e.target && e.target.id === 'toggleLoadLabels') { mec.showLoadLabels = !mec.showLoadLabels; app.notify('render'); };
+    });
+
+    /*********************************  navbar change handler  ****************************************/ 
     document.getElementById('import').addEventListener('change', (e) => app.loadFromJSON(e.target.files));
-    document.getElementById('export').addEventListener('click', () => app.saveToJSON());
-    document.addEventListener('keydown', (e) => { // keyboard handler
+
+    /*********************************  global keyboard handler  ****************************************/ 
+    document.addEventListener('keydown', (e) => {
+        console.log(`Key pressed: ${e.key}`);
         if (e.key === 'Escape') {
             if (app.build) {
                 // reset app.build-state on escapekey
@@ -514,34 +602,68 @@ window.onload = () => {
             }
             // todo: make editor & element state resetable
         };
+        // some shortcuts
+        if (e.key === 'i')    
+            app.inversekinematics = !app.inversekinematics; // toogle drag-mode
+        if (e.key === 'p') {
+            app.build = { mode: 'purgenode' };
+            app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
+            document.body.style.cursor = 'crosshair';
+        }
     });
 
-    // contextmenu handler
-    document.getElementById('contextMenu').addEventListener('change',(e) => {
-        if(!app.tempElm.new) // declare new temporary constraint template if not done already
-                app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
-            console.log(app.tempElm);
+    /*********************************  contextmenu change handler  ****************************************/ 
+    document.getElementById('contextMenu').addEventListener('change', (e) => {
+        let ctxmdirty = false;
+        if (!app.tempElm.new) // declare new temporary constraint template if not done already
+            app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
 
-        if (e.target && e.target.id === 'select-p1') { app.tempElm.new.p1 = e.target.value; ctxmdirty = true;}; // todo: prevent applying same p1 & p2 when updating model
-        if (e.target && e.target.id === 'select-p2') { app.tempElm.new.p2 = e.target.value; ctxmdirty = true;};
-        if (e.target && e.target.id === 'select-ori-type') { app.tempElm.new.ori.type = e.target.value; ctxmdirty = true;};
-        if (e.target && e.target.id === 'select-len-type') { app.tempElm.new.len.type = e.target.value; ctxmdirty = true;};
-        if (e.target && e.target.id === 'select-ori-ref') { app.tempElm.new.ori.ref = e.target.value; ctxmdirty = true;};
-        if (e.target && e.target.id === 'select-len-ref') { app.tempElm.new.len.ref = e.target.value; ctxmdirty = true;};
+        if (e.target && e.target.id === 'select-p1') { app.tempElm.new.p1 = e.target.value; ctxmdirty = true; }; // todo: prevent applying same p1 & p2 when updating model
+        if (e.target && e.target.id === 'select-p2') { app.tempElm.new.p2 = e.target.value; ctxmdirty = true; };
+        if (e.target && e.target.id === 'select-ori-type') { app.tempElm.new.ori.type = e.target.value; ctxmdirty = true; };
+        if (e.target && e.target.id === 'select-len-type') { app.tempElm.new.len.type = e.target.value; ctxmdirty = true; };
+        if (e.target && e.target.id === 'select-ori-ref') { app.tempElm.new.ori.ref = e.target.value; ctxmdirty = true; };
+        if (e.target && e.target.id === 'select-len-ref') { app.tempElm.new.len.ref = e.target.value; ctxmdirty = true; };
 
-        if (e.target && e.target.id === 'node-x') { app.tempElm.new.x = e.target.valueAsNumber; ctxmdirty = true;};
-        if (e.target && e.target.id === 'node-y') { app.tempElm.new.y = e.target.valueAsNumber; ctxmdirty = true;};
-        if (e.target && e.target.id === 'node-mass') { e.target.checked ? app.tempElm.new.m = Number.POSITIVE_INFINITY : app.tempElm.new.m = 1; ctxmdirty = true;};
+        if (e.target && e.target.id === 'node-x') { app.tempElm.new.x = e.target.valueAsNumber; ctxmdirty = true; };
+        if (e.target && e.target.id === 'node-y') { app.tempElm.new.y = e.target.valueAsNumber; ctxmdirty = true; };
+        if (e.target && e.target.id === 'node-mass') { e.target.checked ? app.tempElm.new.m = Number.POSITIVE_INFINITY : app.tempElm.new.m = 1; ctxmdirty = true; };
 
         if (ctxmdirty)
             // todo: check for consistency issues and maybe mark with red border
-            app.updateCtxm(app.tempElm.new,app.tempElm.type);
+            app.updateCtxm(app.tempElm.new, app.tempElm.type);
+    });
+
+    /*********************************  contextmenu click handler  ****************************************/ 
+    document.getElementById('contextMenu').addEventListener('click', (e) => {
+        let ctxmdirty = false;
+        if (!app.tempElm.new) // declare new temporary constraint template if not done already
+            app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
+
+        if (e.target && e.target.id === 'node-trash') {
+            app.tempElm.new = false; 
+            app.model.removeNode(app.model.nodeById(app.tempElm.old.id));
+            app.updateg();
+            app.tempElm = false;
+            app.hideCtxm();
+        };
+        if (e.target && e.target.id === 'constraint-trash') {
+            app.tempElm.new = false; 
+            app.model.removeConstraint(app.model.constraintById(app.tempElm.old.id));
+            app.updateg();
+            app.tempElm = false;
+            app.hideCtxm();
+        };
+
+        if (ctxmdirty)
+            // todo: check for consistency issues and maybe mark with red border
+            app.updateCtxm(app.tempElm.new, app.tempElm.type);
     });
 
     const _draggableCtxMenu = new Draggabilly(document.getElementById('contextMenu'), {
         containment: '.main-container',
         handle: '.card-header'
-    });    
+    });
 }
 
 window.onresize = () => {

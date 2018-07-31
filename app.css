@@ -1,12 +1,47 @@
-/*
- * Base structure
- */
-
-/* Move down content because we have a fixed navbar that is 50px tall */
-body {
-    /* padding-top: 56px; */
-    /* overflow: hidden; */
+i {
+    pointer-events: none;
 }
+/*  icons don't exist for mouse-events 
+*   if this wasn't set, clicking on icons wouldn't fire 
+*   parent event with used event delegation
+*/
+
+@media (min-width: 400px) {
+    /* .sb-l {
+        display: block !important;
+        width: 70px !important;
+        -ms-flex: 0 1 70px;
+        flex: 0 1 70px;
+        flex-flow: column wrap;
+        max-width: 70px !important;
+    } */
+
+    .main-container {
+        min-width: none;
+        /* height: inherit !important; */
+    }
+}
+
+@media (max-width: 400px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    .sb-l {
+        max-width: none !important;
+    }
+
+    .main-container {
+        height: inherit !important;
+    }
+    
+}
+
+/* @media (max-width:420px) and (min-width:400px) {
+    .main-container {
+        min-width: 300px !important;
+    }
+}​ */
 
 #wrapper {
     padding-top: 56px;
@@ -14,6 +49,9 @@ body {
 }
 
 #c {
+    position: absolute;
+    top: 0px;
+    left: 0px;
     padding: 0px;
     background-color: #344c6b;
 }
@@ -21,7 +59,7 @@ body {
 #instructions {
     position: absolute;
     top: 0px;
-    right: 5px;
+    left: 5px;
     color: white;
     text-align: right;
 }
@@ -36,11 +74,11 @@ body {
 }
 
 /* styled via bootstrap spacing classes in main.js */
-.mec-slider { 
+/* .mec-slider {  */
     /* margin-left: 10px;
     margin-right: 5px; */
     /* margin-top: 1px; */
-}
+/* } */
 
 .custom-range {
     min-width: 300px;
@@ -57,11 +95,6 @@ output.badge {
     display: block;
     margin-top: 2;
  } */
-
-.vec_btn {
-    max-width: 100%;
-    height: auto;
-}
 
 .btn-nohalo:focus {
     box-shadow: none;
@@ -82,19 +115,35 @@ output.badge {
     /* lg=1em, 2x=.65em */
 }
 
-/* img scaling in flex-container is bugged in chrome, this fixes it without <span class="fl-w">. see: https://github.com/philipwalton/flexbugs/issues/225 for workaround */
-/* .btn-group .vec_btn{
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-} */
-
 /* class for additional containers due to bugged img scaling in chrome */
 .fl-w{
+    /* flex: 0 1 25%;
+    max-width: 25%; */
     flex: 0 1 25%;
-    max-width: 25%;
+    max-width: 60px;
+    /* height: 60px; */
     background-color: white;
     border: 1px solid #343a40;
+}
+
+.vec_btn {
+    flex: 0 1 25%;
+    max-width: 60px;
+    background-color: white;
+    height: auto;
+}
+
+.svg-btn {
+    margin-bottom: .1rem;
+    padding:0rem;
+    width:50px;
+    height:50px;
+}
+
+.navbar-nav-svg {
+    width:25px;
+    height:25px;
+    margin-top: .3rem;
 }
 
 /* disable horizontal scrolling here because it is inconsistent in sb classes */
@@ -102,6 +151,25 @@ output.badge {
     overflow-x: hidden !important;
 }
 
+.hoverexpand:hover>.dropdown-menu {
+    display: block;
+}
+
+.dropright .dropdown-toggle::after {
+    position: absolute;
+    right: 0.6em;
+    top: 0.9em;
+}
+
+.dropdown-toggle:hover, .dropdown-item:hover{
+    cursor: pointer;
+}
+
+.navbar-brand {
+    color: white !important;
+    font-style: italic;
+    font-family: consolas;
+}
 
 
 /* Contextmenu styles */
@@ -177,8 +245,19 @@ output.badge {
     border-radius: 0.25rem;
 }
 
+.ctxm-right {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.2rem;
+}
+
+.ctxm-right:hover i{
+    color:crimson;
+    cursor: pointer;
+}
 
 .statbar {
+    position: absolute;
     bottom: 0;
     margin-top: -6px; /*no margin padding etc in sight but still needed to get rid of gap between canvas...*/
     width: 100%;
@@ -202,8 +281,12 @@ output.badge {
 .sb-l, .sb-r {
     /* max-height: calc(100vh - 22px) !important; */
     /* max-height: calc(100vh - 56px) !important; */
+    /* display: block; */
+    flex-basis: 70px;
+    width: 100%;
+    max-width: 70px;
     overflow-y: auto;
-    height: inherit !important;
+    /* height: inherit !important; */
     background-color: #343a40;
     /* overflow-x: hidden !important;    */   /* works only on .sb-r ... */
 }
@@ -211,7 +294,8 @@ output.badge {
 .main-container {
     overflow-y: auto;
     overflow-x: hidden;
-    height: inherit !important;
+    /* height: inherit !important; */
+    min-width: 330px;
     /* max-height: calc(100vh - 56px) !important; */
     /* width: 150px !important; */
 }
