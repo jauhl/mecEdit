@@ -1,10 +1,6 @@
 ctxm = {
-    header: (elm,type) => {
-        return `<h6 class="mb-0">${type} id: ${elm.id}</h6>` // stringified constraints have no type: ${elm.type}
-    },
-    sectionTitle(title) {
-        return `<div class="section-divider"></div><label class="input-group-text ctxm-section-title">${title} </label>`
-    },
+    header: (elm,type) => `<h6 class="mb-0">${type} <span style="font-family:roboto;font-weight:500;font-style:italic;">${elm.id}</span></h6>`, // stringified constraints have no type: ${elm.type}
+    sectionTitle: (title) => `<div class="section-divider"></div><label class="input-group-text ctxm-section-title">${title} </label>`,
     // constraintType: (elm) => { // probably not needed
     //     return `<div class="input-group">
     //         <label class="input-group-text">constraint-type: </label>
@@ -16,7 +12,9 @@ ctxm = {
     //         </select>
     //     </div>`
     // },
-    nodes(elm) {
+
+    // constraint templates
+    nodes: (elm) => {
         let select = `<div class="input-group">`,       // add head
             selectP1 = `<label class="ctxm-input-label">p1: </label>
                         <select class="custom-select" id="select-p1">`, 
@@ -35,35 +33,27 @@ ctxm = {
 
         return select;
     },
-    oriType: (elm) => {
-        return `<li class="input-group">
-            <label class="ctxm-input-label">type: </label>
-            <select class="custom-select" id="select-ori-type">
-                <option value="free" ${(elm.ori.type === 'free' ? 'selected' : '')}>free</option>
-                <option value="const"  ${(elm.ori.type === 'const' ? 'selected' : '')}>const</option>
-                <option value="ref"  ${(elm.ori.type === 'ref' ? 'selected' : '')}>ref</option>
-             <!-- <option value="drive" ${(elm.ori.type === 'drive' ? 'selected' : '')}>drive</option> -->
-            </select>
-        </li>`
-    },
-    lenType: (elm) => {
-        return `<li class="input-group">
-            <label class="ctxm-input-label">type: </label>
-            <select class="custom-select" id="select-len-type">
-                <option value="free" ${(elm.len.type === 'free' ? 'selected' : '')}>free</option>
-                <option value="const"  ${(elm.len.type === 'const' ? 'selected' : '')}>const</option>
-                <option value="ref"  ${(elm.len.type === 'ref' ? 'selected' : '')}>ref</option>
-             <!-- <option value="drive" ${(elm.len.type === 'drive' ? 'selected' : '')}>drive</option> -->
-            </select>
-        </li>`
-    },
+    oriType: (elm) => `<li class="input-group">
+                            <label class="ctxm-input-label">type: </label>
+                            <select class="custom-select" id="select-ori-type">
+                                <option value="free" ${(elm.ori.type === 'free' ? 'selected' : '')}>free</option>
+                                <option value="const"  ${(elm.ori.type === 'const' ? 'selected' : '')}>const</option>
+                                <option value="ref"  ${(elm.ori.type === 'ref' ? 'selected' : '')}>ref</option>
+                             <!-- <option value="drive" ${(elm.ori.type === 'drive' ? 'selected' : '')}>drive</option> -->
+                            </select>
+                        </li>`
+    ,
+    lenType: (elm) => `<li class="input-group">
+                            <label class="ctxm-input-label">type: </label>
+                            <select class="custom-select" id="select-len-type">
+                                <option value="free" ${(elm.len.type === 'free' ? 'selected' : '')}>free</option>
+                                <option value="const"  ${(elm.len.type === 'const' ? 'selected' : '')}>const</option>
+                                <option value="ref"  ${(elm.len.type === 'ref' ? 'selected' : '')}>ref</option>
+                             <!-- <option value="drive" ${(elm.len.type === 'drive' ? 'selected' : '')}>drive</option> -->
+                            </select>
+                        </li>`
+    ,
     ref: (elm, type = 'ori', refId) => {
-        // let curRefId;
-        // if (type === 'ori') {
-        //     curRefId = !!elm.ori.ref ? elm.ori.ref : app.model.constraints[0].id
-        // } else {
-        //     curRefId = !!elm.len.ref ? elm.len.ref : app.model.constraints[0].id
-        // };
         let select = `<div class="input-group">
         <label class="ctxm-input-label">referenced: </label>
         <select class="custom-select" id="select-${type}-ref">`; // add head
@@ -77,18 +67,19 @@ ctxm = {
 
         return select
     },
-    nodeCoordinates(elm) {
-        return `<li class="input-group">
-                    <label class="ctxm-input-label">X: </label>
-                    <input type="number" id="node-x" value="${elm.x.toFixed(2)}">
-                    <label class="ctxm-input-label">Y: </label>
-                    <input type="number" id="node-y" value="${elm.y.toFixed(2)}">
-                </li>`
-    },
-    nodeMass(elm) {
-        return `<li class="input-group">
-                    <label class="ctxm-input-label">basenode: </label>
-                    <input type="checkbox" id="node-mass" ${((elm.m === 'infinite' || elm.m === Number.POSITIVE_INFINITY) ? 'checked' : '')}>
-                </li>`
-    }
+    removeConstraintButton: () => `<div class="section-divider"></div><li class="input-group" style="height:28px;"><div class="ctxm-right"><i id="constraint-trash" class="fas fa-trash-alt fa-lg"></i></div></li>`,
+
+    //node templates
+    nodeCoordinates: (elm) => `<li class="input-group">
+                                    <label class="ctxm-input-label">X: </label>
+                                    <input type="number" id="node-x" value="${Math.round(elm.x)}">
+                                    <label class="ctxm-input-label">Y: </label>
+                                    <input type="number" id="node-y" value="${Math.round(elm.y)}">
+                               </li>`
+    ,
+    nodeMass: (elm) => `<li class="input-group">
+                            <label class="ctxm-input-label">basenode: </label>
+                            <input type="checkbox" id="node-mass" ${((elm.m === 'infinite' || elm.m === Number.POSITIVE_INFINITY) ? 'checked' : '')}>
+                            <div class="ctxm-right"><i id="node-trash" class="fas fa-trash-alt fa-lg"></i></div> 
+                        </li>`
 };
