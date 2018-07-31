@@ -48,7 +48,7 @@ mec.model = {
             for (const shape of this.shapes)  // do for all shapes ...
                 mec.shape.extend(shape).init(this);
 
-            if (typeof this.gravity === 'boolean')
+            if (typeof this.gravity === 'boolean' && this.gravity)
                 this.gravity = {x:0,y:-10};
 
             return this;
@@ -61,7 +61,7 @@ mec.model = {
                 dof -= (2 - constraint.dof);
             return dof;
         },
-        get hasGravity() { return this.gravity !== undefined; },
+        get hasGravity() { return (this.gravity !== undefined && !!this.gravity); },
         /**
          * Check for dependencies on specified element. Nodes do not have dependencies.
          * @method
@@ -84,7 +84,7 @@ mec.model = {
          * @param {object} node - node to add.
          */
         addNode(node) {
-            node.model = this;  // check: needed?
+            // node.model = this;  // check: needed?
             this.nodes.push(node);
         },
         /**
@@ -105,7 +105,8 @@ mec.model = {
          * @returns {boolean} true, the node was removed, otherwise false in case of existing dependencies.
          */
         removeNode(node) {
-            const dependency = this.nodes.includes(node) && this.hasDependencies(node);
+            const idx = this.nodes.indexOf(node),
+                  dependency = this.nodes.includes(node) && this.hasDependencies(node);
             if (!dependency)
                 this.nodes.splice(idx,1);  // finally remove node from array.
 
