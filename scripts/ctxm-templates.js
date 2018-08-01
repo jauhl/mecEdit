@@ -67,7 +67,7 @@ ctxm = {
 
         return select
     },
-    removeConstraintButton: () => `<div class="section-divider"></div><li class="input-group" style="height:28px;"><div class="ctxm-right"><i id="constraint-trash" class="fas fa-trash-alt fa-lg"></i></div></li>`,
+    removeConstraintButton: () => `<div class="section-divider"></div><li class="input-group" style="height:28px;"><div id="constraint-trash" class="ctxm-right"><i class="fas fa-trash-alt fa-lg"></i></div></li>`,
 
     //node templates
     nodeCoordinates: (elm) => `<li class="input-group">
