@@ -109,10 +109,10 @@ mec.node = {
         hitInner({x,y,eps}) {
             return g2.isPntInCir({x,y},this,eps);
         },
-        drag({x,y}) { 
+        drag({x,y}) {
             this.x = x; this.y = y;
             // this.model.dirty = true;
-            app.inversekinematics ? this.model.dirty = true : this.updAdjConstraints(); // checkbox flags mode
+            app.inversekinematics ? this.model.dirty = true : this.updAdjConstraints();
         },
         // graphics ...
         get r() { return mec.node.radius; },
