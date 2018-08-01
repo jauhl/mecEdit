@@ -1,4 +1,4 @@
-i {
+i, svg {
     pointer-events: none;
 }
 /*  icons don't exist for mouse-events 
@@ -7,19 +7,21 @@ i {
 */
 
 @media (min-width: 400px) {
-    /* .sb-l {
-        display: block !important;
-        width: 70px !important;
-        -ms-flex: 0 1 70px;
-        flex: 0 1 70px;
-        flex-flow: column wrap;
-        max-width: 70px !important;
-    } */
+    .sb-l {
+        /* display: block !important; */
+        /* width: 70px !important; */
+        /* -ms-flex: 0 1 70px;
+        flex: 0 1 70px; */
+        /* flex-flow: column wrap; */
+        /* max-width: 70px !important; */
+        
+    }
 
     .main-container {
         min-width: none;
         /* height: inherit !important; */
     }
+    
 }
 
 @media (max-width: 400px) {
@@ -74,11 +76,11 @@ i {
 }
 
 /* styled via bootstrap spacing classes in main.js */
-/* .mec-slider {  */
+.mec-slider { 
     /* margin-left: 10px;
     margin-right: 5px; */
     /* margin-top: 1px; */
-/* } */
+}
 
 .custom-range {
     min-width: 300px;
