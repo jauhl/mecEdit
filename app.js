@@ -1,8 +1,6 @@
 const tooltip = document.getElementById('info'),
     statusbar = document.getElementById('statbar'),
     editor = g2.editor(),
-    //   edgeTyp = {BAS:0,ROT:1,TRN:2},
-    // edgeType = ['bas', 'trn', 'rot', 'trn+rot'],
     pi = Math.PI;
 
 const origin = g2().beg({ lc: 'round', lj: 'round', ls:'silver', fs: 'darkgray' })
@@ -59,7 +57,7 @@ const App = {
                 id: 'crank',
                 dt: 2 / 360,
                 dirty: true,
-                gravity: true,
+                // gravity: true,
                 // phi: pi / 2,
                 // psi: pi / 2,
                 // theta: pi / 2,
@@ -81,6 +79,8 @@ const App = {
                     // { id: 'e', p1: 'B0', p2: 'C', len: { type: 'const' }, ori: { type: 'ref', ref: 'd'} },
                 ]
             };
+
+            this.VERSION = 'v0.4.7.7',
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -457,9 +457,20 @@ const App = {
 
         initCtxm(elm) { // todo: remember to add option for drive func
             console.log(elm.type);
+
             this.tempElm = {};  // save elm for eventlistener & state-check
             this.tempElm.type = (!!elm.type && ['free', 'rot', 'tran', 'ctrl'].includes(elm.type)) ? 'constraint' : 'node'; // check elm type
             this.tempElm.old = elm.toJSON();
+
+            // save label-state for resetting to it when closing ctxm
+            this.tempElm.labelState = {nodes: mec.showNodeLabels, constraints: mec.showConstraintLabels, loads: mec.showLoadLabels};
+            // show labels that are hidden
+            if (!mec.showNodeLabels) mec.showNodeLabels = true;
+            if (!mec.showConstraintLabels) mec.showConstraintLabels = true;
+            if (!mec.showLoadLabels) mec.showLoadLabels = true;
+            // render labels
+            app.notify('render');
+
             // app.tempElm.old = JSON.parse(JSON.stringify(elm));
             this.updateCtxm(this.tempElm.old, this.tempElm.type);
             this.showCtxm();
@@ -471,10 +482,19 @@ const App = {
             this.ctxmenu.style.top = `${this.evt.clientY}px`;
         },
 
-        hideCtxm() {
+        hideCtxm(skip = false) {
             this.ctxmenu.style.display = 'none'
-            if (!!this.tempElm.new)
+            if (!!this.tempElm.new && !skip)
                 this.tempElm.type === 'constraint' ? this.replaceConstraint(this.tempElm.old, this.tempElm.new) : this.replaceNode(this.tempElm.old, this.tempElm.new);
+
+            // this.tempElm.labelState = {nodes: mec.showNodeLabels, constraints: mec.showConstraintLabels, loads: mec.showLoadLabels};
+            // show labels that are hidden
+            if (this.tempElm.labelState.nodes !== mec.showNodeLabels) mec.showNodeLabels = this.tempElm.labelState.nodes;
+            if (this.tempElm.labelState.constraints !== mec.showConstraintLabels) mec.showConstraintLabels = this.tempElm.labelState.constraints;
+            if (this.tempElm.labelState.loads !== mec.showLoadLabels) mec.showLoadLabels = this.tempElm.labelState.loads;
+
+            // reset app edit-state
+            this.tempElm = false;
         },
 
         updateCtxm(elm, type) {
@@ -539,162 +559,39 @@ const App = {
         mixin.pointerEventHdl, // managing (delegated) pointer events
         mixin.tickTimer,       // synchronize pointer events and rendering
         mixin.zoomPan)
-}
+};
 
 let app;
 
 window.onload = () => {
     let c = document.getElementById('c'),
-        main = document.getElementById('main');
-    
-    
+        main = document.getElementById('main');   
 
+    // create App instance
     (app = App.create()).init(); 
-    app.updateg(); // fill graphics queue
+    // fill graphics queue
+    app.updateg();
 
     // fit canvas
     c.width = main.clientWidth;
     c.height = main.clientHeight - 30;
 
+    // render graphics
     app.notify('render');
 
     // define non-editor events
-    /*********************************  sidebar click handler  ****************************************/ 
-    document.getElementById('sb-l').addEventListener('click', (e) => { // bind to parent
-        console.log(e);
-        // if (e.target && e.target.className == 'vec_btn') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
-        if (e.target && ['free', 'tran', 'rot'].includes(e.target.id)) { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
-        if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select a constraint to add an actuator to; &lt;ESC&gt; to cancel'; };
-        if (e.target && (e.target.id === 'addnode' || e.target.id == 'addbasenode')) {
-            app.build = { mode: e.target.id };
-            app.instruct.innerHTML = 'left-click on the canvas to place a new node; &lt;ESC&gt; to cancel';
-            document.body.style.cursor = 'crosshair';
-        };
-        if (e.target && e.target.id === 'purgenode') {
-            app.build = { mode: e.target.id };
-            app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
-            document.body.style.cursor = 'crosshair';
-        };
-        // if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
-    });
+    events.navbarClick('navcollapse');
+    events.navbarChange('import');
+    events.sidebarClick('sb-l');
+    events.keyboardDown(); // binds to document
+    events.ctxmClick('contextMenu');
+    events.ctxmInput('contextMenu');
+    events.ctxmChange('contextMenu');
+    events.resize(); // binds to window
 
-    /*********************************  navbar click handler  ****************************************/ 
-    document.getElementById('navcollapse').addEventListener('click', (e) => {
-        if (e.target && e.target.id === 'export') { app.saveToJSON(); };
-        if (e.target && e.target.id === 'inversekinematics') { app.inversekinematics = !app.inversekinematics; };
-        if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
-        if (e.target && e.target.id === 'toggleNodeLabels') { mec.showNodeLabels = !mec.showNodeLabels; app.notify('render'); };
-        if (e.target && e.target.id === 'toggleConstraintLabels') { mec.showConstraintLabels = !mec.showConstraintLabels; app.notify('render'); };
-        if (e.target && e.target.id === 'toggleLoadLabels') { mec.showLoadLabels = !mec.showLoadLabels; app.notify('render'); };
-    });
-
-    /*********************************  navbar change handler  ****************************************/ 
-    document.getElementById('import').addEventListener('change', (e) => app.loadFromJSON(e.target.files));
-
-    /*********************************  global keyboard handler  ****************************************/ 
-    document.addEventListener('keydown', (e) => {
-        console.log(`Key pressed: ${e.key}`);
-        if (e.key === 'Escape') {
-            if (app.build) {
-                // reset app.build-state on escapekey
-                app.resetApp();
-                document.body.style.cursor = 'default';
-            }
-            // todo: make editor & element state resetable
-        };
-        // some shortcuts
-        if (e.key === 'i')    
-            app.inversekinematics = !app.inversekinematics; // toogle drag-mode
-        if (e.key === 'p') {
-            app.build = { mode: 'purgenode' };
-            app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
-            document.body.style.cursor = 'crosshair';
-        }
-    });
-
-    /*********************************  contextmenu change handler  ****************************************/ 
-    document.getElementById('contextMenu').addEventListener('change', (e) => {
-        let ctxmdirty = false;
-        if (!app.tempElm.new) // declare new temporary constraint template if not done already
-            app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
-
-        if (e.target && e.target.id === 'select-p1') { app.tempElm.new.p1 = e.target.value; ctxmdirty = true; }; // todo: prevent applying same p1 & p2 when updating model
-        if (e.target && e.target.id === 'select-p2') { app.tempElm.new.p2 = e.target.value; ctxmdirty = true; };
-        if (e.target && e.target.id === 'select-ori-type') { app.tempElm.new.ori.type = e.target.value; ctxmdirty = true; };
-        if (e.target && e.target.id === 'select-len-type') { app.tempElm.new.len.type = e.target.value; ctxmdirty = true; };
-        if (e.target && e.target.id === 'select-ori-ref') { app.tempElm.new.ori.ref = e.target.value; ctxmdirty = true; };
-        if (e.target && e.target.id === 'select-len-ref') { app.tempElm.new.len.ref = e.target.value; ctxmdirty = true; };
-
-        if (e.target && e.target.id === 'node-x') { app.tempElm.new.x = e.target.valueAsNumber; ctxmdirty = true; };
-        if (e.target && e.target.id === 'node-y') { app.tempElm.new.y = e.target.valueAsNumber; ctxmdirty = true; };
-        if (e.target && e.target.id === 'node-mass') { e.target.checked ? app.tempElm.new.m = Number.POSITIVE_INFINITY : app.tempElm.new.m = 1; ctxmdirty = true; };
-
-        if (ctxmdirty)
-            // todo: check for consistency issues and maybe mark with red border
-            app.updateCtxm(app.tempElm.new, app.tempElm.type);
-    });
-
-    /*********************************  contextmenu click handler  ****************************************/ 
-    document.getElementById('contextMenu').addEventListener('click', (e) => {
-        let ctxmdirty = false;
-        if (!app.tempElm.new) // declare new temporary constraint template if not done already
-            app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
-
-        if (e.target && e.target.id === 'node-trash') {
-            app.tempElm.new = false; 
-            app.model.removeNode(app.model.nodeById(app.tempElm.old.id));
-            app.updateg();
-            app.tempElm = false;
-            app.hideCtxm();
-        };
-        if (e.target && e.target.id === 'constraint-trash') {
-            app.tempElm.new = false; 
-            app.model.removeConstraint(app.model.constraintById(app.tempElm.old.id));
-            app.updateg();
-            app.tempElm = false;
-            app.hideCtxm();
-        };
-
-        if (ctxmdirty)
-            // todo: check for consistency issues and maybe mark with red border
-            app.updateCtxm(app.tempElm.new, app.tempElm.type);
-    });
-
+    // make cxtm dragable
     const _draggableCtxMenu = new Draggabilly(document.getElementById('contextMenu'), {
         containment: '.main-container',
         handle: '.card-header'
     });
-}
-
-window.onresize = () => {
-    let c = document.getElementById('c'),
-        main = document.getElementById('main');
-
-    c.width = main.clientWidth;
-    c.height = main.clientHeight - 30;
-
-    let actcontainer = document.getElementById('actuators-container');
-
-    if (actcontainer.clientWidth > 1000) {
-        let mecsliders = document.querySelectorAll('.mec-slider');
-        let rangesliders = document.querySelectorAll('.custom-range');
-        let rangewidth = (app.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
-
-        // lagging
-        // let rangewidth;
-        // if (app.model.actcount > 1) {
-        //     if (actcontainer.clientWidth < 600) {
-        //         rangewidth = 200;
-        //     } else {
-        //         rangewidth = Math.trunc(actcontainer.clientWidth / 2 - 50);
-        //     }
-        // } else {
-        //     rangewidth = Math.trunc(actcontainer.clientWidth - 50);
-        // }
-
-        mecsliders.forEach(slider => { slider.width = `${rangewidth}`; })
-        rangesliders.forEach(slider => { slider.style.width = `${rangewidth}px` })
-    }
-
-    app.model.dirty = true;
-}
+};

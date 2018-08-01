@@ -2,6 +2,16 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 
 # Changelog
 
+## v0.4.7.7 - contextmenu streamlining
+
+### general:
++ replaced dependency 'Ti-ta-toggle' with some lines of CSS in `app.css`
++ all global event handlers are now found in `appevents.js` which has been split off  from `app.js`
++ styled the contextmenu for nodes
++ slightly changed the behavior when closing the contextmenu and the handling of its input-element-events
+
+---
+
 ## v0.4.7.6 - simplified UI
 
 ### general:

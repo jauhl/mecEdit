@@ -74,7 +74,7 @@ g2.editor.prototype = {
                 let ctxMenuStyle = document.getElementById('contextMenu').style;
                 if (ctxMenuStyle.display === 'block') {     // ctxmenu is shown
                     app.hideCtxm()                          // hide ctxmenu
-                    app.tempElm = false;                    // reset
+                    // app.tempElm = false;                    // reset is now directly in hideCtxm()
                 }
             }
         }

@@ -70,16 +70,20 @@ ctxm = {
     removeConstraintButton: () => `<div class="section-divider"></div><li class="input-group" style="height:28px;"><div id="constraint-trash" class="ctxm-right"><i class="fas fa-trash-alt fa-lg"></i></div></li>`,
 
     //node templates
-    nodeCoordinates: (elm) => `<li class="input-group">
+    nodeCoordinates: (elm) => `<li class="input-group" style="padding:.1rem;">
                                     <label class="ctxm-input-label">X: </label>
-                                    <input type="number" id="node-x" value="${Math.round(elm.x)}">
+                                    <input type="number" class="custom-number-input" id="node-x" step="1" value="${Math.round(elm.x)}">
                                     <label class="ctxm-input-label">Y: </label>
-                                    <input type="number" id="node-y" value="${Math.round(elm.y)}">
+                                    <input type="number" class="custom-number-input" id="node-y" step="1" value="${Math.round(elm.y)}">
                                </li>`
     ,
-    nodeMass: (elm) => `<li class="input-group">
-                            <label class="ctxm-input-label">basenode: </label>
-                            <input type="checkbox" id="node-mass" ${((elm.m === 'infinite' || elm.m === Number.POSITIVE_INFINITY) ? 'checked' : '')}>
+    nodeMass: (elm) => `<div class="section-divider"></div>
+                        <li class="input-group">
+                            <div class="d-flex">
+                                <label class="ctxm-input-label">base: </label>
+                                <input type="checkbox" id="node-mass" class="cbx d-none" ${((elm.m === 'infinite' || elm.m === Number.POSITIVE_INFINITY) ? 'checked' : '')}>
+                                <label class="lbl" for="node-mass"></label>
+                            </div>
                             <div id="node-trash" class="ctxm-right"><i class="fas fa-trash-alt fa-lg"></i></div> 
                         </li>`
 };

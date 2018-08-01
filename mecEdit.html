@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>MECedit</title>
+    <title>mecEdit</title>
 
     <!-- stylesheets -->
     <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
@@ -16,7 +16,7 @@
 
     <!-- local -->
     <link rel="stylesheet" href="./vendor/bootstrap.min.css">
-    <link rel="stylesheet" href="./vendor/ti-ta-toggle.mod.min.css">
+    <!-- <link rel="stylesheet" href="./vendor/ti-ta-toggle.mod.min.css">   -->
     <link rel="stylesheet" href="./vendor/fontawesome/css/all.min.css">
 
     <link rel="stylesheet" href="./app.css">
@@ -319,9 +319,9 @@
     </div>
 
     <!-- ========================== Custom ContextMenu ========================== -->
-    <div id="contextMenu" class=" draggable clearfix"> <!-- class: dropdown clearfix needed when floating items? -->
-        <div class="card bg-light">
-            <div id="contextMenuHeader" class="card-header"></div>
+    <div id="contextMenu" class="draggable clearfix"> <!-- class: dropdown clearfix needed when floating items? -->
+        <div class="card bg-light border-dark">
+            <div id="contextMenuHeader" class="card-header bg-dark text-white"></div>
             <ul id="contextMenuBody" class="list-group list-group-flush"></ul>
         </div>
 
@@ -380,6 +380,7 @@
     
     <script src="./scripts/mixin.js"></script>
     <script src="./scripts/ctxm-templates.js"></script>
+    <script src="./scripts/appevents.js"></script>
     <script src="./app.js"></script>
 
 
