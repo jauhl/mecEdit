@@ -57,22 +57,22 @@ const App = {
                 id: 'crank',
                 dt: 2 / 360,
                 dirty: true,
-                // gravity: true,
+                gravity: true,
                 // phi: pi / 2,
                 // psi: pi / 2,
                 // theta: pi / 2,
                 nodes: [
-                    { id: 'A0', x: 100, y: 100, m: 'infinite' },
+                    { id: 'A0', x: 100, y: 100, base: true },
                     { id: 'A', x: 100, y: 150, m: 1 },
                     { id: 'B', x: 350, y: 220, m: 1 },
-                    { id: 'B0', x: 300, y: 100, m: 'infinite' },
+                    { id: 'B0', x: 300, y: 100, base: true },
                     // { id: 'C', x: 450, y: 200, m: 1 },
                     // { id: 'C0', x: 450, y: 100, m: 1 },
                 ],
                 constraints: [
                     { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
                     { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
-                    // { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
+                    { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
                     // { id: 'd', p1: 'B', p2: 'C', len: { type: 'const' } },
                     // { id: 'e', p1: 'C0', p2: 'C', len: { type: 'const' } },
                     // { id: 'd', p1: 'B', p2: 'C', len: { type: 'const' }, ori: { type: 'ref', ref: 'b'} },
@@ -80,7 +80,7 @@ const App = {
                 ]
             };
 
-            this.VERSION = 'v0.4.7.7',
+            this.VERSION = 'v0.4.8',
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -119,17 +119,20 @@ const App = {
             //     }
 
             this.registerEventsFor(this.ctx.canvas)
-                .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], (e) => { this.g.exe(editor.on(this.pntToUsr(Object.assign({}, e)))) })  // apply events to g2 ...
+                .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], (e) => { this.g.exe(editor.on(this.pntToUsr(Object.assign({}, e)))).exe(this.ctx); })  // apply events to g2 ...
                 .on(['pointer', 'drag', 'pan', 'fps', 'buttondown', 'buttonup', 'click', 'pointerenter', 'pointerleave'], () => this.showStatus())
                 .on('drag', (e) => {       // update tooltip info // kills performance (bug: lag but fps stiil max) and is basically redundant due to statbar. maybe disable tooltip
                     tooltip.style.left = ((e.clientX) + 15) + 'px';
                     tooltip.style.top = (e.clientY - 50) + 'px';
                     tooltip.innerHTML = editor.dragInfo;
+                    // this.model.asmPos();
                 })
                 .on('pan', (e) => {
                     this.pan(e);
+                    this.g.exe(this.ctx);
                 })
                 .on('buttondown', (e) => {                     // show tooltip info
+                    console.log(editor.dragInfo && !this.inversekinematics);
                     if (editor.dragInfo && !this.inversekinematics) {
                         tooltip.style.left = ((e.clientX) + 15) + 'px';
                         tooltip.style.top = (e.clientY - 50) + 'px';
@@ -150,9 +153,10 @@ const App = {
                     }
                 })
                 .on('render', () => this.g.exe(this.ctx))      // redraw
-                .on('step', () => this.model.pre().itr().post())
-                .startTimer() // startTimer ...             // start synchronized ticks
-                .notify('render')   // send 'render' event
+                // .on('step', () => this.model.pre().itr().post())
+                .on('tick', (e) => this.step(e))
+                // .startTimer() // startTimer ...             // start synchronized ticks // now in init()
+                // .notify('render')   // send 'render' event
         }, // constructor
 
         get cartesian() { return this.view.cartesian; },
@@ -164,9 +168,20 @@ const App = {
             statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.inversekinematics?'move':'edit'}, dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}`
         },
 
+        step(e) {
+            if (!!this.model && (this.dragging || this.model.isRunning)) { // check if model is defined first
+                this.model.timer.dt = e.dt;
+                this.dragging ? this.inversekinematics ? this.model.asmPos() : editor.curElm.updAdjConstraints() 
+                              : this.model.pre().itr().post();
+                this.g.exe(this.ctx);
+            }
+        },
+
         init() { // evaluate how many actuators and add init add controlled properties to model instead of typing them there
             mec.model.extend(this.model);
-            this.model.init().asm().draw(this.g);
+            this.model.dirty = true;
+            this.model.init().asmPos();
+            this.model.draw(this.g);
 
             this.model.actcount = 0; // add counter to model
             let actcontainer = document.getElementById('actuators-container');
@@ -187,8 +202,8 @@ const App = {
             //         elm.initEventHandling(this, `${actuated}`, () => { return this.model[`${actuated}`] / pi * 180 }, (q) => { this.model[`${actuated}`] = q / 180 * pi; this.notify(`${actuated}`, q); this.dirty = true; });
             //     }
             // }
-
-            (this.mainLoop.ptr || (this.mainLoop.ptr = this.mainLoop.bind(this)))(this.mainLoop.t0 = performance.now());
+            
+            // (this.mainLoop.ptr || (this.mainLoop.ptr = this.mainLoop.bind(this)))(this.mainLoop.t0 = performance.now());
             this.startTimer() // startTimer ...             // start synchronized ticks 
                 .notify('render');                          // send 'render' event
         },
@@ -207,14 +222,14 @@ const App = {
             return template.content.firstChild;
         },
 
-        mainLoop(t) {
-            if (this.model.dirty) { // model.dirty for inverse
-                this.model.dirty = false;
-                this.notify('step');
-                this.notify('render');
-            }
-            requestAnimationFrame(this.mainLoop.ptr);
-        },
+        // mainLoop(t) {
+        //     if (this.model.dirty) { // model.dirty for inverse
+        //         this.model.dirty = false;
+        //         this.notify('step');
+        //         this.notify('render');
+        //     }
+        //     requestAnimationFrame(this.mainLoop.ptr);
+        // },
 
         updateg() {
             this.g = g2().clr()
@@ -244,6 +259,7 @@ const App = {
         resetApp() {
             app.build = false; // reset appstate
             this.instruct.innerHTML = ''; // reset instructions
+            this.notify('render');
         },
 
         replaceNode(oldN, newN) { // todo: bug: this function does not set the new mass in p1/p2 of adjacent constraints!!
@@ -293,7 +309,7 @@ const App = {
                     this.model.constraints.splice(modelidx[i], 1);
                 };
                 this.model.nodes.splice(this.model.nodes.indexOf(node), 1); // remove node from model
-                this.updateg() // update graphics
+                this.updateg(); // update graphics
 
                 document.body.style.cursor = 'default';
                 this.resetApp();

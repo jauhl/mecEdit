@@ -10,7 +10,7 @@
  * @returns {object} load object.
  * @param {object} - plain javascript load object.
  * @property {string} id - load id.
- * @property {string} type - load type ['force'|'spring].
+ * @property {string} [type='force'] - load type ['force'|'spring].
  * @property {string} p - node id, the force is acting upon.
  * @property {string} [wref] - constraint id, the force orientation is referring to.
  * @property {number} [value=1] - Force value in [N]
@@ -27,6 +27,7 @@ mec.load = {
         constructor() {}, // always parameterless .. !
         init(model) {
             this.model = model;
+            if (!this.type) this.type = 'force';
             if (this.type === 'force') this.init_force(model);
         },
         init_force(model) {
@@ -52,13 +53,12 @@ mec.load = {
         get Qx() { return this.value*Math.cos(this.w)},
         get Qy() { return this.value*Math.sin(this.w)},
         reset() {},
-        pre(dt) {
-            if (this.p) {
-                this.p.Qx += this.Qx;
-                this.p.Qy += this.Qy;
+        apply() {
+            if (this.type === 'force' && !this.p.base) {
+                this.p.Qx += mec.from_N(this.Qx);
+                this.p.Qy += mec.from_N(this.Qy);
             }
         },
-        post(dt) {},
         // interaction
         get isSolid() { return false },
         get sh() { return this.state & g2.OVER ? [0,0,4,"gray"] : false },

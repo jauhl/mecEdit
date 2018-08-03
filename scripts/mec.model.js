@@ -29,9 +29,8 @@ mec.model = {
     },
     prototype: {
         constructor() { // always parameterless .. !
-            this.t = this.t0 = 0;
-            this.direc = 1;
-            this.constraintColor = mec.validConstraintColor;
+            this.state = {dirty:true,valid:true,direc:1,itrpos:0,itrvel:0};
+            this.timer = {t:0,dt:1/60};
         },
         init() {
             if (!this.nodes) this.nodes = [];
@@ -53,6 +52,32 @@ mec.model = {
 
             return this;
         },
+        /**
+         * Reset model
+         */
+        reset() {
+            this.timer.t = 0;
+            for (const node of this.nodes)
+                node.reset();
+            for (const constraint of this.constraints)
+                constraint.reset();
+            for (const load of this.loads)  // do for all shapes ...
+                load.reset();
+            return this;
+        },
+        /**
+         * Perform time tick.
+         * Model time is independent of system time.
+         */
+        tick() {
+            this.timer.t += this.timer.dt;
+            this.pre().itr().post();
+            this.dirty = true;
+            return this;
+        },
+        /**
+         * Model degree of freedom (movability)
+         */
         get dof() {
             let dof = 0;
             for (const node of this.nodes)
@@ -62,6 +87,75 @@ mec.model = {
             return dof;
         },
         get hasGravity() { return (this.gravity !== undefined && !!this.gravity); },
+
+        get dirty() { return this.state.dirty; },
+        set dirty(q) { this.state.dirty = q; },
+        get valid() { return this.state.valid; },
+        set valid(q) { this.state.valid = q; },
+        get itrpos() { return this.state.itrpos; },
+        set itrpos(q) { this.state.itrpos = q; },
+        get itrvel() { return this.state.itrvel; },
+        set itrvel(q) { this.state.itrvel = q; },
+        get direc() { return this.state.direc; },
+        set direc(q) { this.state.direc = q; },
+        /**
+         * Overall center of gravity.
+         * Not taking base nodes into account.
+         */
+        get cog() {
+            const cog = {x:0,y:0}, m = 0;
+            for (const node of this.nodes) {
+                if (!node.base) {
+                    cog.x += node.x*node.m;
+                    cog.y += node.y*node.m;
+                    m += node.m;
+                }
+            }
+            cog.x /= m;
+            cog.y /= m;
+            return cog;
+        },
+        get hasDrives() {
+            let found = false;
+            for (const constraint of this.constraints) 
+                found = found
+                     || constraint.ori.type === 'drive' 
+                     || constraint.len.type === 'drive';
+            return found;
+        },
+        /**
+         * Test if model is active anymore
+         */
+        get isActive() {
+            return  this.dof <= 0 && this.inactive == 0 ||  // static or fully driven
+                    this.dof > 0  && this.inactive <= 1/this.timer.dt;  // resting long enough  ..
+        },
+        /**
+         * Test if model is sleeping .. not moving
+         */
+        get isSleeping() {
+            var sleeping = true;
+            for (var i=0, n=this.joints.length; i < n && sleeping; i++)
+            sleeping = this.joints[i].isSleeping(this.timer.t) && sleeping;
+            if (this.dof > 0 || !sleeping)
+            for (var i=0, n=this.bodies.length; i < n && sleeping; i++)
+                sleeping = this.bodies[i].isSleeping && sleeping;
+            return sleeping;
+        },
+        get isRunning() {
+            let running = false; // this.hasDrives;
+            if (!running && this.dof > 0)
+                for (const node of this.nodes)
+                    if (!(mec.isEps(node.xt) && mec.isEps(node.xt) && mec.isEps(node.Qx) && mec.isEps(node.Qy)) || node.usrDrag)
+                        running = running || true;
+            return running;
+        },
+        get energy() {
+            let e = 0;
+            for (const node of this.nodes)
+                e += node.energy;
+            return mec.to_J(e);
+        },
         /**
          * Check for dependencies on specified element. Nodes do not have dependencies.
          * @method
@@ -118,7 +212,7 @@ mec.model = {
          * @param {object} constraint - constraint to add.
          */
         addConstraint(constraint) {
-            constraint.model = this;  // check: needed?
+            // constraint.model = this;  // check: needed?
             this.constraints.push(constraint);
         },
         /**
@@ -200,13 +294,32 @@ mec.model = {
             return true;
         },
         /**
+         * Apply loads to their nodes.
+         * @method
+         * @returns {object} model
+         */
+        applyLoads() {
+            for (const node of this.nodes) {
+                if (!node.base) {
+                    node.Qx = node.Qy = 0;
+                    if (this.hasGravity) {
+                        node.Qx = node.m*mec.from_N(this.gravity.x);
+                        node.Qy = node.m*mec.from_N(this.gravity.y);
+                    }
+                }
+            }
+            for (const load of this.loads)
+                load.apply();
+            return this;
+        },
+        /**
          * Assemble model.
          * @method
          * @returns {object} model
          */
         asm() {
-            const valid = this.asmPos() && this.asmVel();
-// console.log('asm-itr='+this.positr+'/'+this.velitr);
+            let valid = this.asmPos();
+            valid = this.asmVel() && valid;
             return this;
         },
         /**
@@ -216,13 +329,11 @@ mec.model = {
          */
         asmPos() {
             let valid = false;
-            this.positr = 0;
-            while (!valid && this.positr++ < mec.asmItrMax) {
+            this.itrpos = 0;
+            while (!valid && this.itrpos++ < mec.asmItrMax) {
                 valid = this.pos();
             }
-            this.constraintColor = valid ? mec.model.validConstraintColor
-                                         : mec.model.invalidConstraintColor;
-            return valid;
+            return this.valid = valid;
         },
         /**
          * Assemble velocities of model.
@@ -231,10 +342,9 @@ mec.model = {
          */
         asmVel() {
             let valid = false;
-            this.velitr = 0;
-            while (!valid && this.velitr++ < mec.asmItrMax) {
+            this.itrvel = 0;
+            while (!valid && this.itrvel++ < mec.asmItrMax)
                 valid = this.vel();
-            }
             return valid;
         },
         /**
@@ -243,24 +353,16 @@ mec.model = {
          * @returns {object} model
          */
         pre() {
-            // pre process loads
-            for (const load of this.loads)
-                load.pre(this.dt);
+            this.applyLoads();
             // pre process nodes
             for (const node of this.nodes)
-                node.pre(this.dt);
+                node.pre(this.timer.dt);
             // pre process constraints
             for (const constraint of this.constraints)
-                constraint.pre(this.dt);
+                constraint.pre(this.timer.dt);
             // eliminate drift ...
-            let valid = false;
-            this.positr = 0;
-            while (!valid && this.positr++ < mec.asmItrMax) {
-                valid = this.pos();
-            }
-            // visualize invalid mechanism ...
-            this.constraintColor = valid ? mec.validConstraintColor
-                                         : mec.invalidConstraintColor;
+            this.asmPos(this.timer.dt);
+
             return this;
         },
         /**
@@ -270,12 +372,8 @@ mec.model = {
          * @returns {object} model
          */
         itr() {
-            let valid = false;
-            // iterate velocities ...
-            this.velitr = 0;
-            while (!valid && this.velitr++ < mec.asmItrMax) {
-                valid = this.vel();
-            }
+            this.asmVel();
+//console.log('itrcnt='+this.state.itrpos+'/'+this.state.itrvel)
             return this;
         },
         /**
@@ -286,12 +384,23 @@ mec.model = {
         post() {
             // post process nodes
             for (const node of this.nodes)
-                node.post(this.dt);
+                node.post(this.timer.dt);
             // post process constraints
             for (const constraint of this.constraints)
-                constraint.post(this.dt);
-// console.log('itr='+this.positr+'/'+this.velitr);
+                constraint.post(this.timer.dt);
+// console.log('itr='+this.itrCnt.pos+'/'+this.itrCnt.vel);
 //            this.dirty = true;
+            return this;
+        },
+        /**
+         * Set model to rest state.
+         * @method
+         * @returns {object} model
+         */
+        rest() {
+            // post process nodes
+            for (const node of this.nodes)
+                node.xt = node.yt = node.xtt = node.ytt = 0;
             return this;
         },
         /**
@@ -313,9 +422,11 @@ mec.model = {
         vel() {
             let valid = true;  // pre-assume valid constraints velocities ...
 //            console.log('dt='+this.dt)
-            for (const constraint of this.constraints)
-                valid = constraint.vel(this.dt) && valid;
-            return valid;
+            for (const constraint of this.constraints) {
+//                console.log(constraint.vel(this.timer.dt)+ '&&'+ valid)
+                    valid = constraint.vel(this.timer.dt) && valid;
+                }
+                return valid;
         },
         /**
          * Draw model.

@@ -2,6 +2,14 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 
 # Changelog
 
+## v0.4.8 - added forces/moments & optimizations
+
+### general:
++ merged changes from @goessner (02.08.18) which mainly add forces and moments to the model
++ some functionallity might still be broken
+
+---
+
 ## v0.4.7.7 - contextmenu streamlining
 
 ### general:

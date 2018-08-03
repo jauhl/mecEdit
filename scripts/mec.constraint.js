@@ -23,6 +23,7 @@
  * @property {number} [ori.w0] - initial angle [rad].
  * @property {string} [ori.ref] - referenced constraint id.
  * @property {string} [ori.refval] - referencing other orientation or length value ['ori'|'len'].
+ * @property {number} [ori.ratio] - ratio to referencing value.
  * @property {string} [ori.func] - drive function name ['linear'|'quadratic', ...].
  * @property {number} [ori.t0] - drive parameter start value.
  * @property {number} [ori.Dt] - drive parameter value range.
@@ -70,17 +71,17 @@ mec.constraint = {
                       : ori.type !== 'free' && len.type !== 'free' ? 'ctrl'
                       : 'invalid';
 
-            this.pos = this.type === 'free' ? () => true
-                     : this.type === 'rot'  ? () => this.len_pos()
-                     : this.type === 'tran' ? () => this.ori_pos()
-                     : this.type === 'ctrl' ? () => { let res = this.ori_pos(); return this.len_pos() && res }
-                     : false;
+            // this.pos = this.type === 'free' ? () => true
+            //          : this.type === 'rot'  ? () => this.len_pos()
+            //          : this.type === 'tran' ? () => this.ori_pos()
+            //          : this.type === 'ctrl' ? () => { let res = this.ori_pos(); return this.len_pos() && res }
+            //          : false;
 
-            this.vel = this.type === 'free' ? (dt) => true
-                     : this.type === 'rot'  ? (dt) => this.len_vel(dt)
-                     : this.type === 'tran' ? (dt) => this.ori_vel(dt)
-                     : this.type === 'ctrl' ? (dt) => { let res = this.ori_vel(dt); return this.len_vel(dt) && res }
-                     : false;
+            // this.vel = this.type === 'free' ? (dt) => true
+            //          : this.type === 'rot'  ? (dt) => this.len_vel(dt)
+            //          : this.type === 'tran' ? (dt) => this.ori_vel(dt)
+            //          : this.type === 'ctrl' ? (dt) => { let res = this.ori_vel(dt); return this.len_vel(dt) && res }
+            //          : false;
 
             // pre-calculate both constraint mass components
             // const mc = 1/(this.p1.im + this.p2.im);
@@ -90,12 +91,27 @@ mec.constraint = {
             this.lambda_r = this.dlambda_r = 0;
             this.lambda_w = this.dlambda_w = 0;
         },
-        get mc1() { return this.p1.im / (this.p1.im + this.p2.im) },
-        get mc2() { return this.p2.im / (this.p1.im + this.p2.im) },
+        /**
+         * Reset constraint
+         */
+        reset() {
+            this.lambda_r = this.dlambda_r = 0;
+            this.lambda_w = this.dlambda_w = 0;
+        },
         get initialized() { return typeof this.p1 === 'object' },
         get dof() {
             return (this.ori.type === 'free' ? 1 : 0) + (this.len.type === 'free' ? 1 : 0);
         },
+        /**
+         * Force value in [N]
+         */
+        get force() { 
+            return mec.to_N(-this.lambda_r);
+        },
+        /**
+         * Moment value in [Nm]
+         */
+        get moment() { return mec.to_Nm(-this.lambda_w * this.r); },
         /**
          * Check constraint for dependencies on another element.
          * @method
@@ -115,14 +131,19 @@ mec.constraint = {
         get ayt() { return this.p2.ytcur - this.p1.ytcur },
         get axtt() { return this.p2.xtt - this.p1.xtt },
         get aytt() { return this.p2.ytt - this.p1.ytt },
-
+        get mc1() { return this.p1.im / (this.p1.im + this.p2.im) },
+        get mc2() { return this.p2.im / (this.p1.im + this.p2.im) },
+        get color() { return this.model.valid 
+                           ? mec.validConstraintColor 
+                           : mec.invalidConstraintColor; 
+        },
         init_ori_free(ori) {
             this.w0 = Math.atan2(this.ay,this.ax);
             this.assignGetters({
                 w:  () => Math.atan2(this.ay,this.ax),
                 wt: () => (this.ax*this.ayt - this.ay*this.axt)/this.r**2,
                 wtt:() => (this.ax*this.aytt - this.ay*this.axtt)/this.r**2
-            })
+            });
         },
         init_ori_const(ori) {
             this.w = this.w0 = ori.hasOwnProperty('w0') ? ori.w0 : Math.atan2(this.ay,this.ax);
@@ -223,63 +244,109 @@ mec.constraint = {
         init_len_drive(len) {
         },
         pre(dt) {
-            this.dlambda_r = this.dlambda_w = 0;
+            const impulse_r = this.lambda_r * dt,
+                  impulse_w = this.lambda_w * dt,
+                  w = this.w, cw = Math.cos(w), sw = Math.sin(w);
+            // apply radial impulse
+            this.p1.dxt += -cw * this.p1.im * impulse_r;
+            this.p1.dyt += -sw * this.p1.im * impulse_r;
+            this.p2.dxt +=  cw * this.p2.im * impulse_r;
+            this.p2.dyt +=  sw * this.p2.im * impulse_r;
+            // apply angular impulse
+            this.p1.dxt +=  sw * this.p1.im * impulse_w;
+            this.p1.dyt += -cw * this.p1.im * impulse_w;
+            this.p2.dxt += -sw * this.p2.im * impulse_w;
+            this.p2.dyt +=  cw * this.p2.im * impulse_w;
+
+            this.dlambda_r = this.dlambda_w = 0; // important !!
         },
         post(dt) {
             this.lambda_r += this.dlambda_r;
             this.lambda_w += this.dlambda_w;
+            if (this.ori.type === 'ref') { // surprise .. that way it works ..
+                this.ori.ref.lambda_w -= this.ori.ratio*this.dlambda_w;
+            }
         },
+        pos() {
+            let res;
+            return this.type === 'free' ? true
+                 : this.type === 'rot'  ? this.len_pos()
+                 : this.type === 'tran' ? this.ori_pos()
+                 : this.type === 'ctrl' ? (res = this.ori_pos(), (this.len_pos() && res))                    
+                 : false;
+        },
+        vel(dt) {
+//            console.log(dt)
+            return this.type === 'free' ? true
+                 : this.type === 'rot'  ? this.len_vel(dt)
+                 : this.type === 'tran' ? this.ori_vel(dt)
+                 : this.type === 'ctrl' ? !!((+this.ori_vel(dt))*(+this.len_vel(dt)))
+//                 : this.type === 'ctrl' ? (res = this.ori_vel(dt), (this.len_vel(dt) && res))
+                 : false;
+        },
+        get ori_C() { 
+            const w = this.w, r = this.r;
+            return { x: this.ax - r*Math.cos(w),
+                     y: this.ay - r*Math.sin(w) };
+        },
+        get ori_Ct() {
+            const w = this.w, wt = this.wt, cw = Math.cos(w), sw = Math.sin(w), 
+                  r = this.r, rt = this.rt;
+            return { x: this.axt - rt*cw + r*wt*sw,
+                     y: this.ayt - rt*sw - r*wt*cw };
+        }, 
+        get ori_mc() { return 1/(this.p1.im + this.p2.im); },
         ori_pos() {
-            const w = this.w,
-                  C_x = this.ax - this.r*Math.cos(w),
-                  C_y = this.ay - this.r*Math.sin(w);
+            const C = this.ori_C, mc = this.ori_mc, 
+                  impulse = { x: -mc * C.x, y: -mc * C.y };
     
-            this.p1.x +=  this.mc1 * C_x;
-            this.p1.y +=  this.mc1 * C_y;
-            this.p2.x += -this.mc2 * C_x;
-            this.p2.y += -this.mc2 * C_y;
+            this.p1.x += -this.p1.im * impulse.x;
+            this.p1.y += -this.p1.im * impulse.y;
+            this.p2.x +=  this.p2.im * impulse.x;
+            this.p2.y +=  this.p2.im * impulse.y;
 
-            return C_x**2 + C_y**2 < mec.linTol; // position constraint satisfied .. !
+            return mec.isEps(C.x, mec.linTol) 
+                && mec.isEps(C.y, mec.linTol); // position constraint satisfied .. !
         },
         ori_vel(dt) {
-            const r = this.r, w = this.w, wt = this.ori.type === 'ref' || this.ori.type === 'drive' ? this.wt : 0,
-                  C_xt = wt ? this.axt + wt*this.r*Math.sin(this.w) : this.axt,
-                  C_yt = wt ? this.ayt - wt*this.r*Math.cos(this.w) : this.ayt;
-    
-            this.p1.dxt +=  this.mc1 * C_xt;
-            this.p1.dyt +=  this.mc1 * C_yt;
-            this.p2.dxt += -this.mc2 * C_xt;
-            this.p2.dyt += -this.mc2 * C_yt;
+            const Ct = this.ori_Ct, mc = this.ori_mc,
+                  impulse = { x: -mc * Ct.x, y: -mc * Ct.y };
 
-            this.dlambda_w += (this.mc2 * C_yt * Math.cos(this.w) -
-            this.mc2 * C_xt * Math.sin(this.w))*this.r/dt;
+            this.p1.dxt += -this.p1.im * impulse.x;
+            this.p1.dyt += -this.p1.im * impulse.y;
+            this.p2.dxt +=  this.p2.im * impulse.x;
+            this.p2.dyt +=  this.p2.im * impulse.y;
 
-            return C_xt**2 + C_yt**2 < this.r0*mec.linTol;       // velocity constraint satisfied .. !
+            this.dlambda_r += ( impulse.x * this.ax + impulse.y * this.ay)/this.r/dt;
+            this.dlambda_w += (-impulse.x * this.ay + impulse.y * this.ax)/this.r/dt;
+
+            return mec.isEps(Ct.x*dt, mec.linTol)
+                && mec.isEps(Ct.y*dt, mec.linTol);   // velocity constraint satisfied .. !
         },
+        get len_C() { return (this.ax**2 + this.ay**2 - this.r**2)/(2*this.r0); },
+        get len_Ct() { return (this.ax*this.axt + this.ay*this.ayt - this.r*this.rt)/this.r0; },
+        get len_mc() { return this.r0**2/((this.p1.im + this.p2.im)*(this.ax**2 + this.ay**2)); },
         len_pos() {
-            let aa = this.ax**2 + this.ay**2, rr = this.r**2,
-                C = -0.5*(aa - rr)/aa;
+            const C = this.len_C, impulse = -this.len_mc * C;
 
-            this.p1.x += -this.ax * this.mc1 * C;
-            this.p1.y += -this.ay * this.mc1 * C;
-            this.p2.x +=  this.ax * this.mc2 * C;
-            this.p2.y +=  this.ay * this.mc2 * C;
+            this.p1.x += -this.ax/this.r0 * this.p1.im * impulse;
+            this.p1.y += -this.ay/this.r0 * this.p1.im * impulse;
+            this.p2.x +=  this.ax/this.r0 * this.p2.im * impulse;
+            this.p2.y +=  this.ay/this.r0 * this.p2.im * impulse;
 
-            return Math.abs(aa - rr) < 2*this.r0*mec.linTol; // position constraint satisfied .. !
+            return mec.isEps(C, mec.linTol); // position constraint satisfied .. !
         },
         len_vel(dt) {
-            let Ct = -(this.ax*this.axt + this.ay*this.ayt)/(this.ax**2 + this.ay**2)
+            const Ct = this.len_Ct, impulse = -this.len_mc * Ct;
 
-            this.p1.dxt += -this.ax * this.mc1 * Ct;
-            this.p1.dyt += -this.ay * this.mc1 * Ct;
-            this.p2.dxt +=  this.ax * this.mc2 * Ct;
-            this.p2.dyt +=  this.ay * this.mc2 * Ct;
+            this.p1.dxt += -this.ax/this.r0 * this.p1.im * impulse;
+            this.p1.dyt += -this.ay/this.r0 * this.p1.im * impulse;
+            this.p2.dxt +=  this.ax/this.r0 * this.p2.im * impulse;
+            this.p2.dyt +=  this.ay/this.r0 * this.p2.im * impulse;
 
-            this.dlambda_r += (this.ax * this.mc2 * Ct * Math.cos(this.w) +
-                               this.ay * this.mc2 * Ct * Math.sin(this.w))/ dt;
+            this.dlambda_r += impulse / dt;
 
-//            return Math.abs(Ct) < mec.linTol; // velocity constraint satisfied .. !
-            return this.p2.dxt < mec.linTol && this.p2.dyt < mec.linTol;
+            return mec.isEps(Ct*dt, mec.linTol); // velocity constraint satisfied .. !
         },
         assignGetters(getters) {
             for (const key in getters) 
@@ -320,12 +387,23 @@ mec.constraint = {
                   yid = p1.y + 20*Math.sin(w) + 10*Math.cos(w),
                   g = g2().beg({x:p1.x,y:p1.y,w,scl:1,lw:2,
                                 ls:'orange',fs:'@ls',lc:'round',sh:()=>this.sh})
-                           .stroke({d:`M50,0 ${r},0`,ls:this.model.constraintColor,
+                            .stroke({d:`M50,0 ${r},0`,ls:()=>this.color,
                                     lw:lw+1,lsh:true})
-                           .drw({d:mec.constraint.arrow[type],lsh:true})
+                            .drw({d:mec.constraint.arrow[type],lsh:true})
                           .end();
-            if (mec.showConstraintLabels) 
-                g.txt({str:id||'?',x:xid,y:yid,thal:'center',tval:'middle', ls:'white'})
+
+            if (mec.showConstraintLabels) {
+                let idstr = id || '?', cw = Math.cos(w), sw = Math.sin(w),
+                      xid = p1.x + 20*cw - 10*sw, 
+                      yid = p1.y + 20*sw + 10*cw;
+                if (this.ori.type === 'ref') {
+                    idstr += '('+ this.ori.ref.id+')';
+                    xid -= 3*sw;
+                    yid += 3*cw;
+                }  
+                g.txt({str:idstr,x:xid,y:yid,thal:'center',tval:'middle', ls:'white'})
+            }
+            
             return g;
         }
     },
