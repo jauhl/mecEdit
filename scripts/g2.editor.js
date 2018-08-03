@@ -16,6 +16,7 @@ var g2 = g2 || { prototype:{} };  // for jsdoc only ...
 // extend prototypes for argument objects
 g2.editor = function() {
     if (this instanceof g2.editor) {
+//        this.dragging = false;
         this.draggable = false;
         this.handles = g2();
         return this;
@@ -34,39 +35,55 @@ g2.editor.prototype = {
     get selection() {
         return this.handles.commands.length && this.handles || false;
     },
-    get dragInfo() { return this.draggable && '_info' in this.draggable && this.draggable._info() },
+    get dragInfo() { return this.draggable && '_info' in this.draggable && this.draggable._info() }, // this seems to be obsolete because this.draggable isn't set anylonger
     g2() { return this.handles; },
     exe(commands) {
-        if (this.evt) {   // selection state can change only with events... !
-            if (this.selection) {
-                if (this.evt.type === 'click') {           // something selected ..
-                    for (let cmd of commands)      
-                        if (cmd.a && cmd.a.state)
-                            // cmd.a.state = g2.NONE;
-                            delete cmd.a.state;
-                        this.handles.del();
-                } else {
-                    for (let cmd of this.handles.commands)  // treat handles interactivity !
-                        if (cmd.c === 'handle')
-                            this.hit(cmd.a);
-                }
-            } else {
-                for (let elm=false, i=commands.length; i && !elm; i--)  // stop after first hit .. starting from list end !
-                    elm = this.hit(commands[i-1].a)    
-            }
+        if (this.evt) {   // no selection supported here ... !
+            for (let elm=false, i=commands.length; i && !elm; i--)  // stop after first hit .. starting from list end !
+                elm = this.hit(commands[i-1].a)
             this.evt = false;
         }
     },
-    on({type,x,y,dx,dy,btn,clientX,clientY}) {
-        this.evt = {type,x,y,dx,dy,btn,eps:1.2,clientX,clientY};
+    on({type,x,y,t,dx,dy,dt,btn}) {
+        this.evt = {type,x,y,t,dx,dy,dt,btn,eps:3.8};
         return this;
     },
     hit(elm) {
         this.curElm = elm; // provide element pointed at to api
         const {type,x,y,dx,dy} = this.evt;
-        // console.log(this.evt);
-        if (!elm) {  // commands without arguments object .. !
+        // console.log(`elm.id: ${elm === undefined ? 'undefined':elm.id}, x: ${x}, y: ${y}`);
+        if (!elm)   // commands without arguments object .. !
             return false;
+
+        if (!elm.state) {                                               // no mode
+            if (type === 'pointer' && this.elementHit(elm,this.evt))    // enter OVER mode ..
+                elm.state = g2.OVER;
+            else
+                elm.state = g2.NONE;
+        }
+        else if ((elm.state & g2.DRAG) && !app.build) {                 // in DRAG mode
+            if (type === 'drag' && elm.drag)                            // drag element ..
+                elm.drag(this.evt);
+            else if (type === 'buttonup') {                             // leave DRAG mode ..
+                elm.state ^= g2.DRAG;
+                this.draggable = false;
+                if (elm.selectEnd) elm.selectEnd(this.evt);
+            }
+            else if (type === 'click' && !app.build) {                  // enter EDIT mode .. // dont set EDIT when building mechanism
+                // todo: if (elm.model.isRunning) set freeze & save state to reset to after leaving EDIT
+                if(elm.state === 3) elm.state = elm.state ^ g2.DRAG;    // remove DRAG state
+                elm.state = elm.state ^ g2.OVER | g2.EDIT;
+                app.initCtxm(elm); 
+            }
+        }
+        else if (elm.state & g2.OVER) {                                 // in OVER mode
+            if (type === 'pointer' && !this.elementHit(elm,this.evt))   // leave OVER mode ..
+                elm.state ^= g2.OVER;   
+            else if (type === 'buttondown' && !app.build) {             // enter DRAG mode ..
+                elm.state |= g2.DRAG;
+                this.draggable = elm;
+                if (elm.selectBeg) elm.selectBeg(this.evt);
+            }
         }
         else if (elm.state & g2.EDIT) {                                 // in EDIT mode
             if (type === 'click') {                                     // leave EDIT mode ..
@@ -78,63 +95,38 @@ g2.editor.prototype = {
                 }
             }
         }
-        else if (!(elm.state & g2.OVER)) {                              // not in OVER mode
-            if (type === 'pointer' && this.elementHit(elm,this.evt)) {  // enter OVER mode ..
-                elm.state |= g2.OVER;
-                // document.body.style.cursor = "grab";
-            }
-        }
-        else if ((elm.state & g2.DRAG) && !app.build) {                 // in DRAG mode
-            if (type === 'drag' && elm.drag)                            // drag element ..
-                elm.drag({x,y,dx,dy});
-            else if (type === 'buttonup')                               // leave DRAG mode ..
-                this.elementDragEnd(elm);
-            else if (type === 'click' && !app.build)                    // enter EDIT mode .. // dont set EDIT when building mechanism
-                // if (true) 
-                //     this.elementDragEnd(elm); // dragging mode is usually active at this point due to nature of mouseevents: click = mousedown -> click -> inevitable mouseup mousedown sets drag flag
-                this.elementEdit(elm);                                
-        }
-        else if (elm.state & g2.OVER) {                                 // in OVER mode
-            if (type === 'pointer' && !this.elementHit(elm,this.evt)) { // leave OVER mode ..
-                elm.state ^= g2.OVER;
-                // document.body.style.cursor = "default";
-            } else if (type === 'buttondown' && !app.build)             // enter DRAG mode .. // dont set DRAG when building mechanism
-                this.elementDragBeg(elm);
-        }
         else
-            console.log('what state .. '+g2.editor.state[elm.state]);
+            console.log('unhandled state .. '+elm.state);
 
-        this.curState = elm && elm.state || g2.NONE;
+        this.curState = elm.state;
 
         if (elm.state === g2.NONE) delete elm.state;
 
         return elm.state && elm;
     },
     elementHit(elm,{x,y,eps}) { 
-        return elm.isSolid ? elm.hitInner && elm.hitInner({x,y,eps})
+        return elm.isSolid ? elm.hitInner   && elm.hitInner({x,y,eps})
                            : elm.hitContour && elm.hitContour({x,y,eps});
     },
-    elementDragBeg(elm) {
+/*
+    elementDragBeg(elm,e) {
         elm.state |= g2.DRAG;
         this.draggable = elm;
-        // document.body.style.cursor = "grabbing";
+        if (elm.dragBeg) elm.dragBeg(e);
     },
-    elementDragEnd(elm) {
+    elementDragEnd(elm,e) {
         elm.state ^= g2.DRAG;
         this.draggable = false;
-        // document.body.style.cursor = "grab";
-        // elm.updAdjConstr();
+        if (elm.dragEnd) elm.dragEnd(e);
     },
     elementEdit(elm) { 
-        // if ('handles' in elm) {
-            // console.log(elm.state)
-            if(elm.state === 3) elm.state = elm.state ^ g2.DRAG; // remove DRAG state
-            elm.state = elm.state ^ g2.OVER | g2.EDIT;
-            app.initCtxm(elm);
-            // console.log(elm.state)
-            // elm.handles(this.handles);
-        // }
+        elm.state ^= g2.EDIT;
+        if ('handles' in elm) {
+            elm.state = elm.state ^ (g2.OVER | g2.EDIT);
+            elm.handles(this.handles);
+        }
     },
+*/
 };
 
 // implement zoom agnostic handle ...
