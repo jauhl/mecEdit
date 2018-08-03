@@ -32,7 +32,6 @@ const mixin = {
             elm.addEventListener("mousemove", this, false);
             elm.addEventListener("mousedown", this, false);
             elm.addEventListener("mouseup", this, false);
-            elm.addEventListener("contextmenu", this, false);
             elm.addEventListener("mouseenter", this, false);
             elm.addEventListener("mouseleave", this, false);
             elm.addEventListener("wheel", this, false);
@@ -44,8 +43,7 @@ const mixin = {
         handleEvent(e) {
             if (e.type in this) {  // can I handle events of type e.type .. ?
                 let evt = this.getEventData(e);
-                if (this.isDefaultPreventer(e.type, e.btn))
-                console.log("prevent");
+                if (this.isDefaultPreventer(e.type))
                     e.preventDefault();
                 this[e.type](evt);  // handle it .. ?
                 if (!this.tick) {   // not controlled by timer ... !
@@ -79,10 +77,8 @@ const mixin = {
             e.dy = e.y - this.evt.yi;
             e.type = e.btn !== 0 ? (this.dragging ? 'drag' : 'pan') : 'pointer';
         },
-        // mousedown(e) { e.btn === 2 ? e.type='contextmenu' : e.type='buttondown'; },
-        mousedown(e) { e.type='buttondown'; },
+        mousedown(e) { e.type='buttondown' },
         mouseup(e) { e.type = this.evt.dx===0 && this.evt.dy===0 ? 'click' : 'buttonup' },
-        // contextmenu(e) { e.type ='rightclick' },
         mouseenter(e) { e.type='pointerenter' },
         mouseleave(e) { e.type='pointerleave' },
         wheel(e) { e.type='wheel' },
@@ -117,13 +113,13 @@ const mixin = {
                 this.evt.unused = true;
             }
         },
-        isDefaultPreventer(type,btn) {
-            return ['touchstart','touchend','touchmove'].includes(type) || btn === 2;
+        isDefaultPreventer(type) {
+            return ['touchstart','touchend','touchmove'].includes(type);
         }
     },
     tickTimer: {
         startTimer() {
-            this.tickptr = this.tick.bind(this);
+            this.tick.ptr = this.tick.bind(this);
             this.fps = '?';
             this.frames = 0;
             this.notify('timerStart',this);
@@ -138,15 +134,19 @@ const mixin = {
         tick(time) {
             this.fpsCount(time);
             if (this.evt.type) {
-                this.notify(this.evt.type,{x,y,btn,type}=this.evt);  // notify last event type ... !
+                this.evt.t = time;
+                this.evt.dt = (time-this.t)/1000;
+                this.notify(this.evt.type,{x,y,t,dt,btn,type}=this.evt);  // notify last event type ... !
                 this.evt.unused = this.evt.type = false;             // mark as consumed/used ... !
-                this.notify('render',this.t/1000);                 // todo: render only when dirty ... 
+                // this.notify('render',this.t/1000);                 // should render occur at 'tick' event ?  // todo: render only when dirty ... 
             }
-            this.rafid = requestAnimationFrame(this.tickptr);  // request next animation frame ...
+            this.notify('tick',{t:time,dt:(time-this.t)/1000})
+            this.t = time;
+            this.rafid = requestAnimationFrame(this.tick.ptr);    // request next animation frame ...
             return this;
         },
         fpsCount(time) {
-            if (time - this.fpsOrigin > 1000) { // one second interval reached ...
+            if (time - this.fpsOrigin > 1000) {  // one second interval reached ...
                 let fps = ~~(this.frames*1000/(time - this.fpsOrigin) + 0.5); // ~~ as Math.floor()
                 if (fps !== this.fps)
                     this.notify('fps',this.fps=fps);
