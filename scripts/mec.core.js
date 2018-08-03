@@ -50,7 +50,7 @@ momentTol: 0.01,
 /**
  * fixed limit of assembly iteration steps.
  */
-asmItrMax: 512,
+asmItrMax: 128, // 512,
 /**
  * itrMax: fixed limit of simulation iteration steps.
  */
@@ -141,7 +141,7 @@ to_kgm2(x) { return x*mec.m_u*mec.m_u; },
  * convert [kgm^2] => [kgu^2]
  * @return {number} Value in [kgu^2]
  */
-from_kgm(x) { return x/mec.m_u/mec.m_u; },
+from_kgm2(x) { return x/mec.m_u/mec.m_u; },
 
 /**
  * Helper functions
