@@ -13,7 +13,7 @@
 /**
  * @method
  * @param {object} - plain javascript shape object.
- * @property {string} type - shape type ['fix'|'flt'|'slider'|'bar'|'wheel'|'img'].
+ * @property {string} type - shape type ['fix'|'flt'|'slider'|'bar'|'beam'|'wheel'|'img'].
  */
 mec.shape = {
     extend(shape) {
@@ -97,35 +97,51 @@ mec.shape.slider = {
 
 /**
  * @param {object} - bar shape.
- * @property {string} [p1] - referenced node id for start point position, and ...
- * @property {string} [p2] - referenced node id for end point position, or ...
- * @property {string} [p] - referenced node id for point position, and ...
- * @property {string} [wref] - referenced constraint id for orientation and ...
- * @property {number} [len] - bar length
+ * @property {string} [p1] - referenced node id for start point position.
+ * @property {string} [p2] - referenced node id for end point position.
  */
 mec.shape.bar = {
     init(model) {
-        if (typeof this.p === 'string' && typeof this.wref === 'string' && this.len > 0) {
-            this.p = model.nodeById(this.p);
-            this.wref = model.constraintById(this.wref);
-        }
-        else if (typeof this.p1 === 'string' && typeof this.p2 === 'string') {
+        if (typeof this.p1 === 'string' && typeof this.p2 === 'string') {
             this.p1 = model.nodeById(this.p1);
             this.p2 = model.nodeById(this.p2);
         }
     },
     dependsOn(elem) {
-        return this.p === elem || this.p1 === elem || this.p2 === elem || this.wref === elem;
+        return this.p1 === elem || this.p2 === elem;
     },
     draw(g) {
-        const x1 = this.p1 ? () => this.p1.x : () => this.p.x,
-              y1 = this.p1 ? () => this.p1.y : () => this.p.y,
-              x2 = this.p2 ? () => this.p2.x 
-                 : this.wref && this.len ? () => this.p.x + this.len*Math.cos(this.wref.w)
-                 : this.p1.x,
-              y2 = this.p2 ? () => this.p2.y 
-                 : this.wref && this.len ? () => this.p.y + this.len*Math.sin(this.wref.w)
-                 : this.p1.y;
+        const x1 = () => this.p1.x,
+              y1 = () => this.p1.y,
+              x2 = () => this.p2.x,
+              y2 = () => this.p2.y;
+        g.lin({x1,y1,x2,y2,ls:"@nodcolor",lw:8,lc:"round"})
+         .lin({x1,y1,x2,y2,ls:"@nodfill2",lw:5.5,lc:"round"})
+         .lin({x1,y1,x2,y2,ls:"@nodfill",lw:3,lc:"round"})
+    }
+}
+
+/**
+ * @param {object} - beam shape.
+ * @property {string} [p] - referenced node id for start point position.
+ * @property {string} [wref] - referenced constraint id for orientation.
+ * @property {number} [len] - beam length
+ */
+mec.shape.beam = {
+    init(model) {
+        if (typeof this.wref === 'string' && this.len > 0) {
+            this.p = model.nodeById(this.p);
+            this.wref = model.constraintById(this.wref);
+        }
+    },
+    dependsOn(elem) {
+        return this.p === elem || this.wref === elem;
+    },
+    draw(g) {
+        const x1 = () => this.p.x,
+              y1 = () => this.p.y,
+              x2 = () => this.p.x + this.len*Math.cos(this.wref.w),
+              y2 = () => this.p.y + this.len*Math.sin(this.wref.w);
         g.lin({x1,y1,x2,y2,ls:"@nodcolor",lw:8,lc:"round"})
          .lin({x1,y1,x2,y2,ls:"@nodfill2",lw:5.5,lc:"round"})
          .lin({x1,y1,x2,y2,ls:"@nodfill",lw:3,lc:"round"})

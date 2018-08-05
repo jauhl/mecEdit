@@ -24,7 +24,10 @@
  * @property {string} [ori.ref] - referenced constraint id.
  * @property {string} [ori.refval] - referencing other orientation or length value ['ori'|'len'].
  * @property {number} [ori.ratio] - ratio to referencing value.
- * @property {string} [ori.func] - drive function name ['linear'|'quadratic', ...].
+ * @property {string} [ori.func] - drive function name from `mec.drive` object ['linear'|'quadratic', ...].
+ *                                 If the name points to a function in `mec.drive` (not an object as usual) 
+ *                                 it will be called with `ori.arg` as an argument.
+ * @property {string} [ori.arg] - drive function argument.
  * @property {number} [ori.t0] - drive parameter start value.
  * @property {number} [ori.Dt] - drive parameter value range.
  * @property {number} [ori.Dw] - drive angular range [rad].
@@ -33,7 +36,9 @@
  * @property {number} [len.r0] - initial length.
  * @property {string} [len.ref] - referenced constraint id.
  * @property {string} [len.refval] - referencing other orientation or length value ['ori'|'len'].
+ * @property {number} [ori.ratio] - ratio to referencing value.
  * @property {string} [len.func] - drive function name ['linear'|'quadratic', ...].
+ * @property {string} [len.arg] - drive function argument.
  * @property {number} [len.t0] - drive parameter start value.
  * @property {number} [len.Dt] - drive parameter value range.
  * @property {number} [len.Dr] - drive linear range [rad].
@@ -65,11 +70,11 @@ mec.constraint = {
             else if (len.type === 'ref')   this.init_len_ref(len);
             else if (len.type === 'drive') this.init_len_drive(len);
 
-            this.type = ori.type === 'free' && len.type === 'free' ? 'free'
-                      : ori.type === 'free' && len.type !== 'free' ? 'rot'
-                      : ori.type !== 'free' && len.type === 'free' ? 'tran'
-                      : ori.type !== 'free' && len.type !== 'free' ? 'ctrl'
-                      : 'invalid';
+            // this.type = ori.type === 'free' && len.type === 'free' ? 'free'
+            //           : ori.type === 'free' && len.type !== 'free' ? 'rot'
+            //           : ori.type !== 'free' && len.type === 'free' ? 'tran'
+            //           : ori.type !== 'free' && len.type !== 'free' ? 'ctrl'
+            //           : 'invalid';
 
             // this.pos = this.type === 'free' ? () => true
             //          : this.type === 'rot'  ? () => this.len_pos()
@@ -98,9 +103,18 @@ mec.constraint = {
             this.lambda_r = this.dlambda_r = 0;
             this.lambda_w = this.dlambda_w = 0;
         },
+        get type() {
+            const ori = this.ori, len = this.len;
+            return ori.type === 'free' && len.type === 'free' ? 'free'
+                 : ori.type === 'free' && len.type !== 'free' ? 'rot'
+                 : ori.type !== 'free' && len.type === 'free' ? 'tran'
+                 : ori.type !== 'free' && len.type !== 'free' ? 'ctrl'
+                 : 'invalid';
+        },
         get initialized() { return typeof this.p1 === 'object' },
         get dof() {
-            return (this.ori.type === 'free' ? 1 : 0) + (this.len.type === 'free' ? 1 : 0);
+            return (this.ori.type === 'free' ? 1 : 0) + 
+                   (this.len.type === 'free' ? 1 : 0);
         },
         /**
          * Force value in [N]
@@ -170,44 +184,50 @@ mec.constraint = {
                 })
         },
         init_ori_drive(ori) {
-            if (document.getElementById(ori.input) === null) { // check is actuator element already exists
-                this.w0 = ori.hasOwnProperty('w0') ? ori.w0 : Math.atan2(this.ay,this.ax);
+            this.w0 = ori.hasOwnProperty('w0') ? ori.w0 : Math.atan2(this.ay,this.ax);
 
-                ori.drive = mec.drive[ori.func || 'linear'];
-                ori.Dw = ori.Dw || 2*pi;
-                ori.t0 = ori.t0 || 0;
-                ori.Dt = ori.Dt || 1;
-                ori.t  = ori.t0;
-                this.assignGetters({
-                    w:  () => this.w0 + ori.drive.f((ori.t - ori.t0)/ori.Dt)*ori.Dw,
-                    wt: () => ori.drive.fd((ori.t - ori.t0)/ori.Dt)*ori.Dw/ori.Dt,
-                    wtt:() => ori.drive.fdd((ori.t - ori.t0)/ori.Dt)*ori.Dw/(ori.Dt**2)
-                })
-
-                if (typeof ori.input === 'string') {  // referencing input element
-                    const inputCallbk = (e) => {
-                        ori.tprev = ori.t;
-                        ori.t = (+e.target.value);
-                        this.model.dirty = true;
-                        this.model.direc = Math.sign(ori.t - ori.tprev);
-                        // console.log('direc='+this.model.direc)
-                    }
-
-                    ori.tprev = ori.t0;
-
-                    let rangewidth = 300; // todo: calculate
-                    // document.getElementById(`actuators-container`).appendChild(app.createActuatorElm(ori.input, rangewidth));
-                    document.getElementById(`actuators-container`).appendChild(app.createActuatorElm2(ori.input, rangewidth));
-                    // let elm = document.getElementById(`${ori.input}`);
-                    // mecSlider.RegisterElm(elm);
-                    // elm.initEventHandling(this, ori.input, () => { return this.model[`${ori.input}`] / pi * 180 }, (q) => { this.model[`${ori.input}`] = q / 180 * pi; this.notify(`${ori.input}`, q); this.dirty = true; });
-                    document.getElementById(ori.input).addEventListener("input", inputCallbk, false);
-                    if (typeof ori.output === 'string') {
-                        document.getElementById(ori.input).addEventListener("input", (e) => { document.getElementById(ori.output).value = Math.round(this.w / pi * 180) + '°'; }, false);
-                    }
-                    document.getElementById(ori.input).addEventListener("input", (e) => { app.model.phi = (+e.target.value) / 180 * Math.PI; app.model.dirty = true; }, false);
+            ori.drive = mec.drive[ori.func || 'linear'];
+            ori.Dw = ori.Dw || 2*Math.PI;
+            ori.t0 = ori.t0 || 0;
+            ori.Dt = ori.Dt || 1;
+            if (ori.bounce) {
+                ori.drive = mec.drive.bounce(ori.drive);
+                ori.Dt *= 2;  // preserve duration per repetition
+            }
+            if (ori.repeat) {
+                ori.drive = mec.drive.repeat(ori.drive,ori.repeat);
+                ori.Dt *= ori.repeat;  // preserve duration per repetition
+            }
+/* needed for parametric drive functions (ramp) .. some time in future
+            ori.drive = typeof mec.drive[ori.func] === 'function' 
+                      ? mec.drive[ori.func].apply(null,ori.args)
+                      : mec.drive[ori.func];
+*/
+            if (ori.input) {    // requesting for input element .. for handing over 'inputCallbk'
+                ori.input_t = 0;
+                ori.inputCallbk = (e) => {    // assuming user friendly angles in [deg] are coming in.
+                    const t =  (+e.target.value)*Math.PI/180*ori.Dt/ori.Dw;
+                    ori.prev_t = ori.input_t;
+                    ori.input_t = t;
+                    this.model.timer.dt = Math.PI/180*ori.Dt/ori.Dw;  // dt depends on slider tick size ..
+                    this.model.direc = Math.sign(ori.input_t - ori.prev_t) || 1;  // no zero value allowed ..
                 }
             }
+            // Access drive time via input element (slider) or as model time ...
+            Object.defineProperty(ori, 't', { get: () => ori.input ? ori.input_t : this.model.timer.t, 
+                                              enumerable:true, 
+                                              configurable:true }
+            );
+
+            this.assignGetters({
+                w:  () => this.w0 + ori.drive.f(Math.max(0,Math.min((ori.t - ori.t0)/ori.Dt,1)))*ori.Dw,
+                wt: () => this.model.timer.t < ori.t0 || this.model.timer.t > ori.t0 + ori.Dt
+                        ? 0
+                        : ori.drive.fd(Math.max(0,Math.min((ori.t - ori.t0)/ori.Dt,1)))*ori.Dw/ori.Dt,
+                wtt:() => this.model.timer.t < ori.t0 || this.model.timer.t > ori.t0 + ori.Dt
+                        ? 0
+                        : ori.drive.fdd(Math.max(0,Math.min((ori.t - ori.t0)/ori.Dt,1)))*ori.Dw/(ori.Dt**2)
+            })
         },
         init_len_free(len) {
             this.r0 = Math.hypot(this.ay,this.ax);
@@ -242,6 +262,68 @@ mec.constraint = {
                 })
         },
         init_len_drive(len) {
+            this.r0 = len.hasOwnProperty('r0') ? len.r0 : Math.hypot(this.ay,this.ax);
+
+            len.drive = mec.drive[len.func || 'linear'];
+            len.Dr = len.Dr || 100;
+            len.t0 = len.t0 || 0;
+            len.Dt = len.Dt || 1;
+            if (len.bounce) {
+                len.drive = mec.drive.bounce(len.drive);
+                len.Dt *= 2;  // preserve duration per repetition
+            }
+            if (len.repeat) {
+                len.drive = mec.drive.repeat(len.drive,len.repeat);
+                len.Dt *= len.repeat;  // preserve duration per repetition
+            }
+/* needed for parametric drive functions (ramp) .. some time in future
+            len.drive = typeof mec.drive[len.func] === 'function' 
+                      ? mec.drive[len.func].apply(null,len.args)
+                      : mec.drive[len.func];
+*/
+            if (len.input) {    // requesting for input element .. for handing over 'inputCallbk'
+                len.input_t = 0;
+                len.inputCallbk = (e) => {    // assuming user friendly length values [u] coming in.
+                    const dt = len.Dt/len.Dr,
+                          t =  (+e.target.value)*dt;
+                    len.prev_t = len.input_t;
+                    len.input_t = t;
+                    this.model.timer.dt = dt;  // dt depends on slider tick size ..
+                    this.model.direc = Math.sign(len.input_t - len.prev_t) || 1;  // no zero value allowed ..
+                }
+            }
+            // Access drive time via input element (slider) or as model time ...
+            Object.defineProperty(len, 't', { get: () => len.input ? len.input_t : this.model.timer.t, 
+                                              enumerable:true, 
+                                              configurable:true }
+            );
+
+            this.assignGetters({
+                r:  () => this.r0 + len.drive.f(Math.max(0,Math.min((len.t - len.t0)/len.Dt,1)))*len.Dr,
+                rt: () => this.model.timer.t < len.t0 || this.model.timer.t > len.t0 + len.Dt
+                        ? 0
+                        : len.drive.fd(Math.max(0,Math.min((len.t - len.t0)/len.Dt,1)))*len.Dr/len.Dt,
+                rtt:() => this.model.timer.t < len.t0 || this.model.timer.t > len.t0 + len.Dt
+                        ? 0
+                        : len.drive.fdd(Math.max(0,Math.min((len.t - len.t0)/len.Dt,1)))*len.Dw/(len.Dt**2)
+            })
+        },
+        posStep() {
+            let res;
+            return this.type === 'free' ? true
+                 : this.type === 'rot'  ? this.len_pos()
+                 : this.type === 'tran' ? this.ori_pos()
+                 : this.type === 'ctrl' ? (res = this.ori_pos(), (this.len_pos() && res))                    
+                 : false;
+        },
+        velStep(dt) {
+//            console.log(dt)
+            return this.type === 'free' ? true
+                 : this.type === 'rot'  ? this.len_vel(dt)
+                 : this.type === 'tran' ? this.ori_vel(dt)
+                 : this.type === 'ctrl' ? !!((+this.ori_vel(dt))*(+this.len_vel(dt)))
+//                 : this.type === 'ctrl' ? (res = this.ori_vel(dt), (this.len_vel(dt) && res))
+                 : false;
         },
         pre(dt) {
             const impulse_r = this.lambda_r * dt,
@@ -267,23 +349,6 @@ mec.constraint = {
                 this.ori.ref.lambda_w -= this.ori.ratio*this.dlambda_w;
             }
         },
-        pos() {
-            let res;
-            return this.type === 'free' ? true
-                 : this.type === 'rot'  ? this.len_pos()
-                 : this.type === 'tran' ? this.ori_pos()
-                 : this.type === 'ctrl' ? (res = this.ori_pos(), (this.len_pos() && res))                    
-                 : false;
-        },
-        vel(dt) {
-//            console.log(dt)
-            return this.type === 'free' ? true
-                 : this.type === 'rot'  ? this.len_vel(dt)
-                 : this.type === 'tran' ? this.ori_vel(dt)
-                 : this.type === 'ctrl' ? !!((+this.ori_vel(dt))*(+this.len_vel(dt)))
-//                 : this.type === 'ctrl' ? (res = this.ori_vel(dt), (this.len_vel(dt) && res))
-                 : false;
-        },
         get ori_C() { 
             const w = this.w, r = this.r;
             return { x: this.ax - r*Math.cos(w),
@@ -297,9 +362,13 @@ mec.constraint = {
         }, 
         get ori_mc() { return 1/(this.p1.im + this.p2.im); },
         ori_pos() {
-            const C = this.ori_C, mc = this.ori_mc, 
-                  impulse = { x: -mc * C.x, y: -mc * C.y };
-    
+            const C = this.ori_C,
+                  factor = Math.max(Math.abs(C.x)/mec.maxLinCorrect,
+                                    Math.abs(C.y)/mec.maxLinCorrect,1),
+                  mc = this.ori_mc,
+                  impulse = { x: -mc * (C.x /= factor), 
+                              y: -mc * (C.y /= factor) };
+//console.log(C)
             this.p1.x += -this.p1.im * impulse.x;
             this.p1.y += -this.p1.im * impulse.y;
             this.p2.x +=  this.p2.im * impulse.x;
@@ -327,7 +396,8 @@ mec.constraint = {
         get len_Ct() { return (this.ax*this.axt + this.ay*this.ayt - this.r*this.rt)/this.r0; },
         get len_mc() { return this.r0**2/((this.p1.im + this.p2.im)*(this.ax**2 + this.ay**2)); },
         len_pos() {
-            const C = this.len_C, impulse = -this.len_mc * C;
+            const C = mec.clamp(this.len_C,-mec.maxLinCorrect,mec.maxLinCorrect), 
+                  impulse = -this.len_mc * C;
 
             this.p1.x += -this.ax/this.r0 * this.p1.im * impulse;
             this.p1.y += -this.ay/this.r0 * this.p1.im * impulse;

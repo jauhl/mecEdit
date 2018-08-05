@@ -30,13 +30,6 @@ mec.node = {
             this.Qx = this.Qy = 0;     // sum of external loads ...
         },
         init(model) {
-            // this.model = model;
-            // this.m = this.m === 'infinite' ? Number.POSITIVE_INFINITY : (this.m || 1);
-            // this.im = 1/this.m;
-            // this.Qx = 0; this.Qy = this.model.hasGravity ? -1000 : 0;
-            // this.xt = this.yt = 0;  // resetting derivatives is obligatory for reinitialization
-            // this.xtt = this.ytt = 0;
-            // this.dxt = this.dyt = 0;
             this.model = model;
             // make inverse mass to first class citizen ... 
             this.im = typeof this.m === 'number' ? 1/this.m 
@@ -59,6 +52,16 @@ mec.node = {
 //        get im() { return 1/this.m },
         get dof() { return this.m === Number.POSITIVE_INFINITY ? 0 : 2 },
         /**
+         * Test, if node is significantly moving 
+         * @const
+         * @type {boolean}
+         */
+        get isSleeping() {
+            return this.base
+                || mec.isEps(this.xt,mec.velTol)
+                && mec.isEps(this.yt,mec.velTol);
+        },
+        /**
          * Energy [kgu^2/s^2]
          */
         get energy() {
@@ -76,26 +79,25 @@ mec.node = {
             this.xt = this.yt = 0;
             this.xtt = this.ytt = 0;
             this.dxt = this.dyt = 0;
-            // this.Qx = this.Qy = 0;     // sum of external loads ...
         },
         pre(dt) {
             // symplectic euler ... partially
             this.x += this.model.direc*this.xt*dt;
             this.y += this.model.direc*this.yt*dt;
 
-            if (this.usrDrag) {  // node dragging by user occured .. !
-                const xt = this.usrDrag.dx / this.usrDrag.dt*1000,
-                      yt = this.usrDrag.dy / this.usrDrag.dt*1000,
-                      v  = Math.hypot(xt,yt);
-                if (v > 20) {
-                    this.xt = xt/v*Math.min(v,250);
-                    this.yt = yt/v*Math.min(v,250);
-                }
-                else   // set model to rest ..
-                    this.model.rest();
+            // if (this.usrDrag) {  // node dragging by user occured .. !
+            //     const xt = this.usrDrag.dx / this.usrDrag.dt*1000,
+            //           yt = this.usrDrag.dy / this.usrDrag.dt*1000,
+            //           v  = Math.hypot(xt,yt);
+            //     if (v > 20) {
+            //         this.xt = xt/v*Math.min(v,250);
+            //         this.yt = yt/v*Math.min(v,250);
+            //     }
+            //     else   // set model to rest ..
+            //         this.model.rest();
 
-                delete this.usrDrag;  // avoid multiple evaluation .. !
-            }
+            //     delete this.usrDrag;  // avoid multiple evaluation .. !
+            // }
             // zero out velocity differences .. important !!
             this.dxt = this.dyt = 0;
 
@@ -115,20 +117,15 @@ mec.node = {
             // reset loads
             // this.Qx = 0; this.Qy = this.model.hasGravity ? -1000 : 0;
         },
-
-        // from old mec
         adjConstraintIds() {
             let contraints = []
-            this.model.constraints.forEach(el => { // check for adjacent contraints
-                if (typeof (el) === "object" && (el.p1.id === this.id || el.p2.id === this.id)) {
-                    contraints.push(el.id);
-                }
-            });
+            for (const constraint of this.model.constraints) 
+                if (constraint.dependsOn(this))
+                    contraints.push(constraint.id);
             return contraints;
         },
         updAdjConstraints() {
             this.adjConstraintIds().forEach(el => this.model.constraintById(el).init(this.model));
-            app.model.dirty = true;
         },
         toJSON() {
             const obj = {
@@ -152,17 +149,18 @@ mec.node = {
             return g2.isPntInCir({x,y},this,eps);
         },
         selectBeg({x,y,t}) {
-            if (!this.base)
-                this.usrDrag = {dx:this.x,dy:this.y,dt:t};
+//            if (!this.base)
+//                this.usrDrag = {dx:this.x,dy:this.y,dt:t};
         },
         selectEnd({x,y,t}) {
             if (!this.base) {
-                this.usrDrag.dx = this.x - this.usrDrag.dx;
-                this.usrDrag.dy = this.y - this.usrDrag.dy;
-                this.usrDrag.dt = (t - this.usrDrag.dt);
+                this.xt = this.yt = this.xtt = this.ytt = 0;
+//                this.usrDrag.dx = this.x - this.usrDrag.dx;
+//                this.usrDrag.dy = this.y - this.usrDrag.dy;
+//                this.usrDrag.dt = (t - this.usrDrag.dt);
             }
         },
-        drag({x,y,dx,dy,dt}) {
+        drag({x,y}) {
             this.x = x; this.y = y;
             // this.model.dirty = true;
             // app.inversekinematics ? this.model.dirty = true : this.updAdjConstraints(); // now in app.step()

@@ -1,6 +1,11 @@
 /**
  * mec.load (c) 2018 Stefan Goessner
  * @license MIT License
+ * @requires mec.core.js
+ * @requires mec.node.js
+ * @requires mec.constraint.js
+ * @requires mec.model.js
+ * @requires g2.js
  */
 "use strict";
 
@@ -19,12 +24,16 @@
  */
 mec.load = {
     extend(load) { 
-        Object.setPrototypeOf(load, this.prototype); 
-        load.constructor(); 
+        if (load.type && mec.load[load.type]) {
+            Object.setPrototypeOf(load, mec.load[load.type]);
+            load.constructor(); 
+        }
         return load; 
-    },
-    prototype: {
-        constructor() {}, // always parameterless .. !
+    }
+}
+
+mec.load.force = {
+    constructor() {}, // always parameterless .. !
         init(model) {
             this.model = model;
             if (!this.type) this.type = 'force';
@@ -75,7 +84,7 @@ mec.load = {
                 const w = this.w,
                       cw = Math.cos(w), sw = Math.sin(w),
                       p = this.p,
-                      len = mec.load.forceLength,
+                      len = mec.load.force.arrowLength,
                       off = 2*mec.node.radius,
                       idsign = this.mode === 'push' ? -1 : 1,
                       xid = p.x + idsign*25*cw - 12*sw, 
@@ -86,14 +95,13 @@ mec.load = {
                                                : () => p.y + off*sw,
                       g = g2().beg({x,y,w,scl:1,lw:2,ls:mec.forceColor,
                                     lc:'round',sh:()=>this.sh,fs:'@ls'})
-                              .drw({d:mec.load.forceArrow,lsh:true})
+                              .drw({d:mec.load.force.arrow,lsh:true})
                               .end();
                 if (mec.showLoadLabels)
                     g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle'});
                 return g;
             }
-        }
     },
-    forceLength: 45,   // draw all forces of length ...
-    forceArrow: 'M0,0 35,0M45,0 36,-3 37,0 36,3 Z'
+    arrowLength: 45,   // draw all forces of length ...
+    arrow: 'M0,0 35,0M45,0 36,-3 37,0 36,3 Z'
 }

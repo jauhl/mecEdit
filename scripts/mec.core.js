@@ -11,6 +11,8 @@
 const mec = {
 /**
  * mec library version
+ * @const
+ * @type {string}
  */
 VERSION: "0.70",
 /**
@@ -36,6 +38,12 @@ linTol: 0.001,
  */
 angTol: 2 / 180 * Math.PI,
 /**
+ * Velocity tolerance.
+ * @const
+ * @type {number}
+ */
+velTol: 0.01,
+/**
  * Force tolerance.
  * @const
  * @type {number}
@@ -48,9 +56,15 @@ forceTol: 0.1,
  */
 momentTol: 0.01,
 /**
+ * Maximal value for position correction.
+ * @const
+ * @type {number}
+ */
+maxLinCorrect: 20,
+/**
  * fixed limit of assembly iteration steps.
  */
-asmItrMax: 128, // 512,
+asmItrMax: 512,
 /**
  * itrMax: fixed limit of simulation iteration steps.
  */
@@ -147,10 +161,9 @@ from_kgm2(x) { return x/mec.m_u/mec.m_u; },
  * Helper functions
  */
 /**
- * Test, if the absolute value of a number `a` is smaller than eps,
- * or test, if the absolute value of the difference of `a` and `b` is smaller than EPS.
+ * Test, if the absolute value of a number `a` is smaller than eps.
  * @param {number} a Value to test.
- * @param {number} [eps=mec.EPS]  difference is smaller than EPS.
+ * @param {number} [eps=mec.EPS]  used epsilon.
  * @returns {boolean} test result.
  */
 isEps(a,eps) {

@@ -33,6 +33,9 @@ mec.drive = {
         fd: (q) => (30 - 60*q +30*q*q)*q*q,
         fdd: (q) => (60 - 180*q + 120*q*q)*q
     },
+    static: {   // used for actuators (Stellantrieb) without velocities and accelerations
+        f: (q) =>q, fd: (q) => 0, fdd: (q) => 0
+    },
     ramp(dq) {
         dq = mec.clamp(dq,0,0.5);
         if (dq === 0)
@@ -57,6 +60,22 @@ mec.drive = {
                             :             -a;
                     }
             };
+        }
+    },
+    bounce: function(drv) {
+        if (typeof drv === 'string') drv = mec.drive[drv];
+        return {
+            f: q => drv.f(q < 0.5 ? 2*q : 2-2*q),
+            fd: q => drv.fd(q < 0.5 ? 2*q : 2-2*q),
+            fdd: q => drv.fdd(q < 0.5 ? 2*q : 2-2*q)
+        }
+    },
+    repeat: function(drv,n) {
+        if (typeof drv === 'string') drv = mec.drive[drv];
+        return {
+            f: q => drv.f((q*n)%1),
+            fd: q => drv.fd((q*n)%1),
+            fdd: q => drv.fdd((q*n)%1)
         }
     },
     // Penner's' simple potential functions ... why are they so popular ?

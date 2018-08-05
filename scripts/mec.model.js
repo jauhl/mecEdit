@@ -32,6 +32,11 @@ mec.model = {
             this.state = {dirty:true,valid:true,direc:1,itrpos:0,itrvel:0};
             this.timer = {t:0,dt:1/60};
         },
+        /**
+         * Init model
+         * @method
+         * @returns {object} model
+         */
         init() {
             if (!this.nodes) this.nodes = [];
             for (const node of this.nodes)  // do for all nodes ...
@@ -47,13 +52,17 @@ mec.model = {
             for (const shape of this.shapes)  // do for all shapes ...
                 mec.shape.extend(shape).init(this);
 
-            if (typeof this.gravity === 'boolean' && this.gravity)
+            if (this.gravity === true)
                 this.gravity = {x:0,y:-10};
 
             return this;
         },
         /**
          * Reset model
+         * All nodes are set to their initial position. 
+         * Kinematic values are set to zero.
+         * @method
+         * @returns {object} model
          */
         reset() {
             this.timer.t = 0;
@@ -66,13 +75,50 @@ mec.model = {
             return this;
         },
         /**
-         * Perform time tick.
-         * Model time is independent of system time.
+         * Assemble model (depricated ... use pose() instead)
+         * @method
+         * @returns {object} model
          */
-        tick() {
-            this.timer.t += this.timer.dt;
+        asm() {
+            let valid = this.asmPos();
+            valid = this.asmVel() && valid;
+            return this;
+        },
+        /**
+         * Bring mechanism to a valid pose.
+         * No velocities or forces are calculated.
+         * @method
+         * @returns {object} model
+         */
+        pose() {
+            return this.asmPos();
+        },
+        /**
+         * Perform timer tick.
+         * Model time is incremented bei `dt`.
+         * Model time is independent of system time.
+         * Input elements may set simulation time and `dt` explicite.
+         * `model.tick()` is then called with `dt = 0`.
+         * @method
+         * @param {number} [dt=0] - time increment.
+         * @returns {object} model
+         */
+        tick(dt) {
+            if (dt)  // sliders are setting simulation time explicite .. !
+                this.timer.t += (this.timer.dt = dt);
             this.pre().itr().post();
-            this.dirty = true;
+            return this;
+        },
+        /**
+         * Stop model motion.
+         * Zero out velocities and accelerations.
+         * @method
+         * @returns {object} model
+         */
+        stop() {
+            // post process nodes
+            for (const node of this.nodes)
+                node.xt = node.yt = node.xtt = node.ytt = 0;
             return this;
         },
         /**
@@ -86,75 +132,75 @@ mec.model = {
                 dof -= (2 - constraint.dof);
             return dof;
         },
-        get hasGravity() { return (this.gravity !== undefined && !!this.gravity); },
+        /**
+         * Gravity (vector) value.
+         * @type {boolean | object}
+         */
+        get hasGravity() { 
+            return this.gravity === true
+                || this.gravity
+                && this.gravity.x === 0
+                && this.gravity.y === 0;
+        },
 
-        get dirty() { return this.state.dirty; },
+        get dirty() { return this.state.dirty; },  // deprecated !!
         set dirty(q) { this.state.dirty = q; },
         get valid() { return this.state.valid; },
         set valid(q) { this.state.valid = q; },
+        /**
+         * Number of positional iterations.
+         * @type {number}
+         */
         get itrpos() { return this.state.itrpos; },
         set itrpos(q) { this.state.itrpos = q; },
+        /**
+         * Number of velocity iterations.
+         * @type {number}
+         */
         get itrvel() { return this.state.itrvel; },
         set itrvel(q) { this.state.itrvel = q; },
+
+        /**
+         * Direction flag.
+         * Used implicite by slider input elements.
+         * Avoids setting negative `dt` by going back in time.
+         * @type {boolean}
+         */
         get direc() { return this.state.direc; },
         set direc(q) { this.state.direc = q; },
         /**
-         * Overall center of gravity.
-         * Not taking base nodes into account.
-         */
-        get cog() {
-            const cog = {x:0,y:0}, m = 0;
-            for (const node of this.nodes) {
-                if (!node.base) {
-                    cog.x += node.x*node.m;
-                    cog.y += node.y*node.m;
-                    m += node.m;
-                }
-            }
-            cog.x /= m;
-            cog.y /= m;
-            return cog;
-        },
-        get hasDrives() {
-            let found = false;
-            for (const constraint of this.constraints) 
-                found = found
-                     || constraint.ori.type === 'drive' 
-                     || constraint.len.type === 'drive';
-            return found;
-        },
-        /**
-         * Test if model is active anymore
+         * Test, if model is active.
+         * Nodes are not moving anymore (zero velocities) and no drives active.
+         * @type {boolean}
          */
         get isActive() {
-            return  this.dof <= 0 && this.inactive == 0 ||  // static or fully driven
-                    this.dof > 0  && this.inactive <= 1/this.timer.dt;  // resting long enough  ..
+            return !this.hasActiveDrives // node velocities are not necessarily zero with drives
+                &&  this.isSleeping;
         },
         /**
-         * Test if model is sleeping .. not moving
+         * Test, if nodes are significantly moving 
+         * @type {boolean}
          */
         get isSleeping() {
-            var sleeping = true;
-            for (var i=0, n=this.joints.length; i < n && sleeping; i++)
-            sleeping = this.joints[i].isSleeping(this.timer.t) && sleeping;
-            if (this.dof > 0 || !sleeping)
-            for (var i=0, n=this.bodies.length; i < n && sleeping; i++)
-                sleeping = this.bodies[i].isSleeping && sleeping;
+            let sleeping = true;
+            for (const node of this.nodes)
+                if (sleeping && !node.isSleeping)
+                    sleeping = false;
             return sleeping;
         },
-        get isRunning() {
-            let running = false; // this.hasDrives;
-            if (!running && this.dof > 0)
-                for (const node of this.nodes)
-                    if (!(mec.isEps(node.xt) && mec.isEps(node.xt) && mec.isEps(node.Qx) && mec.isEps(node.Qy)) || node.usrDrag)
-                        running = running || true;
-            return running;
-        },
-        get energy() {
-            let e = 0;
-            for (const node of this.nodes)
-                e += node.energy;
-            return mec.to_J(e);
+        /**
+         * Test, if some drives are 'idle' or 'running' 
+         * @const
+         * @type {boolean}
+         */
+        get hasActiveDrives() {
+            let idle = false;
+            for (const constraint of this.constraints) 
+                idle =  constraint.ori.type === 'drive'
+                     && this.timer.t < constraint.ori.t0 + constraint.ori.Dt
+                     || constraint.len.type === 'drive'
+                     && this.timer.t < constraint.len.t0 + constraint.len.Dt;
+            return idle;
         },
         /**
          * Check for dependencies on specified element. Nodes do not have dependencies.
@@ -178,7 +224,6 @@ mec.model = {
          * @param {object} node - node to add.
          */
         addNode(node) {
-            // node.model = this;  // check: needed?
             this.nodes.push(node);
         },
         /**
@@ -207,12 +252,28 @@ mec.model = {
             return !dependency;
         },
         /**
+         * Delete node and all depending elements from model.
+         * @method
+         * @param {object} node - node to remove.
+         */
+        purgeNode(node) {
+            for (const constraint of this.constraints) 
+                if (constraint.dependsOn(node))
+                    this.purgeConstraint(constraint);
+            for (const load of this.loads)
+                if (load.dependsOn(node))
+                    this.purgeLoad(load);
+            for (const shape of this.shapes)
+                if (shape.dependsOn(node))
+                    this.purgeShape(shape);
+            this.nodes.splice(this.nodes.indexOf(node),1);
+        },
+        /**
          * Add constraint to model.
          * @method
          * @param {object} constraint - constraint to add.
          */
         addConstraint(constraint) {
-            // constraint.model = this;  // check: needed?
             this.constraints.push(constraint);
         },
         /**
@@ -239,6 +300,20 @@ mec.model = {
                 this.constraints.splice(idx,1);  // finally remove node from array.
 
             return !dependency;
+        },
+        /**
+         * Delete constraint and all depending elements from model.
+         * @method
+         * @param {object} constraint - constraint to remove.
+         */
+        purgeConstraint(constraint) {
+            for (const load of this.loads)
+                if (load.dependsOn(constraint))
+                    this.purgeLoad(load);
+            for (const shape of this.shapes)
+                if (shape.dependsOn(constraint))
+                    this.purgeShape(shape);
+            this.constraints.splice(this.constraints.indexOf(constraint),1);
         },
         /**
          * Add load to model.
@@ -274,6 +349,15 @@ mec.model = {
             return !dependency;
         },
         /**
+         * Delete load from model.
+         * No elements depend on loads at current.
+         * @method
+         * @param {object} load - load to delete.
+         */
+        purgeLoad(load) {
+            this.loads.splice(this.loads.indexOf(load),1);  // finally remove node from array.
+        },
+        /**
          * Add shape to model.
          * @method
          * @param {object} shape - shape to add.
@@ -294,11 +378,22 @@ mec.model = {
             return true;
         },
         /**
+         * Delete shape from model.
+         * No elements depend on shapesat current.
+         * @method
+         * @param {object} shape - shape to delete.
+         */
+        purgeShape(shape) {
+            this.loads.splice(this.shapes.indexOf(shape),1);
+        },
+        /**
          * Apply loads to their nodes.
+         * @internal
          * @method
          * @returns {object} model
          */
         applyLoads() {
+            // Apply node weight in case of gravity.
             for (const node of this.nodes) {
                 if (!node.base) {
                     node.Qx = node.Qy = 0;
@@ -308,22 +403,14 @@ mec.model = {
                     }
                 }
             }
+            // Apply external loads.
             for (const load of this.loads)
                 load.apply();
             return this;
         },
         /**
-         * Assemble model.
-         * @method
-         * @returns {object} model
-         */
-        asm() {
-            let valid = this.asmPos();
-            valid = this.asmVel() && valid;
-            return this;
-        },
-        /**
          * Assemble positions of model.
+         * @internal
          * @method
          * @returns {object} model
          */
@@ -331,12 +418,25 @@ mec.model = {
             let valid = false;
             this.itrpos = 0;
             while (!valid && this.itrpos++ < mec.asmItrMax) {
-                valid = this.pos();
+                valid = this.posStep();
             }
             return this.valid = valid;
         },
         /**
+         * Position iteration step over all constraints.
+         * @internal
+         * @method
+         * @returns {object} model
+         */
+        posStep() {
+            let valid = true;  // pre-assume valid constraints positions ...
+            for (const constraint of this.constraints)
+                valid = constraint.posStep() && valid;
+            return valid;
+        },
+        /**
          * Assemble velocities of model.
+         * @internal
          * @method
          * @returns {object} model
          */
@@ -344,11 +444,26 @@ mec.model = {
             let valid = false;
             this.itrvel = 0;
             while (!valid && this.itrvel++ < mec.asmItrMax)
-                valid = this.vel();
+                valid = this.velStep();
+            return valid;
+        },
+        /**
+         * Velocity iteration step over all constraints.
+         * @method
+         * @returns {object} model
+         */
+        velStep() {
+            let valid = true;  // pre-assume valid constraints velocities ...
+//            console.log('dt='+this.dt)
+            for (const constraint of this.constraints) {
+//                console.log(constraint.vel(this.timer.dt)+ '&&'+ valid)
+                valid = constraint.velStep(this.timer.dt) && valid;
+            }
             return valid;
         },
         /**
          * Pre-process model.
+         * @internal
          * @method
          * @returns {object} model
          */
@@ -368,16 +483,17 @@ mec.model = {
         /**
          * Perform iteration steps until constraints are valid or max-iteration 
          * steps for assembly are reached.
+         * @internal
          * @method
          * @returns {object} model
          */
         itr() {
             this.asmVel();
-//console.log('itrcnt='+this.state.itrpos+'/'+this.state.itrvel)
             return this;
         },
         /**
          * Post-process model.
+         * @internal
          * @method
          * @returns {object} model
          */
@@ -389,44 +505,7 @@ mec.model = {
             for (const constraint of this.constraints)
                 constraint.post(this.timer.dt);
 // console.log('itr='+this.itrCnt.pos+'/'+this.itrCnt.vel);
-//            this.dirty = true;
             return this;
-        },
-        /**
-         * Set model to rest state.
-         * @method
-         * @returns {object} model
-         */
-        rest() {
-            // post process nodes
-            for (const node of this.nodes)
-                node.xt = node.yt = node.xtt = node.ytt = 0;
-            return this;
-        },
-        /**
-         * Position iteration step over all constraints.
-         * @method
-         * @returns {object} model
-         */
-        pos() {
-            let valid = true;  // pre-assume valid constraints positions ...
-            for (const constraint of this.constraints)
-                valid = constraint.pos() && valid;
-            return valid;
-        },
-        /**
-         * Velocity iteration step over all constraints.
-         * @method
-         * @returns {object} model
-         */
-        vel() {
-            let valid = true;  // pre-assume valid constraints velocities ...
-//            console.log('dt='+this.dt)
-            for (const constraint of this.constraints) {
-//                console.log(constraint.vel(this.timer.dt)+ '&&'+ valid)
-                    valid = constraint.vel(this.timer.dt) && valid;
-                }
-                return valid;
         },
         /**
          * Draw model.
@@ -445,10 +524,5 @@ mec.model = {
                 g.ins(node);
             return this;
         }
-    },
-    // unused or deprecated. Use 'mec.validConstraintColor' instead.
-    maxid: 0,
-    // redundant? also in mec.core.js and is used from there
-    validConstraintColor: '#ffffff99', // default: #777 
-    invalidConstraintColor: '#b11'
+    }
 }
