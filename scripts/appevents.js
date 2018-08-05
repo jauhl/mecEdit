@@ -23,8 +23,10 @@ const events = {
     navbarClick: (id) => {
         /*********************************  navbar click handler  ****************************************/ 
         document.getElementById(id).addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'newModel') { app.newModel(); };
             if (e.target && e.target.id === 'export') { app.saveToJSON(); };
             if (e.target && e.target.id === 'inversekinematics') { app.inversekinematics = !app.inversekinematics; };
+            if (e.target && e.target.id === 'model-edit') { modelModal.show(); };
             if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
             if (e.target && e.target.id === 'toggleNodeLabels') { 
                 mec.showNodeLabels = !mec.showNodeLabels;
@@ -51,21 +53,25 @@ const events = {
         /*********************************  global keyboard handler  ****************************************/ 
         document.addEventListener('keydown', (e) => {
             console.log(`Key pressed: ${e.key}`);
-            if (e.key === 'Escape') {
-                if (app.build) {
-                    // reset app.build-state on escapekey
-                    app.resetApp();
-                    document.body.style.cursor = 'default';
+            if (document.getElementById('modelModal').attributes['aria-hidden'].value === 'true') { // modal is hidden
+                if (e.key === 'Escape') {
+                    if (app.build) {
+                        // reset app.build-state on escapekey
+                        app.resetApp();
+                        document.body.style.cursor = 'default';
+                    }
+                    // todo: make editor & element state resetable
+                };
+                // some shortcuts
+                if (e.key === 'e')    
+                    modelModal.show(); // open model editor
+                if (e.key === 'i')    
+                    app.inversekinematics = !app.inversekinematics; // toogle drag-mode
+                if (e.key === 'p') {
+                    app.build = { mode: 'purgenode' };
+                    app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
+                    document.body.style.cursor = 'crosshair';
                 }
-                // todo: make editor & element state resetable
-            };
-            // some shortcuts
-            if (e.key === 'i')    
-                app.inversekinematics = !app.inversekinematics; // toogle drag-mode
-            if (e.key === 'p') {
-                app.build = { mode: 'purgenode' };
-                app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
-                document.body.style.cursor = 'crosshair';
             }
         });
     },
@@ -108,31 +114,35 @@ const events = {
         /*********************************  contextmenu change handler  ****************************************/ 
         document.getElementById(id).addEventListener('input', (e) => {
             console.log('ctxmInput fired');
-            let ctxmdirty = false;
-            if (!app.tempElm.new) // declare new temporary constraint template if not done already
-                app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
+            // let ctxmdirty = false;
+            // if (!app.tempElm.new) // declare new temporary constraint template if not done already
+            //     app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
 
             if (e.target && e.target.id === 'node-x') { 
-                app.tempElm.new.x = e.target.valueAsNumber;
+                // app.tempElm.new.x = e.target.valueAsNumber;
                 app.model.nodeById(app.tempElm.old.id).x = e.target.valueAsNumber;
                 app.model.nodeById(app.tempElm.old.id).updAdjConstraints();
+                app.notify('render');
                 // ctxmdirty = true; 
                 };
             if (e.target && e.target.id === 'node-y') {
-                app.tempElm.new.y = e.target.valueAsNumber;
+                // app.tempElm.new.y = e.target.valueAsNumber;
                 app.model.nodeById(app.tempElm.old.id).y = e.target.valueAsNumber;
                 app.model.nodeById(app.tempElm.old.id).updAdjConstraints();
+                app.notify('render');
                 // ctxmdirty = true;
             };
             if (e.target && e.target.id === 'node-mass') { 
-                e.target.checked ? app.model.nodeById(app.tempElm.old.id).m = app.tempElm.new.m = Number.POSITIVE_INFINITY : app.model.nodeById(app.tempElm.old.id).m = app.tempElm.new.m = 1; // todo: maybe later remove tempElm.new
-                app.model.nodeById(app.tempElm.old.id).init(app.model);
+                // e.target.checked ? app.model.nodeById(app.tempElm.old.id).m = app.tempElm.new.m = Number.POSITIVE_INFINITY : app.model.nodeById(app.tempElm.old.id).m = app.tempElm.new.m = 1; // todo: maybe later remove tempElm.new
+                // app.model.nodeById(app.tempElm.old.id).init(app.model);
+                e.target.checked ? app.model.nodeById(app.tempElm.old.id).m = Number.POSITIVE_INFINITY : app.model.nodeById(app.tempElm.old.id).m = 1;
+                app.notify('render');
                 // ctxmdirty = true; 
             };
 
-            if (ctxmdirty)
-                // todo: check for consistency issues and maybe mark with red border
-                app.updateCtxm(app.tempElm.new, app.tempElm.type);
+            // if (ctxmdirty)
+            //     // todo: check for consistency issues and maybe mark with red border
+            //     app.updateCtxm(app.tempElm.new, app.tempElm.type);
         });
     },
     ctxmChange: (id) => {
@@ -160,6 +170,21 @@ const events = {
                     app.updateCtxm(app.tempElm.new, app.tempElm.type);
             }
         });
+    },
+    modalShown: (id) => {
+        document.getElementById(id).addEventListener('shown.bs.modal', (e) => { // show.bs.modal fires earlier but the Editor value is not updated without scrolling; shown.bs.modal works though
+            // document.getElementById('modalTextarea').innerHTML = app.syntaxHighlight(JSON.stringify(app.model,undefined,4));  // only if element is <pre>
+            // let code = JSON.stringify(app.model,undefined,4);
+            // app.tempElm = JSON.stringify(app.model,undefined,4);
+            jsonEditor.setValue(JSON.stringify(app.model,null,4));
+        });
+    },
+    modalAccept: (id) => {
+        document.getElementById(id).addEventListener('click', (e) => {
+            app.model = JSON.parse(jsonEditor.getValue());  // todo: strip unnecessary properties before parsing || model.toJSON
+            app.init();
+            app.updateg();
+        })
     },
     resize: () => {
         window.onresize = () => {

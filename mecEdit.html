@@ -11,6 +11,7 @@
     <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
         crossorigin="anonymous"> -->
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.css"> -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.5.1/css/OverlayScrollbars.min.css" integrity="sha256-U1JhalfvRWuOx6iqA584Euc54EQ41i9uAXqcVpg8WNA=" crossorigin="anonymous" /> -->
     <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
         crossorigin="anonymous"> -->
 
@@ -18,7 +19,10 @@
     <link rel="stylesheet" href="./vendor/bootstrap.min.css">
     <!-- <link rel="stylesheet" href="./vendor/ti-ta-toggle.mod.min.css"> -->
     <link rel="stylesheet" href="./vendor/fontawesome/css/all.min.css">
-
+    <link rel="stylesheet" href="./vendor/codemirror/codemirror5.39.2.css"/>
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/darcula.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/lucario.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/eclipse.css"> -->
     <link rel="stylesheet" href="./app.css">
     <!-- <link rel="stylesheet" href="./common.css">
     <link rel="stylesheet" href="./darkblue.css"> -->
@@ -50,6 +54,8 @@
                         File
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" id="newModel">New model</a>
+                        <div class="dropdown-divider"></div>
                         <!-- <label class="dropdown-item">Import linkage from *.JSON<input type="file" hidden></label> -->
                         <label class="btn btn-default btn-file dropdown-item">Import linkage from *.JSON
                             <input type="file" id="import" style="display: none;" accept="application/json">
@@ -66,6 +72,8 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" id="inversekinematics">toggle drag mode</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" id="model-edit">model editor</a>
                         <!-- <label class="dropdown-item">Import linkage from *.JSON<input type="file" hidden></label> -->
                     </div>
                 </li>
@@ -145,7 +153,7 @@
 
             <!-- ========================== left sidebar ========================== -->
             <nav id="sb-l" class="col sidebar sb-l">
-                <!-- add class "data-simplebar" for pretty scrollbar-->
+                <!-- add attribute "data-simplebar" for pretty scrollbar-->
                 <ul class="nav nav-pills flex-column text-center">
                     <!-- <label class="nav-link greenish mb-1 font-weight-bold">
                         <i class="fas fa-toolbox"></i> Components:</label> -->
@@ -319,11 +327,17 @@
     </div>
 
     <!-- ========================== Custom ContextMenu ========================== -->
-    <div id="contextMenu" class="draggable clearfix"> <!-- class: dropdown clearfix needed when floating items? -->
-        <div class="card bg-light border-dark">
+    <!-- <div id="contextMenu" class="draggable clearfix">
+        <div class="card bg-dark border-dark">
             <div id="contextMenuHeader" class="card-header bg-dark text-white"></div>
-            <ul id="contextMenuBody" class="list-group list-group-flush"></ul>
+            <ul id="contextMenuBody" class="list-group bg-light list-group-flush"></ul>
         </div>
+    </div> -->
+    
+    <div id="contextMenu" class="card border-0 draggable clearfix">
+        <div id="contextMenuHeader" class="card-header bg-dark text-white"></div>
+        <ul id="contextMenuBody" class="list-group bg-light list-group-flush"></ul>
+    </div>
 
         <!-- <div class="card bg-light">
             <div id="contextMenuHeader" class="card-header"></div>
@@ -339,12 +353,31 @@
             <!-- <a class="dropdown-item" href="#">Link 2</a>
             <a class="dropdown-item" href="#">Link 3</a>
         </div> -->
-    </div>
 
     <!-- ========================== Tooltip ========================== -->
     <!-- id="popover-inverse" class="text-muted"  data-placement="bottom"  data-toggle="popover" data-content="disable this option to change constraint dimensions by dragging nodes" -->
     <!-- <span id='info' data-toggle="popover" data-content="placeholder"></span> -->
     <span id='info' style="position:absolute;display:none;background-color:#ffb;border:1px solid black;padding:0.1em;font:0.9em monospace;">tooltip</span>
+
+    <!-- ========================== Custom Modal ========================== -->
+    <div id="modelModal" class="modal fade" role="dialog" aria-labelledby="modelModallabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="myModalLabel">model editor</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+                    <!-- <pre id="modalTextarea" class="form-control mb-0" contenteditable="true">no model</pre> -->
+                    <textarea id="modalTextarea">no model</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="modalAccept">Apply changes</button>
+                </div>   
+            </div>
+        </div>
+    </div>
 
 
     <!-- Bootstrap core JavaScript
@@ -360,9 +393,12 @@
     <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
         crossorigin="anonymous"></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/simplebar@latest/dist/simplebar.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.5.1/js/OverlayScrollbars.min.js" integrity="sha256-4V8M3nc95tD6hwXpDdZQ2qq7TV/tM7MQ6R8XxxvLXxg=" crossorigin="anonymous"></script> -->
 
     <script src="./vendor/bootstrap-native-v4.min.js"></script>
     <script src="./vendor/draggabilly.pkgd.min.js"></script>
+    <script src="./vendor/codemirror/codemirror5.39.2.min.js"></script>
+    <script src="./vendor/codemirror/codemirror.jsmode5.39.2.js"></script>
 
     <script src="./scripts/g2.js"></script>
     <script src="./scripts/g2.ext.js"></script>

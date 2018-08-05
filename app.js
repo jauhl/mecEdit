@@ -54,17 +54,14 @@ const App = {
     prototype: Object.assign({
         constructor() {
             this.model = {
-                id: 'crank',
-                dt: 2 / 360,
-                dirty: true,
+                id: 'linkage',
+                // dt: 2 / 360,
+                // dirty: true,
                 gravity: true,
-                // phi: pi / 2,
-                // psi: pi / 2,
-                // theta: pi / 2,
                 nodes: [
                     { id: 'A0', x: 100, y: 100, base: true },
-                    { id: 'A', x: 100, y: 150, m: 1 },
-                    { id: 'B', x: 350, y: 220, m: 1 },
+                    { id: 'A', x: 100, y: 150 },
+                    { id: 'B', x: 350, y: 220 },
                     { id: 'B0', x: 300, y: 100, base: true },
                     // { id: 'C', x: 450, y: 200, m: 1 },
                     // { id: 'C0', x: 450, y: 100, m: 1 },
@@ -80,7 +77,7 @@ const App = {
                 ]
             };
 
-            this.VERSION = 'v0.4.8',
+            this.VERSION = 'v0.4.8.2',
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -132,7 +129,7 @@ const App = {
                     this.g.exe(this.ctx);
                 })
                 .on('buttondown', (e) => {                     // show tooltip info
-                    console.log(editor.dragInfo && !this.inversekinematics);
+                    // console.log(editor.dragInfo && !this.inversekinematics);
                     if (editor.dragInfo && !this.inversekinematics) {
                         tooltip.style.left = ((e.clientX) + 15) + 'px';
                         tooltip.style.top = (e.clientY - 50) + 'px';
@@ -165,13 +162,14 @@ const App = {
 
         showStatus() {  // poor man's status bar
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
-            statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.inversekinematics?'move':'edit'}, dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}`
+            // statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.inversekinematics?'move':'edit'}, dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}`
+            statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.inversekinematics?'move':'edit'}, ${typeof this.model === 'object' ? `dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}` : `` }`
         },
 
         step(e) {
             if (!!this.model && (this.dragging || this.model.isRunning)) { // check if model is defined first
                 this.model.timer.dt = e.dt;
-                this.dragging ? this.inversekinematics ? this.model.asmPos() : editor.curElm.updAdjConstraints() 
+                this.dragging ? this.inversekinematics ? this.model.pose() : editor.curElm.updAdjConstraints() 
                               : this.model.pre().itr().post();
                 this.g.exe(this.ctx);
             }
@@ -179,7 +177,7 @@ const App = {
 
         init() { // evaluate how many actuators and add init add controlled properties to model instead of typing them there
             mec.model.extend(this.model);
-            this.model.dirty = true;
+            // this.model.dirty = true;
             this.model.init().asmPos();
             this.model.draw(this.g);
 
@@ -204,8 +202,10 @@ const App = {
             // }
             
             // (this.mainLoop.ptr || (this.mainLoop.ptr = this.mainLoop.bind(this)))(this.mainLoop.t0 = performance.now());
-            this.startTimer() // startTimer ...             // start synchronized ticks 
-                .notify('render');                          // send 'render' event
+            if (typeof t === 'undefined' || t === null) {  // dont start second timer if init() is called again
+                this.startTimer() // startTimer ...             // start synchronized ticks 
+                    .notify('render');                          // send 'render' event
+            }
         },
 
         createActuatorElm(actuated, width) {
@@ -232,28 +232,31 @@ const App = {
         // },
 
         updateg() {
+            let apphasmodel = typeof this.model === 'object' && Object.keys(this.model).length ? true : false;
+
             this.g = g2().clr()
                 .view(this.view)
                 .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 100 })
                 .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 20 })
                 .p() // mark origin
-                .m({ x: () => -this.view.x / this.view.scl, y: 0 })
-                .l({ x: () => (this.cnv.width - this.view.x) / this.view.scl, y: 0 })
-                .m({ x: 0, y: () => -this.view.y / this.view.scl })
-                .l({ x: 0, y: () => (this.cnv.height - this.view.y) / this.view.scl })
+                    .m({ x: () => -this.view.x / this.view.scl, y: 0 })
+                    .l({ x: () => (this.cnv.width - this.view.x) / this.view.scl, y: 0 })
+                    .m({ x: 0, y: () => -this.view.y / this.view.scl })
+                    .l({ x: 0, y: () => (this.cnv.height - this.view.y) / this.view.scl })
                 .z()
                 .stroke({ ls: 'rgba(255, 255, 255, 0.3)', lw: 2 })
-                // if (()=>this.view.cartesian) / can always be shown
-                .use({grp:origin,x: () => (10 - this.view.x)/this.view.scl, y: () => (10 - this.view.y)/this.view.scl, scl: () => this.view.scl})
-                if(this.model.hasGravity) {
+                .use({grp:origin,x: () => (10 - this.view.x)/this.view.scl, y: () => (10 - this.view.y)/this.view.scl, scl: () => this.view.scl});
+                if(apphasmodel && this.model.hasGravity) {
                     if(this.cartesian) {
-                        this.g.use({grp:gravvec(true),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (this.cnv.height - 15 - this.view.y)/this.view.scl, scl: () => this.view.scl})
+                        this.g.use({grp:gravvec(true),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (this.cnv.height - 15 - this.view.y)/this.view.scl, scl: () => this.view.scl});
                     } else {
-                        this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (- this.view.y + 14 )/this.view.scl, scl: () => this.view.scl})
-                    }
-                }
+                        this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (- this.view.y + 14 )/this.view.scl, scl: () => this.view.scl});
+                    };
+                };
 
-            this.model.draw(this.g);
+            if (apphasmodel)
+                this.model.draw(this.g);
+            this.notify('render')
         },
 
         resetApp() {
@@ -272,7 +275,7 @@ const App = {
             if (!(oldN.x === newN.x)) this.model.nodeById(oldN.id).x = newN.x;
             if (!(oldN.y === newN.y)) this.model.nodeById(oldN.id).y = newN.y;
             if (!(oldN.m === newN.m)) this.model.nodeById(oldN.id).m = newN.m;
-            this.model.dirty = true;
+            // this.model.dirty = true;
         },
 
         addNode() {
@@ -296,7 +299,7 @@ const App = {
             this.resetApp();
         },
 
-        deleteNode(node) {
+        deleteNode(node) {  // todo: switch to model.purgeNode() when fixed
             if (!!node && node.hasOwnProperty('m')) { // check if a node was clicked
                  // remove adjacent constraints from model // todo: also remove other dependencies
                 const adjConstraints = node.adjConstraintIds(); // fetch ids of adjacent constraints
@@ -317,9 +320,9 @@ const App = {
         },
 
         replaceConstraint(oldC, newC) {
-            this.model.constraints.splice(app.model.constraints.indexOf(app.model.constraintById(oldC.id)), 1); // remove old
-            this.model.addConstraint(mec.constraint.extend(newC)); // add new
-            newC.init(this.model);
+            this.model.constraints.splice(app.model.constraints.indexOf(app.model.constraintById(oldC.id)), 1); // remove old constraint
+            this.model.addConstraint(mec.constraint.extend(newC)); // add new constraint
+            newC.init(this.model); // init new constraint
             this.updateg(); // update graphics
         },
 
@@ -376,18 +379,23 @@ const App = {
 
         getNewChar(x = 'node') { // returns @type {string} todo: bug: adding a constraint with no constraints in model returns id "constraint" and not "a", which it should
             let charArr = [];
-            let name;
-            let obj;
-            let maxChar;
-            x === 'node' ? (obj = this.model.nodes, name = 'node', maxChar = 90) : (obj = this.model.constraints, name = 'constraint', maxChar = 122); // 90 = Z, 122 = z
-            for (let i = 0; i < obj.length; i++) {
-                charArr.push(obj[i].id.charCodeAt(0)) // push charcodes from first letter of node ids
-            }
-            charArr.sort(function (a, b) { // sort array containing charcodes
-                return a - b;
-            });
-            let potChar = charArr[charArr.length - 1] + 1
-            return (potChar <= maxChar) ? String.fromCharCode(potChar) : `${name}${obj.length + 1}`;   // choose one higher than highest charCode or assign numbers when running out of characters
+            let name, obj, maxChar, char;
+
+            if ((x === 'node' && this.model.nodes.length > 0) || (x === 'constraint' && this.model.constraints.length > 0)) {
+                x === 'node' ? (obj = this.model.nodes, name = 'node', maxChar = 90) : (obj = this.model.constraints, name = 'constraint', maxChar = 122); // 90 = Z, 122 = z
+                for (let i = 0; i < obj.length; i++) {
+                    charArr.push(obj[i].id.charCodeAt(0)) // push charcodes from first letter of node ids
+                }
+                charArr.sort(function (a, b) { // sort array containing charcodes
+                    return a - b;
+                });
+                let potChar = charArr[charArr.length - 1] + 1
+                char = (potChar <= maxChar) ? String.fromCharCode(potChar) : `${name}${obj.length + 1}`;   // choose one higher than highest charCode or assign numbers when running out of characters
+            } else {
+                char = x === 'node' ? 'A' : 'a'; // 65 = A, 97 = a,
+            };
+
+            return char;
         },
 
         // build() { // rename if needed again
@@ -435,41 +443,41 @@ const App = {
             this.resetApp(); // reset state and instructions
         },
 
-        changeConstraintType(elm, newtype) { // todo: check if still needed, guess is not...
-            console.log(newtype);
-            let newConstraint = {
-                id: elm.id,
-                p1: elm.p1.id,
-                p2: elm.p2.id,
-                state: elm.state // preserve state (otherwise contextmenu won't close and possibly other inconsistencies)
-            };
+        // changeConstraintType(elm, newtype) { // todo: check if still needed, guess is not...
+        //     console.log(newtype);
+        //     let newConstraint = {
+        //         id: elm.id,
+        //         p1: elm.p1.id,
+        //         p2: elm.p2.id,
+        //         state: elm.state // preserve state (otherwise contextmenu won't close and possibly other inconsistencies)
+        //     };
 
-            switch (newtype) { // todo: generalize in- and outputs
-                case 'rot':
-                    newConstraint.len = { type: 'const' };
-                    break;
-                case 'tran':
-                    newConstraint.ori = { type: 'const' };
-                    break;
-                case 'ctrl': // assume ori 'ref', not 'drive'. drive has to be added elsewhere, // maybe dont set stuff here but open second menu or form/modal to distinguish ori/len ref
-                    newConstraint.len = { type: 'const' };
-                    newConstraint.ori = {
-                        type: 'ref',
-                        ref: elm.p1.adjConstraintIds()[0] // reference the first found constraint of p1 for now ...
-                    }; // todo: make select ref
-            }
+        //     switch (newtype) { // todo: generalize in- and outputs
+        //         case 'rot':
+        //             newConstraint.len = { type: 'const' };
+        //             break;
+        //         case 'tran':
+        //             newConstraint.ori = { type: 'const' };
+        //             break;
+        //         case 'ctrl': // assume ori 'ref', not 'drive'. drive has to be added elsewhere, // maybe dont set stuff here but open second menu or form/modal to distinguish ori/len ref
+        //             newConstraint.len = { type: 'const' };
+        //             newConstraint.ori = {
+        //                 type: 'ref',
+        //                 ref: elm.p1.adjConstraintIds()[0] // reference the first found constraint of p1 for now ...
+        //             }; // todo: make select ref
+        //     }
 
-            // replace old with new constraint in model and flag for rebuild
-            this.model.constraints.splice(this.model.constraints.indexOf(this.model.constraintById(elm.id)), 1) // get index of passed constraint and delete it from the model 
+        //     // replace old with new constraint in model and flag for rebuild
+        //     this.model.constraints.splice(this.model.constraints.indexOf(this.model.constraintById(elm.id)), 1) // get index of passed constraint and delete it from the model 
 
-            this.model.addConstraint(mec.constraint.extend(newConstraint));
-            newConstraint.init(this.model);
+        //     this.model.addConstraint(mec.constraint.extend(newConstraint));
+        //     newConstraint.init(this.model);
 
-            this.tempElm = { new: this.model.constraintById(elm.id).toJSON() };
+        //     this.tempElm = { new: this.model.constraintById(elm.id).toJSON() };
 
 
-            this.updateg(); // update graphics
-        },
+        //     this.updateg(); // update graphics
+        // },
 
         initCtxm(elm) { // todo: remember to add option for drive func
             console.log(elm.type);
@@ -499,9 +507,11 @@ const App = {
         },
 
         hideCtxm(skip = false) {
-            this.ctxmenu.style.display = 'none'
-            if (!!this.tempElm.new && !skip)
-                this.tempElm.type === 'constraint' ? this.replaceConstraint(this.tempElm.old, this.tempElm.new) : this.replaceNode(this.tempElm.old, this.tempElm.new);
+            this.ctxmenu.style.display = 'none';
+
+            if (!!this.tempElm.new && this.tempElm.type === 'constraint' && !skip)
+                this.replaceConstraint(this.tempElm.old, this.tempElm.new);
+                // this.tempElm.type === 'constraint' ? this.replaceConstraint(this.tempElm.old, this.tempElm.new) : this.replaceNode(this.tempElm.old, this.tempElm.new);
 
             // this.tempElm.labelState = {nodes: mec.showNodeLabels, constraints: mec.showConstraintLabels, loads: mec.showLoadLabels};
             // show labels that are hidden
@@ -570,6 +580,15 @@ const App = {
             document.body.appendChild(a); // Firefox needs the element to be added to the DOM for this to work, Chrome & Edge ¯\_(ツ)_/¯
             a.click();
             document.body.removeChild(a);
+        },
+        newModel() {
+            if (typeof this.model === 'object') {
+                if (!confirm('All unsaved changes will be lost! Continue?'))
+                    return;
+            }
+            this.model = {};
+            this.updateg();
+            this.init(); // needs to be called after updateg() !
         }
     }, mixin.observable,      // for handling (custom) events ..
         mixin.pointerEventHdl, // managing (delegated) pointer events
@@ -578,6 +597,27 @@ const App = {
 };
 
 let app;
+
+// let modelModal; // needs to be accessible
+// initialize bootstrap modal
+let modelModal = new Modal(document.getElementById('modelModal'), {
+    backdrop: 'static',
+    keyboard: true // dismiss with ESC key
+});
+
+let jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'), {
+    mode: 'javascript',
+    theme: 'default',
+    lineNumbers: true,
+    styleActiveLine: true,
+    matchBrackets: true,
+    viewportMargin: Infinity,
+    lineWrapping: true
+  });
+
+//   jsonEditor.on('change', function (editor) {
+//     app.tempElm = jsonEditor.getValue();
+//   });
 
 window.onload = () => {
     let c = document.getElementById('c'),
@@ -604,9 +644,11 @@ window.onload = () => {
     events.ctxmInput('contextMenu');
     events.ctxmChange('contextMenu');
     events.resize(); // binds to window
+    events.modalShown('modelModal');
+    events.modalAccept('modalAccept');
 
-    // make cxtm dragable
-    const _draggableCtxMenu = new Draggabilly(document.getElementById('contextMenu'), {
+    // make cxtm dragable (decalre private, no need to access later)
+    new Draggabilly(document.getElementById('contextMenu'), {
         containment: '.main-container',
         handle: '.card-header'
     });

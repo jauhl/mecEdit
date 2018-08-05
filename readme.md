@@ -2,6 +2,26 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 
 # Changelog
 
+## v0.4.8.2 - new model editor & mec2 release merge
+
+### general:
++ merged changes from mec2 library (initital release)
++ added a model-editor where the user can directly edit the code (in `JSON`) that defines the model. menu -> edit -> model editor (or keyboard [e])
++ added dependency [CodeMirror](https://codemirror.net/) for sytaxhighlighting in the model-editor
++ added entry 'New model' to the Navbarmenu. This discards the current model and initializes an empty one.
+
+### appenvents.js:
++ values of nodes are now dynamically applied from the contextmenu without having the node replaced (`app.tempElm` stays `false`)
+
+### mixin.js:
++ mousemove events now distinguish between pressed buttons.
+
+    + left-mousebutton for dragging nodes
+    + middle-mousebutton OR [Ctrl] + left-mousebutton for panning
+    + right-mousebutton is a pointer eventtype
+
+---
+
 ## v0.4.8 - added forces/moments & optimizations
 
 ### general:

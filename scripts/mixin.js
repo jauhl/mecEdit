@@ -69,13 +69,21 @@ const mixin = {
                 dx: 0, dy: 0,
                 clientX: e.clientX, clientY: e.clientY,
                 btn: e.buttons !== undefined ? e.buttons : e.button || e.which,
+                ctrlKey: e.ctrlKey,
                 delta: Math.max(-1,Math.min(1,e.deltaY||e.wheelDelta)) || 0
             }
         },
         mousemove(e) {
             e.dx = e.x - this.evt.xi;
             e.dy = e.y - this.evt.yi;
-            e.type = e.btn !== 0 ? (this.dragging ? 'drag' : 'pan') : 'pointer';
+            // e.type = e.btn !== 0 ? (this.dragging ? 'drag' : 'pan') : 'pointer';
+
+            switch (e.btn) {
+                case 1:     e.type = e.ctrlKey ? 'pan' : this.dragging ?  'drag' : 'pointer'; break;  // left mousebutton
+                // case 2 && this.dragging:    e.type = 'drag';    break;  // right mousebutton
+                case 4:                     e.type = 'pan';     break;  // middle mousebutton
+                default:                    e.type = 'pointer'; 
+            }
         },
         mousedown(e) { e.type='buttondown' },
         mouseup(e) { e.type = this.evt.dx===0 && this.evt.dy===0 ? 'click' : 'buttonup' },
