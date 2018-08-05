@@ -320,6 +320,26 @@ output.badge {
     cursor: pointer;
 }
 
+.modal-content, .card-header {
+    border-top-left-radius: .5rem;
+    border-top-right-radius: .5rem;
+}
+
+.modal-dialog {
+    max-width: 800px;
+}
+
+#modalTextarea {
+    max-height: calc(70vh); /*if <pre> set max-height*/
+}
+
+/* pretty-print <pre>-content */
+.string { color: green; }
+.number { color: darkorange; }
+.boolean { color: blue; }
+.null { color: magenta; }
+.key { color: red; }
+
 .statbar {
     position: absolute;
     bottom: 0;
