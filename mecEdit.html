@@ -33,7 +33,7 @@
 <body>
 
     <!-- ========================== navbar ========================== -->
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top flex-nowrap">
         <a class="navbar-brand" >mecEdit</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navcollapse" aria-controls="navcollapse"
             aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,7 @@
                         Edit
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" id="inversekinematics">toggle drag mode</a>
+                        <a class="dropdown-item" id="dragmode">toggle drag mode</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" id="model-edit">model editor</a>
                         <!-- <label class="dropdown-item">Import linkage from *.JSON<input type="file" hidden></label> -->
@@ -94,6 +94,9 @@
                                         <a class="dropdown-item" id="toggleLoadLabels">loads</a>
                                     </div>
                             </div>
+
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" id="darkmode">toogle darkmode</a>
                             
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" id="resetview">reset editor-view</a>
@@ -106,17 +109,28 @@
                             <a class="dropdown-item" id="resetview" href="#">reset editor-view</a>
                     </div> -->
                 </li>
+                <li>
+                    <div class="btn-group ml-4" role="group" aria-label="controls-group">
+                        <button type="button" id="run" class="btn btn-dark border-secondary"><i class="fas fa-play"></i></button>
+                        <button type="button" id="idle" class="btn btn-dark border-secondary"><i class="fas fa-pause"></i></button>
+                        <button type="button" id="stop" class="btn btn-dark border-secondary"><i class="fas fa-stop"></i></button>
+                        <button type="button" id="reset" class="btn btn-dark border-secondary"><i class="fas fa-undo"></i></button>
+                    </div>
+                    <div class="btn-group ml-2" role="group" aria-label="gravity-group">
+                        <button type="button" id="toggle-g" class="btn btn-dark border-secondary">g <i class="fas fa-long-arrow-alt-down"></i></button>
+                      </div>
+                </li>
                 </ul>
+  
                 <div class="navbar-nav ml-auto">
-       
-                <div class="nav-item">
-                    <a class="nav-link pb-0 pt-0 nav-svg-logo" href="https://github.com/jauhl/mecEdit" target="_blank" rel="noopener" aria-label="mecEdit GitHub">
-                        <svg class="navbar-nav-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 499.36" focusable="false">
-                            <title>mecEdit GitHub</title>
-                            <path d="M256 0C114.64 0 0 114.61 0 256c0 113.09 73.34 209 175.08 242.9 12.8 2.35 17.47-5.56 17.47-12.34 0-6.08-.22-22.18-.35-43.54-71.2 15.49-86.2-34.34-86.2-34.34-11.64-29.57-28.42-37.45-28.42-37.45-23.27-15.84 1.73-15.55 1.73-15.55 25.69 1.81 39.21 26.38 39.21 26.38 22.84 39.12 59.92 27.82 74.5 21.27 2.33-16.54 8.94-27.82 16.25-34.22-56.84-6.43-116.6-28.43-116.6-126.49 0-27.95 10-50.8 26.35-68.69-2.63-6.48-11.42-32.5 2.51-67.75 0 0 21.49-6.88 70.4 26.24a242.65 242.65 0 0 1 128.18 0c48.87-33.13 70.33-26.24 70.33-26.24 14 35.25 5.18 61.27 2.55 67.75 16.41 17.9 26.31 40.75 26.31 68.69 0 98.35-59.85 120-116.88 126.32 9.19 7.9 17.38 23.53 17.38 47.41 0 34.22-.31 61.83-.31 70.23 0 6.85 4.61 14.81 17.6 12.31C438.72 464.97 512 369.08 512 256.02 512 114.62 397.37 0 256 0z" fill="currentColor" fill-rule="evenodd" />
-                        </svg>
-                    </a>
-                </div>
+                    <div class="nav-item">
+                        <a class="nav-link pb-0 pt-0 nav-svg-logo" href="https://github.com/jauhl/mecEdit" target="_blank" rel="noopener" aria-label="mecEdit GitHub">
+                            <svg class="navbar-nav-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 499.36" focusable="false">
+                                <title>mecEdit GitHub</title>
+                                <path d="M256 0C114.64 0 0 114.61 0 256c0 113.09 73.34 209 175.08 242.9 12.8 2.35 17.47-5.56 17.47-12.34 0-6.08-.22-22.18-.35-43.54-71.2 15.49-86.2-34.34-86.2-34.34-11.64-29.57-28.42-37.45-28.42-37.45-23.27-15.84 1.73-15.55 1.73-15.55 25.69 1.81 39.21 26.38 39.21 26.38 22.84 39.12 59.92 27.82 74.5 21.27 2.33-16.54 8.94-27.82 16.25-34.22-56.84-6.43-116.6-28.43-116.6-126.49 0-27.95 10-50.8 26.35-68.69-2.63-6.48-11.42-32.5 2.51-67.75 0 0 21.49-6.88 70.4 26.24a242.65 242.65 0 0 1 128.18 0c48.87-33.13 70.33-26.24 70.33-26.24 14 35.25 5.18 61.27 2.55 67.75 16.41 17.9 26.31 40.75 26.31 68.69 0 98.35-59.85 120-116.88 126.32 9.19 7.9 17.38 23.53 17.38 47.41 0 34.22-.31 61.83-.31 70.23 0 6.85 4.61 14.81 17.6 12.31C438.72 464.97 512 369.08 512 256.02 512 114.62 397.37 0 256 0z" fill="currentColor" fill-rule="evenodd" />
+                            </svg>
+                        </a>
+                    </div>
           
                 <!-- <li class="nav-item">
                         <a class="nav-link">inverse kinematics:
@@ -164,7 +178,21 @@
                         <!-- <div class="text-center m-1"> -->
                             <!-- <div class="btn-group btn-group-justified" role="group" aria-label="nodebuttons"> -->
                                 <button type="button" id="addbasenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="base node">
-                                    <i class="fas fa-circle"></i></button>
+                                    <svg viewBox="0 0 60 60" transform="scale(.7)">
+                                        <circle cx="30" cy="30" r="20" stroke="white" stroke-width="3" fill="none"/>
+                                        <path d='M 50,30 
+                                                 A 20 20 0 0 0 30,10
+                                                 L 30,50
+                                                 A 20 20 0 0 1 10,30
+                                                 Z' 
+                                              stroke="white"
+                                              stroke-width="1"
+                                              fill="white"
+                                        />
+                                    </svg>
+                                </button>
+                                <!-- <button type="button" id="addbasenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="base node">
+                                    <i class="fas fa-circle"></i></button> -->
                                 <!-- <button type="button" id="addnode" class="btn btn-dark">
                                     <i class="far fa-circle"></i> normal</button> -->
                             <!-- </div> -->
@@ -172,20 +200,23 @@
                     <!-- </li>
 
                     <li class="nav-item mb-1"> -->
-                                <button type="button" id="addnode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="node">
-                                    <i class="far fa-circle"></i></button>
+                            <button type="button" id="addnode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="node">
+                                    <svg viewBox="0 0 60 60" transform="scale(.7)">
+                                        <circle cx="30" cy="30" r="20" stroke="white" stroke-width="3" fill="white"/>
+                                    </svg>
+                                </button>
+                                <!-- <button type="button" id="addnode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="node">
+                                    <i class="far fa-circle"></i></button> -->
                             <!-- </div> -->
                         <!-- </div> -->
-                    </li>
 
-                    <li class="nav-item mb-1">
                         <!-- <label class="nav-link greenish m-0">
                             <i class="fas fa-minus"></i> purge node:</label> -->
                         <button type="button" id="purgenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="purge node">
                             <i class="fas fa-trash-alt fa-lg"></i></button>
-                    </li>
+                    <!-- </li>
 
-                    <li class="nav-item mb-1">
+                    <li class="nav-item mb-1"> -->
                             <!-- <span class="fl-w"> -->
                                 <button type="button" id="free" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="free">
                                     <svg viewBox="-10 -20 60 60"> 
@@ -412,6 +443,7 @@
     <script src="./scripts/mec.drive.js"></script>
     <script src="./scripts/mec.load.js"></script>
     <script src="./scripts/mec.shape.js"></script>
+    <script src="./scripts/mec.view.js"></script>
     <script src="./scripts/mec.slider.js"></script>
     
     <script src="./scripts/mixin.js"></script>

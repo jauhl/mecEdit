@@ -25,8 +25,9 @@ const events = {
         document.getElementById(id).addEventListener('click', (e) => {
             if (e.target && e.target.id === 'newModel') { app.newModel(); };
             if (e.target && e.target.id === 'export') { app.saveToJSON(); };
-            if (e.target && e.target.id === 'inversekinematics') { app.inversekinematics = !app.inversekinematics; };
+            if (e.target && e.target.id === 'dragmode') { app.dragMove = !app.dragMove; };
             if (e.target && e.target.id === 'model-edit') { modelModal.show(); };
+            if (e.target && e.target.id === 'darkmode') { app.toogleDarkmode(); };
             if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
             if (e.target && e.target.id === 'toggleNodeLabels') { 
                 mec.showNodeLabels = !mec.showNodeLabels;
@@ -43,6 +44,11 @@ const events = {
                 if (!!app.tempElm.labelState) app.tempElm.labelState.loads = mec.showLoadLabels;
                 app.notify('render');
             };
+            if (e.target && e.target.id === 'run') { app.run(); };
+            if (e.target && e.target.id === 'idle') { app.idle(); };
+            if (e.target && e.target.id === 'stop') { app.stop(); };
+            if (e.target && e.target.id === 'reset') { app.reset(); };
+            if (e.target && e.target.id === 'toggle-g') { app.model.gravity.active = !app.model.gravity.active; app.updateg(); };
         })
     },
     navbarChange: (id) => {
@@ -66,7 +72,7 @@ const events = {
                 if (e.key === 'e')    
                     modelModal.show(); // open model editor
                 if (e.key === 'i')    
-                    app.inversekinematics = !app.inversekinematics; // toogle drag-mode
+                    app.dragMove = !app.dragMove; // toogle drag-mode
                 if (e.key === 'p') {
                     app.build = { mode: 'purgenode' };
                     app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';

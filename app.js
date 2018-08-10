@@ -3,7 +3,7 @@ const tooltip = document.getElementById('info'),
     editor = g2.editor(),
     pi = Math.PI;
 
-const origin = g2().beg({ lc: 'round', lj: 'round', ls:'silver', fs: 'darkgray' })
+const origin = g2().beg({ lc: 'round', lj: 'round', ls:()=>mec.darkmode?'silver':'slategray', fs: 'darkgray' })
                         .p()
                             .m({ x: 21, y: 0 })
                             .l({ x: 0, y: 0 })
@@ -21,14 +21,14 @@ const origin = g2().beg({ lc: 'round', lj: 'round', ls:'silver', fs: 'darkgray' 
                         .drw()
                         .cir({ x: 0, y: 0, r: 2.5, fs: '#ccc' })
                     .end()
-                    .beg({ ls:'silver', font: '14px roboto'})
+                    .beg({ ls:()=>mec.darkmode?'silver':'slategray', font: '14px roboto'})
                         .txt({str:'x', x: 38, y: 4})
                         .txt({str:'y', x: 6, y: 30})
                     .end();
                     
 const gravvec = (cartesian = true) => {
-    const sgn = cartesian ? - 1 : 1;
-    return g2().beg({ w: sgn*pi/2, lw: 2, ls:'silver', fs: 'darkgray'})
+    const ytxt = cartesian ? - 20 : -15;
+    return g2().beg({ w: -pi/2, lw: 2, ls:()=>mec.darkmode?'silver':'slategray', fs: 'darkgray'})
                .p()
                    .m({ x: 0, y: 0 })
                    .l({ x: 50, y: 0 })
@@ -40,8 +40,8 @@ const gravvec = (cartesian = true) => {
                .z()
                .drw()
             .end()
-            .beg({ ls:'silver', font: '14px roboto'})
-                .txt({str:'g', x: -15, y: sgn*20})
+            .beg({ ls:()=>mec.darkmode?'silver':'slategray', font: '14px roboto'})
+                .txt({str:'g', x: -15, y: ytxt})
             .end();
 }
 
@@ -53,31 +53,83 @@ const App = {
     },
     prototype: Object.assign({
         constructor() {
+            // this.model = {
+            //     id: 'linkage',
+            //     dt: 2 / 360,
+            //     gravity: false,
+            //     nodes: [
+            //         { id: 'A0', x: 100, y: 100, base: true },
+            //         { id: 'A', x: 100, y: 150 },
+            //         { id: 'B', x: 350, y: 220 },
+            //         { id: 'B0', x: 300, y: 100, base: true },
+            //         { id: 'C', x: 500, y: 220, m: 1 },
+            //         { id: 'D', x: 500, y: 100, m: 1 }
+            //     ],
+            //     constraints: [
+            //         { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
+            //         { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
+            //         { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
+            //         // { id: 'd', p1: 'B', p2: 'D', len: { type: 'const' } },
+            //         { id: 'e', p1: 'B0', p2: 'D', ori: { type: 'const' } },
+            //         { id: 'f', p1: 'B', p2: 'C', len: { type: 'ref', ref:'e' }, ori:{type:"const"} },
+            //     ]
+            // };
+
             this.model = {
-                id: 'linkage',
-                // dt: 2 / 360,
-                // dirty: true,
-                gravity: true,
+                id:"hand",
+                dt: 2 / 360,
+                gravity:true,
+                dirty: true,
                 nodes: [
-                    { id: 'A0', x: 100, y: 100, base: true },
-                    { id: 'A', x: 100, y: 150 },
-                    { id: 'B', x: 350, y: 220 },
-                    { id: 'B0', x: 300, y: 100, base: true },
-                    // { id: 'C', x: 450, y: 200, m: 1 },
-                    // { id: 'C0', x: 450, y: 100, m: 1 },
+                    {id:'A0',x:100,y:100,base:true},
+                    {id:'A',x:100,y:150},
+                    {id:'B',x:350,y:220},
+                    {id:'C',x:250,y:250},
+                    {id:'D',x:600,y:100},
+                    {id:'B0',x:300,y:100,base:true},
                 ],
                 constraints: [
-                    { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
-                    { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
-                    { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
-                    // { id: 'd', p1: 'B', p2: 'C', len: { type: 'const' } },
-                    // { id: 'e', p1: 'C0', p2: 'C', len: { type: 'const' } },
-                    // { id: 'd', p1: 'B', p2: 'C', len: { type: 'const' }, ori: { type: 'ref', ref: 'b'} },
-                    // { id: 'e', p1: 'B0', p2: 'C', len: { type: 'const' }, ori: { type: 'ref', ref: 'd'} },
+                    { id:'a',p1:'A0',p2:'A',len:{type:'const'} },
+                    // { id:'a',p1:'A0',p2:'A',ori:{type:'drive',func:'quadratic',Dt:2,Dw:2*pi,input:true},len:{type:'drive',func:'sinoid',Dt:3,Dr:3*pi,input:true} },
+                    // { id:'a',p1:'A0',p2:'A',ori:{type:'drive',func:'quadratic',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'},len:{type:'const'} },
+                    { id:'b',p1:'A', p2:'B',len:{type:'const'} },
+                    { id:'c',p1:'B0', p2:'B',len:{type:'const'} },
+                    { id:'d',p1:'B', p2:'D',len:{type:'const'} },
+                    { id:'e',p1:'B0', p2:'D',ori:{type:'const'} },
+                    { id:'f',p1:'B', p2:'C',len:{type:'ref',ref:'e'},ori:{type:'const'} }
+                ],
+                shapes: [
+                    {type:'wheel',p:'A0',r:40,wref:'a'},
+                    {type:'fix',p:'A0'},
+                    {type:'flt',p:'B0'},
+                    {type:'beam',p:'B0',wref:'c',len:175},
+                    {type:'slider',p:'A',wref:'c'},
+                    {type:'img',uri:'./img/hand.png',p:'A0',wref:'a',xoff:140,yoff:80,scl:0.1,w0:-pi/2}
+                ],
+                loads: [
+                    { type:'force',id:'F',p:'A', mode:'push' },
+                    { type:'spring',id:'F',p1:'A',p2:'B0' }
                 ]
+                // ,
+                // views: [
+                //     { id:'aly',type:'trace',p:'C',Dt:2 }
+                // ]
             };
+            // this.model = {
+            //     id:"len ref",
+            //     nodes: [
+            //         {id:'A0',x:100,y:100,base:true},
+            //         {id:'A',x:100,y:200},
+            //         {id:'B',x:300,y:200},
+            //         {id:'B0',x:300,y:100,base:true},
+            //     ],
+            //     constraints: [
+            //         { id:'a',p1:'A0',p2:'A',ori:{type:'const'} },
+            //         { id:'b',p1:'B0', p2:'B',len:{type:'ref',ref:'a'} },
+            //     ]
+            // };
 
-            this.VERSION = 'v0.4.8.2',
+            this.VERSION = 'v0.4.8.4',
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -92,28 +144,9 @@ const App = {
             this.ctxmenuheader = document.getElementById("contextMenuHeader");
             this.ctxmenubody = document.getElementById("contextMenuBody");
             this.imported = {}; // here goes the imported JSON model
-            this.inversekinematics = true;
+            this.dragMove = true;
 
-            this.g = g2().clr()
-                // .view(this.view)
-                // .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 100 })
-                // .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 20 })
-                // .p() // mark origin
-                // .m({ x: () => -this.view.x / this.view.scl, y: 0 })
-                // .l({ x: () => (this.cnv.width - this.view.x) / this.view.scl, y: 0 })
-                // .m({ x: 0, y: () => -this.view.y / this.view.scl })
-                // .l({ x: 0, y: () => (this.cnv.height - this.view.y) / this.view.scl })
-                // .z()
-                // .stroke({ ls: 'rgba(255, 255, 255, 0.3)', lw: 2 })
-            //     // if (()=>this.view.cartesian) / can always be shown
-            //     .use({grp:origin,x: () => (10 - this.view.x)/this.view.scl, y: () => (10 - this.view.y)/this.view.scl, scl: () => this.view.scl})
-            //     if(()=>this.model.hasGravity) {
-            //         if(this.cartesian) {
-            //             this.g.use({grp:gravvec(true),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (this.cnv.height - 15 - this.view.y)/this.view.scl, scl: () => this.view.scl})
-            //         } else {
-            //             this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (- this.view.y + 65 )/this.view.scl, scl: () => this.view.scl})
-            //         }
-            //     }
+            this.g = g2();
 
             this.registerEventsFor(this.ctx.canvas)
                 .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], (e) => { this.g.exe(editor.on(this.pntToUsr(Object.assign({}, e)))).exe(this.ctx); })  // apply events to g2 ...
@@ -129,8 +162,8 @@ const App = {
                     this.g.exe(this.ctx);
                 })
                 .on('buttondown', (e) => {                     // show tooltip info
-                    // console.log(editor.dragInfo && !this.inversekinematics);
-                    if (editor.dragInfo && !this.inversekinematics) {
+                    // console.log(editor.dragInfo && !this.dragMove);
+                    if (editor.dragInfo && !this.dragMove) {
                         tooltip.style.left = ((e.clientX) + 15) + 'px';
                         tooltip.style.top = (e.clientY - 50) + 'px';
                         tooltip.innerHTML = editor.dragInfo;
@@ -144,16 +177,18 @@ const App = {
                     if (this.build) {
                         // console.log(editor)
                         if (['addnode', 'addbasenode'].includes(this.build.mode)) this.addNode();
-                        if (this.build.mode === 'purgenode') this.deleteNode(editor.curElm);
+                        if (this.build.mode === 'purgenode') this.clearNode(editor.curElm);
                         if (['free', 'tran', 'rot'].includes(this.build.mode)) this.addConstraint();
                         if (this.build.mode === 'drive') this.addActuator(editor.curElm);
                     }
                 })
                 .on('render', () => this.g.exe(this.ctx))      // redraw
                 // .on('step', () => this.model.pre().itr().post())
-                .on('tick', (e) => this.step(e))
+                .on('tick', (e) => this.tick(e));
                 // .startTimer() // startTimer ...             // start synchronized ticks // now in init()
                 // .notify('render')   // send 'render' event
+            
+            this.state = 'created';
         }, // constructor
 
         get cartesian() { return this.view.cartesian; },
@@ -162,17 +197,51 @@ const App = {
 
         showStatus() {  // poor man's status bar
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
-            // statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.inversekinematics?'move':'edit'}, dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}`
-            statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.inversekinematics?'move':'edit'}, ${typeof this.model === 'object' ? `dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}` : `` }`
+            // statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.dragMove?'move':'edit'}, dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}`
+            statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.dragMove?'move':'edit'}, ${typeof this.model === 'object' ? `dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}` : `` }`
         },
 
-        step(e) {
-            if (!!this.model && (this.dragging || this.model.isRunning)) { // check if model is defined first
-                this.model.timer.dt = e.dt;
-                this.dragging ? this.inversekinematics ? this.model.pose() : editor.curElm.updAdjConstraints() 
-                              : this.model.pre().itr().post();
-                this.g.exe(this.ctx);
+        // step(e) {
+        //     if (!!this.model && (this.dragging || this.model.isRunning)) { // check if model is defined first
+        //         this.model.timer.dt = e.dt;
+        //         this.dragging ? this.dragMove ? this.model.pose() : editor.curElm.updDependants() 
+        //                       : this.model.pre().itr().post();
+        //         this.g.exe(this.ctx);
+        //     }
+        //     // this.model.tick(e.dt);
+        //     // this.g.exe(this.ctx);
+        // },
+
+        tick(e) {
+            if (!!this.model) { // check if model is defined first
+                if (this.dragging) {
+                    this.dragMove ? this.model.pose() : this.updDependants(editor.curElm); // null, if updating on dragend via editor
+                    // this.model.pose();                  // try to bring mechanism to valid current pose
+                    this.g.exe(this.ctx);
+                }
+                else if (this.state === 'active') {     // perform time step
+                    this.model.tick(e.dt);
+                    if (!this.model.isActive)
+                        this.stop();
+                    this.g.exe(this.ctx);
+                }
+                else if (this.state === 'input') {     // perform time step
+                    this.model.tick(0);
+                    this.g.exe(this.ctx);
+                }
             }
+
+            // if (!!this.model && (this.dragging || this.model.isRunning)) { // check if model is defined first
+            //     this.model.timer.dt = e.dt;
+            //     this.dragging ? 
+            //                     this.dragMove ? 
+            //                                     this.model.pose() 
+            //                                     : this.updDependants(editor.curElm) // null, if updating on dragend via editor
+            //                   : this.model.pre().itr().post();
+            //     this.g.exe(this.ctx);
+            // }
+            // this.model.tick(e.dt);
+            // this.g.exe(this.ctx);
         },
 
         init() { // evaluate how many actuators and add init add controlled properties to model instead of typing them there
@@ -205,7 +274,37 @@ const App = {
             if (typeof t === 'undefined' || t === null) {  // dont start second timer if init() is called again
                 this.startTimer() // startTimer ...             // start synchronized ticks 
                     .notify('render');                          // send 'render' event
+            };
+
+            this.state = 'initialized';
+        },
+
+        run() { this.state = 'active'; },
+        idle() { this.state = 'idle'; },
+        stop() {
+            this.model.stop();
+            this.state = 'idle'; 
+        },
+        reset() { 
+            this.model.reset();
+            this.notify('render');
+            this.state = 'reset'; 
+        },
+
+        updDependants(elm) {
+            // const dependants = this.model.dependentsOf(this); // currently only constraints need to be updated
+            let dependants = [];
+            for (const constraint of this.model.constraints) {
+                if (constraint.dependsOn(elm))
+                    dependants.push(constraint);
             }
+            dependants.forEach(el => el.init(this.model));
+        },
+
+        toogleDarkmode() {
+            mec.darkmode = !mec.darkmode;
+            this.cnv.style.backgroundColor = mec.darkmode ? '#344c6b' : 'rgb(250, 246, 209)';
+            this.notify('render');
         },
 
         createActuatorElm(actuated, width) {
@@ -236,21 +335,21 @@ const App = {
 
             this.g = g2().clr()
                 .view(this.view)
-                .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 100 })
-                .grid({ color: 'rgba(255, 255, 255, 0.1)', size: 20 })
+                .grid({ color: ()=>mec.darkmode?'rgba(255, 255, 255, 0.1)':'rgba(0, 0, 0, 0.1)', size: 100 })
+                .grid({ color: ()=>mec.darkmode?'rgba(255, 255, 255, 0.1)':'rgba(0, 0, 0, 0.1)', size: 20 })
                 .p() // mark origin
                     .m({ x: () => -this.view.x / this.view.scl, y: 0 })
                     .l({ x: () => (this.cnv.width - this.view.x) / this.view.scl, y: 0 })
                     .m({ x: 0, y: () => -this.view.y / this.view.scl })
                     .l({ x: 0, y: () => (this.cnv.height - this.view.y) / this.view.scl })
                 .z()
-                .stroke({ ls: 'rgba(255, 255, 255, 0.3)', lw: 2 })
+                .stroke({ ls: ()=>mec.darkmode?'rgba(255, 255, 255, 0.3)':'rgba(0, 0, 0, 0.2)', lw: 2 })
                 .use({grp:origin,x: () => (10 - this.view.x)/this.view.scl, y: () => (10 - this.view.y)/this.view.scl, scl: () => this.view.scl});
                 if(apphasmodel && this.model.hasGravity) {
                     if(this.cartesian) {
                         this.g.use({grp:gravvec(true),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (this.cnv.height - 15 - this.view.y)/this.view.scl, scl: () => this.view.scl});
                     } else {
-                        this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (- this.view.y + 14 )/this.view.scl, scl: () => this.view.scl});
+                        this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (- this.view.y + 69 )/this.view.scl, scl: () => this.view.scl});
                     };
                 };
 
@@ -299,19 +398,10 @@ const App = {
             this.resetApp();
         },
 
-        deleteNode(node) {  // todo: switch to model.purgeNode() when fixed
-            if (!!node && node.hasOwnProperty('m')) { // check if a node was clicked
-                 // remove adjacent constraints from model // todo: also remove other dependencies
-                const adjConstraints = node.adjConstraintIds(); // fetch ids of adjacent constraints
-                let modelidx = [];
-                adjConstraints.forEach(el => {  // fetch index of all adj. constraints in their array model.constraints
-                    modelidx.push(this.model.constraints.indexOf(this.model.constraintById(el)));
-                    // if (this.model.constraintById(el).hasOwnProperty('for')) { delete this.model[this.model.constraintById(el).for] }; // remove actuator angle from model if constraint is actuated // "for" does not exist anymore
-                });
-                for (let i = modelidx.length - 1; i >= 0; i--) { // delete adj. constraints; splice from back so modelidx values stay valid
-                    this.model.constraints.splice(modelidx[i], 1);
-                };
-                this.model.nodes.splice(this.model.nodes.indexOf(node), 1); // remove node from model
+        clearNode(node) {  // remove passed node and all its dependants
+            if (!!node && node.hasOwnProperty('m')) { // check if clicked object is a node
+                app.model.purgeNode(node)
+
                 this.updateg(); // update graphics
 
                 document.body.style.cursor = 'default';
@@ -621,10 +711,11 @@ let jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'
 
 window.onload = () => {
     let c = document.getElementById('c'),
-        main = document.getElementById('main');   
+        main = document.getElementById('main'); 
 
     // create App instance
-    (app = App.create()).init(); 
+    (app = App.create()).init();
+    app.toogleDarkmode(); // switch on, off by default
     // fill graphics queue
     app.updateg();
 
@@ -646,6 +737,9 @@ window.onload = () => {
     events.resize(); // binds to window
     events.modalShown('modelModal');
     events.modalAccept('modalAccept');
+
+    // this fixes the initial sizing bug on laptops
+    window.dispatchEvent(new Event('resize'));
 
     // make cxtm dragable (decalre private, no need to access later)
     new Draggabilly(document.getElementById('contextMenu'), {

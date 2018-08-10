@@ -2,6 +2,14 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 
 # Changelog
 
+## v0.4.8.4 - controlpanel & light-theme
+
+### general:
++ Introduced app-states. The controlpanel in the navbar sets `app.state`, which is then utilized in `app.tick()`.
++ Users can now switch between a light- and a dark-theme for the editor window via the Navbar -> View -> toogle darkmode. The app defaults to dark because I like my retinas unburnt.
+
+---
+
 ## v0.4.8.2 - new model editor & mec2 release merge
 
 ### general:

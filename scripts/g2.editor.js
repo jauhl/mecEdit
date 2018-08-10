@@ -68,6 +68,7 @@ g2.editor.prototype = {
             else if (type === 'buttonup') {                             // leave DRAG mode ..
                 elm.state ^= g2.DRAG;
                 this.draggable = false;
+                // if (!app.dragMove) app.updDependants(elm);   // this is faster than updating on drag but less impressive
                 if (elm.selectEnd) elm.selectEnd(this.evt);
             }
             else if (type === 'click' && !app.build) {                  // enter EDIT mode .. // dont set EDIT when building mechanism
