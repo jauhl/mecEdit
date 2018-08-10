@@ -127,11 +127,11 @@ const mixin = {
     },
     tickTimer: {
         startTimer() {
-            this.tick.ptr = this.tick.bind(this);
+            this.timerTick.ptr = this.timerTick.bind(this);
             this.fps = '?';
             this.frames = 0;
             this.notify('timerStart',this);
-            this.tick(this.time0 = this.fpsOrigin = performance.now());
+            this.timerTick(this.time0 = this.fpsOrigin = performance.now());
             return this;
         },
         endTimer() {
@@ -139,18 +139,17 @@ const mixin = {
             this.notify('timerEnd',this.t/1000);
             return this;
         },
-        tick(time) {
+        timerTick(time) {
             this.fpsCount(time);
             if (this.evt.type) {
                 this.evt.t = time;
                 this.evt.dt = (time-this.t)/1000;
-                this.notify(this.evt.type,{x,y,t,dt,btn,type}=this.evt);  // notify last event type ... !
-                this.evt.unused = this.evt.type = false;             // mark as consumed/used ... !
-                // this.notify('render',this.t/1000);                 // should render occur at 'tick' event ?  // todo: render only when dirty ... 
+                this.notify(this.evt.type,{x,y,t,dt,btn,type}=this.evt); // notify last event type ... !
+                this.evt.unused = this.evt.type = false;                 // mark as consumed/used ... !
             }
             this.notify('tick',{t:time,dt:(time-this.t)/1000})
             this.t = time;
-            this.rafid = requestAnimationFrame(this.tick.ptr);    // request next animation frame ...
+            this.rafid = requestAnimationFrame(this.timerTick.ptr);   // request next animation frame ...
             return this;
         },
         fpsCount(time) {
