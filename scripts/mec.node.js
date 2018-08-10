@@ -84,29 +84,30 @@ mec.node = {
             // symplectic euler ... partially
             this.x += this.model.direc*this.xt*dt;
             this.y += this.model.direc*this.yt*dt;
+/*
+            if (this.usrDrag) {  // node throwing by user occured .. !
+                const xt = this.usrDrag.dx / this.usrDrag.dt*1000,
+                      yt = this.usrDrag.dy / this.usrDrag.dt*1000,
+                      v  = Math.hypot(xt,yt);
+                if (v > 20) {    // set upper limit of throwing velocity
+                    this.xt = xt/v*Math.min(v,250);
+                    this.yt = yt/v*Math.min(v,250);
+                }
+                else   // set model to rest ..
+                    this.model.stop();
 
-            // if (this.usrDrag) {  // node dragging by user occured .. !
-            //     const xt = this.usrDrag.dx / this.usrDrag.dt*1000,
-            //           yt = this.usrDrag.dy / this.usrDrag.dt*1000,
-            //           v  = Math.hypot(xt,yt);
-            //     if (v > 20) {
-            //         this.xt = xt/v*Math.min(v,250);
-            //         this.yt = yt/v*Math.min(v,250);
-            //     }
-            //     else   // set model to rest ..
-            //         this.model.rest();
-
-            //     delete this.usrDrag;  // avoid multiple evaluation .. !
-            // }
-            // zero out velocity differences .. important !!
-            this.dxt = this.dyt = 0;
-
-            // if applied forces are acting, set velocity diffs initially by forces.
-            if (this.Qx || this.Qy) {
-                this.dxt = this.Qx*this.im * dt;
-                this.dyt = this.Qy*this.im * dt;
+                delete this.usrDrag;  // avoid multiple evaluation .. !
             }
-        },
+*/
+            // if applied forces are acting, set velocity diffs initially by forces.
+//console.log('node('+this.id+')=['+this.Qx+','+this.Qy+']')
+if (this.Qx || this.Qy) {
+    this.dxt = this.Qx*this.im * dt;
+    this.dyt = this.Qy*this.im * dt;
+}
+else
+    this.dxt = this.dyt = 0;  // zero out velocity differences .. important !!
+},
         post(dt) {
             // symplectic euler ... partially
             this.xt += this.dxt;
@@ -114,36 +115,36 @@ mec.node = {
             // get accelerations from velocity differences...
             this.xtt = this.dxt/dt;
             this.ytt = this.dyt/dt;
-            // reset loads
-            // this.Qx = 0; this.Qy = this.model.hasGravity ? -1000 : 0;
         },
-        adjConstraintIds() {
-            let contraints = []
-            for (const constraint of this.model.constraints) 
-                if (constraint.dependsOn(this))
-                    contraints.push(constraint.id);
-            return contraints;
-        },
-        updAdjConstraints() {
-            this.adjConstraintIds().forEach(el => this.model.constraintById(el).init(this.model));
+        asJSON() {
+            return '{ "id":"'+this.id+'","x":'+this.x0+',"y":'+this.y0
+                 + (this.base ? ',"base":true' : '')
+                 + (this.idloc ? ',"idloc":"'+this.idloc+'"' : '')
+                 + ' }';
         },
         toJSON() {
             const obj = {
                 id: this.id,
-                x: this.x,  // changed from x0,y0
+                x: this.x,
                 y: this.y
-            }
-            if (this.m !== 1)
-                obj.m = this.m === Number.POSITIVE_INFINITY ? 'infinite' : this.m;
+            };
+            if (this.base)
+                obj.base = true;
+            if (this.idloc)
+                obj.idloc = this.idloc;
 
             return obj;
         },
-        // end old mec
-
+        // analysis methods
+        force() { return {x:this.Qx,y:this.Qy}; },
+        vel() { return {x:this.xt,y:this.yt}; },
+        acc() { return {x:this.xtt,y:this.ytt}; },
+        forceAbs() { return Math.hypot(this.Qx,this.Qy); },
+        velAbs() { return Math.hypot(this.xt,this.yt); },
+        accAbs() { return Math.hypot(this.xtt,this.ytt); },
         // interaction
         get isSolid() { return true },
-        // get sh() { return this.state & g2.OVER ? [0,0,5,"black"] : false },
-        get sh() { return this.state & g2.OVER ? [0, 0, 10, 'white'] : this.state & g2.EDIT ? [0, 0, 10, 'yellow'] : false; },
+        get sh() { return this.state & g2.OVER ? [0, 0, 10, mec.hoveredElmColor] : this.state & g2.EDIT ? [0, 0, 10, mec.selectedElmColor] : false; },
         _info() { return `x:${this.x}<br>y:${this.y}` },
         hitInner({x,y,eps}) {
             return g2.isPntInCir({x,y},this,eps);
@@ -162,8 +163,6 @@ mec.node = {
         },
         drag({x,y}) {
             this.x = x; this.y = y;
-            // this.model.dirty = true;
-            // app.inversekinematics ? this.model.dirty = true : this.updAdjConstraints(); // now in app.step()
         },
         // graphics ...
         get r() { return mec.node.radius; },
@@ -172,15 +171,15 @@ mec.node = {
                   xid = this.x + 3*this.r*loc[0], 
                   yid = this.y + 3*this.r*loc[1],
                   g = this.base 
-                    ? g2().beg({x:()=>this.x,y:()=>this.y,sh:()=>this.sh})
+                    ? g2().beg({x:this.x,y:this.y,sh:this.sh})
                           .cir({x:0,y:0,r:5,ls:"@nodcolor",fs:"@nodfill"})
                           .p().m({x:0,y:5}).a({dw:Math.PI/2,x:-5,y:0}).l({x:5,y:0})
                           .a({dw:-Math.PI/2,x:0,y:-5}).z().fill({fs:"@nodcolor"})
                           .end()
-                    : g2().cir({x:()=>this.x,y:()=>this.y,r:this.r,
+                    : g2().cir({x:this.x,y:this.y,r:this.r,
                                 ls:'#333',fs:'#eee',sh:()=>this.sh});
             if (mec.showNodeLabels)
-                g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle',ls:'white'});
+                g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle',ls:mec.txtColor});
             return g;
         }
     },

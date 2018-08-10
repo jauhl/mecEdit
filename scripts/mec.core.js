@@ -10,16 +10,6 @@
  */
 const mec = {
 /**
- * mec library version
- * @const
- * @type {string}
- */
-VERSION: "0.70",
-/**
- * Reference to the global context. In browsers this will be 'window'.
- */
-global: this,
-/**
  * minimal float difference to 1.0
  * @const
  * @type {number}
@@ -73,10 +63,6 @@ itrMax: 256,
  * corrMax: fixed number of position correction steps.
  */
 corrMax: 64,
-/**
- * calculation target ['velocity'|'forces'], used for stopping iteration loop.
- */
-priority: 'velocity',
 /* graphics related */
 /**
  * place and show labels with elements
@@ -84,19 +70,94 @@ priority: 'velocity',
 showNodeLabels: false,
 showConstraintLabels: true,
 showLoadLabels: true,
+/*
+ * color conventions
+ */
+/**
+ * flag for darkmode.
+ * @const
+ * @type {boolean}
+ */
+darkmode: false,
 /**
  * color for drawing valid constraints.
+ * @return {string}
  */
-validConstraintColor: '#ffffff99', // '#777',
+get validConstraintColor() { return this.darkmode ? '#ffffff99' : '#777' },
 /**
  * color for drawing invalid constraints.
+ * @const
+ * @type {string}
  */
 invalidConstraintColor: '#b11',
 /**
  * color for drawing forces.
+ * @return {string}
  */
-forceColor: 'orange',
+get forceColor() { return this.darkmode ? 'crimson' : 'orange' },
+/**
+ * color for drawing springs.
+ * @return {string}
+ */
+get springColor() { return this.darkmode ? 'lightslategray' : '@linkcolor' },
+/**
+ * color for vectortypes of constraints.
+ * @return {string}
+ */
+get constraintVectorColor() { return this.darkmode ? 'orange' : 'green' },
+/**
+ * hovered element shading color.
+ * @return {string}
+ */
+get hoveredElmColor() { return this.darkmode ? 'white' : 'gray' },
+/**
+ * selected element shading color.
+ * @return {string}
+ */
+get selectedElmColor() { return this.darkmode ? 'yellow': 'blue' },
+/**
+ * color for g2.txt (ls).
+ * @return {string}
+ */
+get txtColor() { return this.darkmode ? 'white' : 'black' },
+/*
+ * colors for analyses
+ */
+color: {
+    /**
+     * color for velocity arrow (ls).
+     * @const
+     * @type {string}
+     */
+    get vel() { return mec.darkmode ? 'lightsteelblue' : 'steelblue' },
+    /**
+     * color for acceleration arrow (ls).
+     * @const
+     * @type {string}
+     */
+    get acc() { return mec.darkmode ? 'lightsalmon' : 'firebrick' },
+    /**
+     * color for acceleration arrow (ls).
+     * @const
+     * @type {string}
+     */
+    get force() { return mec.darkmode ? 'wheat' : 'saddlebrown' },
+},
 
+/**
+ * default gravity.
+ * @const
+ * @type {object}
+ */
+gravity: {x:0,y:-10,active:false},
+/*
+ * analysing values
+ */
+aly: {
+    vel: { get scl() {return 40*mec.m_u}, minlen:25, maxlen:150 },
+    acc: { get scl() {return  10*mec.m_u}, minlen:25, maxlen:150 },
+    force: { get scl() {return  5*mec.m_u}, minlen:25, maxlen:150 },
+},
 /**
  * unit specifiers and relations
  */
@@ -137,6 +198,16 @@ to_Nm(x) { return x*mec.m_u*mec.m_u; },
  */
 from_Nm(x) { return x/mec.m_u/mec.m_u; },
 /**
+ * convert [N/m] => [kg/s^2] = [N/m] (spring rate)
+ * @return {number} Value in [N/m]
+ */
+to_N_m(x) { return x; },
+/**
+ * convert [N/m] = [kg/s^2] => [k/s^2]
+ * @return {number} Value in [kg/s^2]
+ */
+from_N_m(x) { return x; },
+/**
  * convert [kgu/m^2] => [kgm^2/s^2] = [J]
  * @return {number} Value in [N]
  */
@@ -156,7 +227,6 @@ to_kgm2(x) { return x*mec.m_u*mec.m_u; },
  * @return {number} Value in [kgu^2]
  */
 from_kgm2(x) { return x/mec.m_u/mec.m_u; },
-
 /**
  * Helper functions
  */
@@ -169,14 +239,34 @@ from_kgm2(x) { return x/mec.m_u/mec.m_u; },
 isEps(a,eps) {
     return a < (eps || mec.EPS) && a > -(eps || mec.EPS); 
  },
+ /**
+ * If the absolute value of a number `a` is smaller than eps, it is set to zero.
+ * @param {number} a Value to test.
+ * @param {number} [eps=mec.EPS]  used epsilon.
+ * @returns {number} original value or zero.
+ */
+toZero(a,eps) {
+    return a < (eps || mec.EPS) && a > -(eps || mec.EPS) ? 0 : a;
+},
 /**
- * Clamps a numerical value within the provided bounds.
+ * Clamps a numerical value linearly within the provided bounds.
  * @param {number} val Value to clamp.
  * @param {number} lo Lower bound.
  * @param {number} hi Upper bound.
  * @returns {number} Value within the bounds.
  */
 clamp(val,lo,hi) { return Math.min(Math.max(val, lo), hi); },
+/**
+ * Clamps a numerical value asymptotically within the provided bounds.
+ * @param {number} val Value to clamp.
+ * @param {number} lo Lower bound.
+ * @param {number} hi Upper bound.
+ * @returns {number} Value within the bounds.
+ */
+asympClamp(val,lo,hi) {
+    const dq = hi - lo;
+    return dq ? lo + 0.5*dq + Math.tanh(((Math.min(Math.max(val, lo), hi) - lo)/dq - 0.5)*5)*0.5*dq : lo;
+},
 /**
  * Convert angle from degrees to radians.
  * @param {number} deg Angle in degrees.
@@ -200,4 +290,4 @@ mixin(obj, ...protos) {
     })
     return obj;
 }
-};
+}
