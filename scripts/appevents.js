@@ -243,7 +243,7 @@ const events = {
             // document.getElementById('modalTextarea').innerHTML = app.syntaxHighlight(JSON.stringify(app.model,undefined,4));  // only if element is <pre>
             // let code = JSON.stringify(app.model,undefined,4);
             // app.tempElm = JSON.stringify(app.model,undefined,4);
-            jsonEditor.setValue(JSON.stringify(app.model,null,4));
+            // jsonEditor.setValue(JSON.stringify(app.model,null,4));
             jsonEditor.setValue(app.model.asJSON());
         });
     },
