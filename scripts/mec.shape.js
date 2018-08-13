@@ -42,26 +42,14 @@ mec.shape.fix = {
         return this.p === elem;
     },
     asJSON() {
-        return '{ "type":"'+this.type+'","p":'+this.p.id
+        return '{ "type":"'+this.type+'","p":"'+this.p.id+'"'
                 + ((this.w0 && this.w0 > 0.0001) ? ',"w0":'+this.w0 : '')
                 + ' }';
-    },
-    toJSON() {
-        const obj = {
-            type: this.type,
-            p: this.p.id,
-        };
-
-        if (this.w0 && this.w0 > 0.0001) // ~0.006°
-            obj.w0 = this.w0;
-
-        return obj;
     },
     draw(g) {
         g.use({grp:'nodfix',x:()=>this.p.x,y:()=>this.p.y,w:this.w0 || 0});
     }
-}
-
+},
 /**
  * @param {object} - floating node shape.
  * @property {string} p - referenced node id for position.
@@ -76,20 +64,9 @@ mec.shape.flt = {
         return this.p === elem;
     },
     asJSON() {
-        return '{ "type":"'+this.type+'","p":'+this.p.id
+        return '{ "type":"'+this.type+'","p":"'+this.p.id+'"'
                 + ((this.w0 && this.w0 > 0.0001) ? ',"w0":'+this.w0 : '')
                 + ' }';
-    },
-    toJSON() {
-        const obj = {
-            type: this.type,
-            p: this.p.id,
-        };
-
-        if (this.w0 && this.w0 > 0.0001) // ~0.006°
-            obj.w0 = this.w0;
-
-        return obj;
     },
     draw(g) {
         g.use({grp:'nodflt',x:()=>this.p.x,y:()=>this.p.y,w:this.w0 || 0});
@@ -119,23 +96,10 @@ mec.shape.slider = {
         return this.p === elem || this.wref === elem;
     },
     asJSON() {
-        return '{ "type":"'+this.type+'","p":'+this.p.id
+        return '{ "type":"'+this.type+'","p":"'+this.p.id+'"'
                 + ((this.w0 && this.w0 > 0.0001) ? ',"w0":'+this.w0 : '')
-                + (this.wref ? ',"wref":'+this.wref.id : '')
+                + (this.wref ? ',"wref":"'+this.wref.id+'"' : '')
                 + ' }';
-    },
-    toJSON() {
-        const obj = {
-            type: this.type,
-            p: this.p.id,
-        };
-
-        if (this.w0 && this.w0 > 0.0001) // ~0.006°
-            obj.w0 = this.w0;
-        if (this.wref)
-            obj.wref = this.wref.id;
-
-        return obj;
     },
     draw(g) {
         const w = this.wref ? ()=>this.wref.w : this.w0 || 0;
@@ -162,15 +126,6 @@ mec.shape.bar = {
     },
     asJSON() {
         return '{ "type":"'+this.type+'","p1":"'+this.p1.id+'","p2":"'+this.p2.id+'" }';
-    },
-    toJSON() {
-        const obj = {
-            type: this.type,
-            p1: this.p1.id,
-            p2: this.p2.id,
-        };
-
-        return obj;
     },
     draw(g) {
         const x1 = () => this.p1.x,
@@ -204,16 +159,6 @@ mec.shape.beam = {
     asJSON() {
         return '{ "type":"'+this.type+'","p":"'+this.p.id+'","wref":"'+this.wref.id+'","len":"'+this.len+'" }';
     },
-    toJSON() {
-        const obj = {
-            type: this.type,
-            p: this.p.id,
-            wref: this.wref.id,
-            len: this.len
-        };
-
-        return obj;
-    },
     draw(g) {
         const x1 = () => this.p.x,
               y1 = () => this.p.y,
@@ -243,22 +188,10 @@ mec.shape.wheel = {
         return this.p === elem || this.wref === elem;
     },
     asJSON() {
-        return '{ "type":"'+this.type+'","p":"'+this.p.id+'","w0":'+this.w0+',"r":'+this.r
+        return '{ "type":"'+this.type+'","p":"'+this.p.id+'","r":'+this.r
+                + ((this.w0 && this.w0 > 0.0001) ? ',"w0":'+this.w0 : '')
                 + (this.wref ? ',"wref":"'+this.wref.id+'"' : '')
                 + ' }';
-    },
-    toJSON() {
-        const obj = {
-            type: this.type,
-            p: this.p.id,
-            w0: this.w0,
-            r: this.r
-        };
-
-        if (this.wref)
-            obj.wref = this.wref.id;
-
-        return obj;
     },
     draw(g) {
         const w = this.wref ? ()=>this.wref.w : this.w0 || 0, r = this.r, 
@@ -304,33 +237,13 @@ mec.shape.img = {
         return this.p === elem || this.wref === elem;
     },
     asJSON() {
-        return '{ "type":"'+this.type+'","uri":"'+this.uri+'","p":'+this.p.id+'"'
-                + (this.wref ? ',"wref":'+this.wref.id : '')
+        return '{ "type":"'+this.type+'","uri":"'+this.uri+'","p":"'+this.p.id+'"'
+                + (this.wref ? ',"wref":"'+this.wref.id+'"' : '')
                 + ((this.w0 && this.w0 > 0.0001) ? ',"w0":'+this.w0 : '')
                 + ((this.xoff && Math.abs(this.xoff) > 0.0001) ? ',"xoff":'+this.xoff : '')
                 + ((this.yoff && Math.abs(this.yoff) > 0.0001) ? ',"yoff":'+this.yoff : '')
                 + ((this.scl && Math.abs(this.scl - 1) > 0.0001) ? ',"scl":'+this.scl : '')
                 + ' }';
-    },
-    toJSON() {
-        const obj = {
-            type: this.type,
-            uri: this.uri,
-            p: this.p.id
-        };
-
-        if (this.wref)
-            obj.wref = this.wref.id;
-        if (this.w0 && this.w0 > 0.0001) // ~0.006°
-            obj.w0 = this.w0;
-        if (this.xoff && Math.abs(this.xoff) > 0.0001)
-            obj.xoff = this.xoff;
-        if (this.yoff && Math.abs(this.yoff) > 0.0001)
-            obj.yoff = this.yoff;
-        if (this.scl && Math.abs(this.scl - 1) > 0.0001)
-            obj.scl = this.scl;
-
-        return obj;
     },
     draw(g) {
         const w0 = this.w0 || 0, w = this.wref ? ()=>this.wref.w + w0 : w0; 

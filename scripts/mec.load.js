@@ -59,27 +59,12 @@ mec.load.force = {
         return this.p === elem || this.wref === elem;
     },
     asJSON() {
-        return '{ "type":"'+this.type+'","id":"'+this.id+'","p":'+this.p.id+'"'
+        return '{ "type":"'+this.type+'","id":"'+this.id+'","p":"'+this.p.id+'"'
+                + ((!!this.mode && (this.mode === 'push')) ? ',"mode":"push"' : '')
                 + ((this.w0 && this.w0 > 0.0001) ? ',"w0":'+this.w0 : '')
                 + (this.wref ? ',"wref":'+this.wref.id+'"' : '')
                 + ((this.value && Math.abs(mec.to_N(this.value) - 1) > 0.0001) ? ',"value":'+mec.to_N(this.value) : '')
                 + ' }';
-    },
-    toJSON() {
-        const obj = {
-            type: this.type,
-            id: this.id,
-            p: this.p.id
-        };
-
-        if (this.w0 && this.w0 > 0.0001) // ~0.006°
-            obj.w0 = this.w0;
-        if (this.wref)
-            obj.wref = this.wref.id;
-        if (this.value && Math.abs(mec.to_N(this.value) - 1) > 0.0001)
-            obj.value = mec.to_N(this.value);
-
-        return obj;
     },
 
  // cartesian components
@@ -124,7 +109,7 @@ mec.load.force = {
                             lc:'round',sh:()=>this.sh,fs:'@ls'})
                       .drw({d:mec.load.force.arrow,lsh:true})
                       .end();
-        if (mec.showLoadLabels)
+        if (this.model.labels.loads)
             g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle',ls:mec.txtColor});
         return g;
     },
@@ -170,21 +155,6 @@ mec.load.spring = {
                 + ((this.k && !(mec.to_N_m(this.k) === 0.01)) ? ',"k":'+mec.to_N_m(this.k) : '')
                 + ((this.len0 && Math.abs(this.len0 - Math.hypot(this.p2.x0-this.p1.x0,this.p2.y0-this.p1.y0)) > 0.0001) ? ',"len0":'+this.len0 : '')
                 + ' }';
-    },
-    toJSON() {
-        const obj = {
-            type: this.type,
-            id: this.id,
-            p1: this.p1.id,
-            p2: this.p2.id
-        };
-
-        if (this.k && !(mec.to_N_m(this.k) === 0.01))
-            obj.k = mec.to_N_m(this.k);
-        if (this.len0 && Math.abs(this.len0 - Math.hypot(this.p2.x0-this.p1.x0,this.p2.y0-this.p1.y0)) > 0.0001)
-            obj.len0 = this.len0;
-
-        return obj;
     },
 
     // cartesian components

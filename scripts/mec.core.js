@@ -65,7 +65,17 @@ itrMax: 256,
 corrMax: 64,
 /* graphics related */
 /**
- * place and show labels with elements
+ * flags for showing labels.
+ * @const
+ * @type {object}
+ */
+labels: {
+    nodes: false,
+    constraints: true,
+    loads: true
+},
+/**
+ * place and show labels with elements (depricated !!) 
  */
 showNodeLabels: false,
 showConstraintLabels: true,
@@ -154,9 +164,17 @@ gravity: {x:0,y:-10,active:false},
  * analysing values
  */
 aly: {
-    vel: { get scl() {return 40*mec.m_u}, minlen:25, maxlen:150 },
-    acc: { get scl() {return  10*mec.m_u}, minlen:25, maxlen:150 },
-    force: { get scl() {return  5*mec.m_u}, minlen:25, maxlen:150 },
+    mass: { get scl() { return 1}, type:'num', name:'m', unit:'kg' },
+    vel: { get scl() {return mec.m_u}, type:'vec', name:'v', unit:'m/s', get drwscl() {return 40*mec.m_u} },
+    acc: { get scl() {return mec.m_u}, type:'vec', name:'a', unit:'m/s^2', get drwscl() {return 10*mec.m_u} },
+    w: { get scl() { return 180/Math.PI}, type:'num', name:'φ', unit:'°' },
+    wt: { get scl() { return 1}, type:'num', name:'ω', unit:'rad/s' },
+    wtt: { get scl() { return 1}, type:'num', name:'α', unit:'rad/s^2' },
+    force: { get scl() {return mec.m_u}, type:'vec', name:'F', unit:'N', get drwscl() {return 5*mec.m_u} },
+    velAbs: { get scl() {return mec.m_u}, type:'num', name:'v', unit:'m/s' },
+    accAbs: { get scl() {return mec.m_u}, type:'num', name:'a', unit:'m/s' },
+    forceAbs: { get scl() {return mec.m_u}, type:'num', name:'F', unit:'N' },
+    moment: { get scl() {return mec.m_u**2}, type:'num', name:'M', unit:'Nm' },
 },
 /**
  * unit specifiers and relations

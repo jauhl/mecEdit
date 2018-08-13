@@ -50,6 +50,7 @@ mec.node = {
         get ytcur() { return this.yt + this.dyt },
         // inverse mass
 //        get im() { return 1/this.m },
+        get type() { return 'node' },
         get dof() { return this.m === Number.POSITIVE_INFINITY ? 0 : 2 },
         /**
          * Test, if node is significantly moving 
@@ -84,6 +85,9 @@ mec.node = {
             // symplectic euler ... partially
             this.x += this.model.direc*this.xt*dt;
             this.y += this.model.direc*this.yt*dt;
+            // position verlet  ... just for investigating in future  
+//            this.x += this.model.direc*(this.xt - 0.5*this.dxt)*dt;
+//            this.y += this.model.direc*(this.yt - 0.5*this.dyt)*dt;
 /*
             if (this.usrDrag) {  // node throwing by user occured .. !
                 const xt = this.usrDrag.dx / this.usrDrag.dt*1000,
@@ -100,14 +104,14 @@ mec.node = {
             }
 */
             // if applied forces are acting, set velocity diffs initially by forces.
-//console.log('node('+this.id+')=['+this.Qx+','+this.Qy+']')
-if (this.Qx || this.Qy) {
-    this.dxt = this.Qx*this.im * dt;
-    this.dyt = this.Qy*this.im * dt;
-}
-else
-    this.dxt = this.dyt = 0;  // zero out velocity differences .. important !!
-},
+            //console.log('node('+this.id+')=['+this.Qx+','+this.Qy+']')
+            if (this.Qx || this.Qy) {
+                this.dxt = this.Qx*this.im * dt;
+                this.dyt = this.Qy*this.im * dt;
+            }
+            else
+                this.dxt = this.dyt = 0;  // zero out velocity differences .. important !!
+        },
         post(dt) {
             // symplectic euler ... partially
             this.xt += this.dxt;
@@ -122,26 +126,15 @@ else
                  + (this.idloc ? ',"idloc":"'+this.idloc+'"' : '')
                  + ' }';
         },
-        toJSON() {
-            const obj = {
-                id: this.id,
-                x: this.x,
-                y: this.y
-            };
-            if (this.base)
-                obj.base = true;
-            if (this.idloc)
-                obj.idloc = this.idloc;
 
-            return obj;
-        },
-        // analysis methods
-        force() { return {x:this.Qx,y:this.Qy}; },
-        vel() { return {x:this.xt,y:this.yt}; },
-        acc() { return {x:this.xtt,y:this.ytt}; },
-        forceAbs() { return Math.hypot(this.Qx,this.Qy); },
-        velAbs() { return Math.hypot(this.xt,this.yt); },
-        accAbs() { return Math.hypot(this.xtt,this.ytt); },
+        // analysis getters
+        get force() { return {x:this.Qx,y:this.Qy}; },
+        get vel() { return {x:this.xt,y:this.yt}; },
+        get acc() { return {x:this.xtt,y:this.ytt}; },
+        get forceAbs() { return Math.hypot(this.Qx,this.Qy); },
+        get velAbs() { return Math.hypot(this.xt,this.yt); },
+        get accAbs() { return Math.hypot(this.xtt,this.ytt); },
+
         // interaction
         get isSolid() { return true },
         get sh() { return this.state & g2.OVER ? [0, 0, 10, mec.hoveredElmColor] : this.state & g2.EDIT ? [0, 0, 10, mec.selectedElmColor] : false; },
@@ -178,7 +171,7 @@ else
                           .end()
                     : g2().cir({x:this.x,y:this.y,r:this.r,
                                 ls:'#333',fs:'#eee',sh:()=>this.sh});
-            if (mec.showNodeLabels)
+            if (this.model.labels.nodes)
                 g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle',ls:mec.txtColor});
             return g;
         }

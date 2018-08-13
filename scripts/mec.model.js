@@ -16,7 +16,8 @@
  * @returns {object} model object.
  * @param {object} - plain javascript model object.
  * @property {string} id - model id.
- * @property {boolean|object} gravity - Vector `{x,y}` of gravity or `{x:0,y:-10}` in case of `true`.
+ * @property {boolean|object} [gravity] - Vector `{x,y}` of gravity or `{x:0,y:-10}` in case of `true`.
+ * @property {object} [labels] - user specification of labels to show `default={nodes:false,constraints:true,loads:true}`.
  * @property {array} nodes - Array of node objects.
  * @property {array} constraints - Array of constraint objects.
  * @property {array} shapes - Array of shape objects.
@@ -31,6 +32,23 @@ mec.model = {
         constructor() { // always parameterless .. !
             this.state = {dirty:true,valid:true,direc:1,itrpos:0,itrvel:0};
             this.timer = {t:0,dt:1/60};
+            // create empty containers for all elements
+            if (!this.nodes) this.nodes = [];
+            if (!this.constraints) this.constraints = [];
+            if (!this.loads) this.loads = [];
+            if (!this.views) this.views = [];
+            if (!this.shapes) this.shapes = [];
+            // extending elements by their prototypes
+            for (const node of this.nodes)
+                mec.node.extend(node);
+            for (const constraint of this.constraints)
+                mec.constraint.extend(constraint);
+            for (const load of this.loads)
+                mec.load.extend(load)
+            for (const view of this.views)
+                mec.view.extend(view)
+            for (const shape of this.shapes)
+                mec.shape.extend(shape)
         },
         /**
          * Init model
@@ -38,27 +56,25 @@ mec.model = {
          * @returns {object} model
          */
         init() {
-            if (!this.nodes) this.nodes = [];
-            for (const node of this.nodes)  // do for all nodes ...
-                mec.node.extend(node).init(this);
-            if (!this.constraints) this.constraints = [];
-            for (const constraint of this.constraints)  // do for all constraints ...
-                if (!constraint.initialized)
-                    mec.constraint.extend(constraint).init(this);
-            if (!this.loads) this.loads = [];
-            for (const load of this.loads)  // do for all loads ...
-                mec.load.extend(load).init(this);
-            if (!this.views) this.views = [];
-            for (const view of this.views)  // do for all views ...
-                mec.view.extend(view).init(this);
-            if (!this.shapes) this.shapes = [];
-            for (const shape of this.shapes)  // do for all shapes ...
-                mec.shape.extend(shape).init(this);
-
             if (this.gravity === true)
                 this.gravity = Object.assign({},mec.gravity,{active:true});
             else if (!this.gravity)
                 this.gravity = Object.assign({},mec.gravity,{active:false});
+
+            this.labels = Object.assign({},mec.labels,this.labels||null);
+
+            for (const node of this.nodes)
+                node.init(this);
+            for (const constraint of this.constraints)
+                if (!constraint.initialized)  // possibly already uinitialized by referencing .. !
+                    constraint.init(this);
+            for (const load of this.loads)
+                load.init(this);
+            for (const view of this.views)
+                view.init(this);
+            for (const shape of this.shapes)
+                shape.init(this);
+
 
             return this;
         },
@@ -75,7 +91,7 @@ mec.model = {
                 node.reset();
             for (const constraint of this.constraints)
                 constraint.reset();
-                for (const load of this.loads)
+            for (const load of this.loads)
                 load.reset();
             for (const view of this.views)
                 view.reset();
@@ -150,6 +166,12 @@ mec.model = {
         set dirty(q) { this.state.dirty = q; },
         get valid() { return this.state.valid; },
         set valid(q) { this.state.valid = q; },
+        get info() {
+            for (const view of this.views)
+                if (view.hasInfo)
+                    return view.infoString();
+            return false; 
+        },
         /**
          * Number of positional iterations.
          * @type {number}
@@ -227,7 +249,7 @@ mec.model = {
         /**
          * Get dependents of a specified element.
          * As a result a dictionary object containing dependent elements is created:
-         * `{constraints:[], loads:[], shapes:[]}`
+         * `{constraints:[], loads:[], shapes:[], views:[]}`
          * @method
          * @param {object} elem - element.
          * @returns {object} dictionary object containing dependent elements.
@@ -248,7 +270,7 @@ mec.model = {
                     deps.shapes.push(shape);
             return deps;
         },
-        /**
+            /**
          * Purge all elements in an element dictionary.
          * @method
          * @param {object} elems - element dictionary.
@@ -260,8 +282,19 @@ mec.model = {
                 this.loads.splice(this.loads.indexOf(load),1);
             for (const view of elems.views)
                 this.views.splice(this.views.indexOf(view),1);
-            for (const shape of this.shapes)
+            for (const shape of elems.shapes)
                 this.shapes.splice(this.shapes.indexOf(shape),1);
+        },
+        /**
+         * Get element by id.
+         * @method
+         * @param {string} id - element id.
+         */
+        elementById(id) {
+            return this.nodeById(id)
+                || this.constraintById(id)
+                || this.loadById(id)
+                || this.viewById(id);
         },
         /**
          * Add node to model.
@@ -509,51 +542,6 @@ mec.model = {
             return str;
         },
         /**
-         * Return a canonical JSON-representation of the model
-         * @method
-         * @returns {object} model as JSON.
-         */
-        toJSON() {
-            const obj = {};
-
-            if (this.id)
-                obj.id = this.id;
-            obj.dirty = true; // needed?
-            if (this.dt)
-                obj.dt = this.dt;
-            obj.gravity = this.hasGravity ? true : false;
-
-            if (this.nodes && this.nodes.length > 0) {
-                const nodearr = [];
-                for (const node of this.nodes)
-                    nodearr.push(node.toJSON());
-                obj.nodes = nodearr;
-            };
-
-            if (this.constraints && this.constraints.length > 0) {
-                const constraintarr = [];
-                for (const constraint of this.constraints)
-                    constraintarr.push(constraint.toJSON());
-                obj.constraints = constraintarr;
-            };
-
-            if (this.loads && this.loads.length > 0) {
-                const loadarr = [];
-                for (const load of this.loads)
-                    loadarr.push(load.toJSON());
-                obj.loads = loadarr;
-            };
-
-            if (this.shapes && this.shapes.length > 0) {
-                const shapearr = [];
-                for (const shape of this.shapes)
-                    shapearr.push(shape.toJSON());
-                obj.shapes = shapearr;
-            };
-
-            return obj;
-        },
-        /**
          * Apply loads to their nodes.
          * @internal
          * @method
@@ -619,9 +607,7 @@ mec.model = {
          */
         velStep() {
             let valid = true;  // pre-assume valid constraints velocities ...
-//            console.log('dt='+this.dt)
             for (const constraint of this.constraints) {
-//                console.log(constraint.vel(this.timer.dt)+ '&&'+ valid)
                 valid = constraint.velStep(this.timer.dt) && valid;
             }
             return valid;
