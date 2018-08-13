@@ -2,6 +2,22 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 
 # Changelog
 
+## v0.4.8.5 - loads & node-tracing
+
+### general:
++ The sidebar has now buttons to add loads (forces and springs) to the model. Those loads additionally have their own contextmenu. 
++ The contextmenu of nodes now offers an option to trace this node. Clicking this toggle adds or removes an `view` `type:'trace'` to the model.
++ Reworked the tooltip. It now shows node coordinates while dragging them in dragmode EDIT and views while hovering nodes with views in dragmode MOVE.
+
+### app.js, appevents.js:
++ Modified `initCtxm` to work with the minimal `asJSON` string since `toJSON` did contain default properties.
++ Added various functions and conditionals to handle load and view components.
+
+### g2.editor.js
++ Elements that do not return a member `type {string}` (e.g. `shape.beam`) are now ignored.
+
+---
+
 ## v0.4.8.4 - controlpanel & light-theme
 
 ### general:

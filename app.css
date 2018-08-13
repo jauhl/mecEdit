@@ -56,8 +56,9 @@ i, svg {
     top: 0px;
     left: 0px;
     padding: 0px;
+    background-color: white ;
     /* background-color: #344c6b; */
-    background-color: rgb(250, 246, 209) ;
+    /* background-color: rgb(250, 246, 209) ; */
 
 }
 

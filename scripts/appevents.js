@@ -5,7 +5,7 @@ const events = {
         document.getElementById(id).addEventListener('click', (e) => { // bind to parent
             console.log(e);
             // if (e.target && e.target.className == 'vec_btn') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
-            if (e.target && ['free', 'tran', 'rot'].includes(e.target.id)) { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
+            if (e.target && ['free', 'tran', 'rot','spring'].includes(e.target.id)) { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
             if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select a constraint to add an actuator to; &lt;ESC&gt; to cancel'; };
             if (e.target && (e.target.id === 'addnode' || e.target.id == 'addbasenode')) {
                 app.build = { mode: e.target.id };
@@ -14,7 +14,12 @@ const events = {
             };
             if (e.target && e.target.id === 'purgenode') {
                 app.build = { mode: e.target.id };
-                app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
+                app.instruct.innerHTML = 'left-click on a node to delete it and all its dependants; &lt;ESC&gt; to cancel';
+                document.body.style.cursor = 'crosshair';
+            };
+            if (e.target && e.target.id === 'force') {
+                app.build = { mode: e.target.id };
+                app.instruct.innerHTML = 'left-click on a node to add a force; &lt;ESC&gt; to cancel';
                 document.body.style.cursor = 'crosshair';
             };
             // if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
@@ -27,7 +32,7 @@ const events = {
             if (e.target && e.target.id === 'export') { app.saveToJSON(); };
             if (e.target && e.target.id === 'dragmode') { app.dragMove = !app.dragMove; };
             if (e.target && e.target.id === 'model-edit') { modelModal.show(); };
-            if (e.target && e.target.id === 'darkmode') { app.toogleDarkmode(); };
+            if (e.target && e.target.id === 'darkmode') { app.toggleDarkmode(); };
             if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
             if (e.target && e.target.id === 'toggleNodeLabels') { 
                 mec.showNodeLabels = !mec.showNodeLabels;
@@ -72,7 +77,7 @@ const events = {
                 if (e.key === 'e')    
                     modelModal.show(); // open model editor
                 if (e.key === 'i')    
-                    app.dragMove = !app.dragMove; // toogle drag-mode
+                    app.dragMove = !app.dragMove; // toggle drag-mode
                 if (e.key === 'p') {
                     app.build = { mode: 'purgenode' };
                     app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
@@ -86,8 +91,14 @@ const events = {
         document.getElementById(id).addEventListener('click', (e) => {
             console.log('ctxmClick fired');
             let ctxmdirty = false;
-            if (!app.tempElm.new) // declare new temporary constraint template if not done already
-                app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
+            // console.log(app.tempElm.new);
+            // if (app.tempELm && !app.tempELm.hasOwnProperty('new')) // declare new temporary constraint template if not done already
+            //     app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
+            // console.log(app.tempElm.new);
+            // if (!app.tempELm.new.hasOwnProperty('ori')) 
+            //     app.tempELm.new.ori = {};
+            // if (!app.tempELm.new.hasOwnProperty('len')) 
+            //     app.tempELm.new.len = {}; 
 
             if (e.target && e.target.id === 'node-trash') {
                 // app.tempElm.new = false; 
@@ -98,7 +109,6 @@ const events = {
                     app.instruct.innerHTML = `<span class="blink" style="color:orange;">node has dependencies</span>`;
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
                 }
-
             };
             if (e.target && e.target.id === 'constraint-trash') {
                 // app.tempElm.new = false; 
@@ -110,6 +120,27 @@ const events = {
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
                 }
             };
+            if (e.target && e.target.id === 'force-trash') {
+                // app.tempElm.new = false; 
+                if (app.model.removeLoad(app.model.loadById(app.tempElm.old.id))) {
+                    app.updateg();
+                    app.hideCtxm('skipreplace');
+                } else {
+                    app.instruct.innerHTML = `<span class="blink" style="color:orange;">node has dependencies</span>`;
+                    setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
+                }
+            };
+            if (e.target && e.target.id === 'spring-trash') {
+                // app.tempElm.new = false; 
+                if (app.model.removeLoad(app.model.loadById(app.tempElm.old.id))) {
+                    app.updateg();
+                    app.hideCtxm('skipreplace');
+                } else {
+                    app.instruct.innerHTML = `<span class="blink" style="color:orange;">node has dependencies</span>`;
+                    setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
+                }
+            };
+            
 
             if (ctxmdirty)
                 // todo: check for consistency issues and maybe mark with red border
@@ -124,6 +155,7 @@ const events = {
             // if (!app.tempElm.new) // declare new temporary constraint template if not done already
             //     app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
 
+            // nodes
             if (e.target && e.target.id === 'node-x') { 
                 // app.tempElm.new.x = e.target.valueAsNumber;
                 app.model.nodeById(app.tempElm.old.id).x = e.target.valueAsNumber;
@@ -138,12 +170,22 @@ const events = {
                 app.notify('render');
                 // ctxmdirty = true;
             };
-            if (e.target && e.target.id === 'node-mass') { 
+            if (e.target && e.target.id === 'node-base') { 
                 // e.target.checked ? app.model.nodeById(app.tempElm.old.id).m = app.tempElm.new.m = Number.POSITIVE_INFINITY : app.model.nodeById(app.tempElm.old.id).m = app.tempElm.new.m = 1; // todo: maybe later remove tempElm.new
                 // app.model.nodeById(app.tempElm.old.id).init(app.model);
-                e.target.checked ? app.model.nodeById(app.tempElm.old.id).m = Number.POSITIVE_INFINITY : app.model.nodeById(app.tempElm.old.id).m = 1;
+                app.model.nodeById(app.tempElm.old.id).base = e.target.checked ? true : false;
                 app.notify('render');
                 // ctxmdirty = true; 
+            };
+            if (e.target && e.target.id === 'node-trace') { 
+                e.target.checked ? app.addTrace() : app.removeTrace() ;
+                app.notify('render');
+            };
+
+            // forces
+            if (e.target && e.target.id === 'force-value') { 
+                app.model.loadById(app.tempElm.old.id).value = e.target.value;
+                app.notify('render');
             };
 
             // if (ctxmdirty)
@@ -157,15 +199,34 @@ const events = {
             console.log('ctxmChange fired');
             if(app.tempElm) {
                 let ctxmdirty = false;
-                if (!app.tempElm.new) // declare new temporary constraint template if not done already
-                    app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
+                // if (!app.tempElm.new)  // declare new temporary constraint template if not done already
+                //     app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
+                // if (!app.tempELm.new.ori) 
+                //     app.tempElm.new.ori = {};
+                // if (!app.tempELm.new.len) 
+                //     app.tempELm.new.len = {}; 
                 
+                // constraints
                 if (e.target && e.target.id === 'select-p1') { app.tempElm.new.p1 = e.target.value; ctxmdirty = true; }; // todo: prevent applying same p1 & p2 when updating model
                 if (e.target && e.target.id === 'select-p2') { app.tempElm.new.p2 = e.target.value; ctxmdirty = true; };
                 if (e.target && e.target.id === 'select-ori-type') { app.tempElm.new.ori.type = e.target.value; ctxmdirty = true; };
                 if (e.target && e.target.id === 'select-len-type') { app.tempElm.new.len.type = e.target.value; ctxmdirty = true; };
                 if (e.target && e.target.id === 'select-ori-ref') { app.tempElm.new.ori.ref = e.target.value; ctxmdirty = true; };
                 if (e.target && e.target.id === 'select-len-ref') { app.tempElm.new.len.ref = e.target.value; ctxmdirty = true; };
+
+                //forces
+                if (e.target && e.target.id === 'select-force-node') {
+                    console.log(e.target);
+                    app.model.loadById(app.tempElm.old.id).p = app.model.nodeById(e.target.value);
+                    app.notify('render');
+                    ctxmdirty = true;
+                };
+                if (e.target && e.target.id === 'select-force-mode') {
+                    app.model.loadById(app.tempElm.old.id).mode = e.target.value;
+                    app.notify('render');
+                    ctxmdirty = true; 
+                };
+                
                 
                 // if (e.target && e.target.id === 'node-x') { app.tempElm.new.x = e.target.valueAsNumber; ctxmdirty = true; };
                 // if (e.target && e.target.id === 'node-y') { app.tempElm.new.y = e.target.valueAsNumber; ctxmdirty = true; };
@@ -183,6 +244,7 @@ const events = {
             // let code = JSON.stringify(app.model,undefined,4);
             // app.tempElm = JSON.stringify(app.model,undefined,4);
             jsonEditor.setValue(JSON.stringify(app.model,null,4));
+            jsonEditor.setValue(app.model.asJSON());
         });
     },
     modalAccept: (id) => {

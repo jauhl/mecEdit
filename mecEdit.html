@@ -20,9 +20,9 @@
     <!-- <link rel="stylesheet" href="./vendor/ti-ta-toggle.mod.min.css"> -->
     <link rel="stylesheet" href="./vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="./vendor/codemirror/codemirror5.39.2.css"/>
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/darcula.css">
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/dracula.css"> -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/lucario.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/eclipse.css"> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/mdn-like.css">
     <link rel="stylesheet" href="./app.css">
     <!-- <link rel="stylesheet" href="./common.css">
     <link rel="stylesheet" href="./darkblue.css"> -->
@@ -86,7 +86,7 @@
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <div class="btn-group dropright d-block hoverexpand">
                                     <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                      toogle labels
+                                      toggle labels
                                     </a>
                                     <div class="dropdown-menu m-0">
                                         <a class="dropdown-item" id="toggleNodeLabels">nodes</a>
@@ -96,15 +96,15 @@
                             </div>
 
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" id="darkmode">toogle darkmode</a>
+                            <a class="dropdown-item" id="darkmode">toggle darkmode</a>
                             
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" id="resetview">reset editor-view</a>
                     </div>
                     <!-- <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" id="toggleNodeLabels" href="#">toogle node labels</a>
-                            <a class="dropdown-item" id="toggleConstraintLabels" href="#">toogle constraint labels</a>
-                            <a class="dropdown-item" id="toggleConstraintLabels" href="#">toogle load labels</a>
+                            <a class="dropdown-item" id="toggleNodeLabels" href="#">toggle node labels</a>
+                            <a class="dropdown-item" id="toggleConstraintLabels" href="#">toggle constraint labels</a>
+                            <a class="dropdown-item" id="toggleConstraintLabels" href="#">toggle load labels</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" id="resetview" href="#">reset editor-view</a>
                     </div> -->
@@ -302,9 +302,20 @@
                                                   transform="translate(0,30) rotate(-45) scale(1.2)"/>
                                         </svg>
                                     </button>
+
                                     <button type="button" id="drive" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="add drive">
                                         <i class="fas fa-cogs"></i>
                                     </button>
+
+                                    <button type="button" id="force" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="add force">
+                                        force
+                                    </button>
+
+                                    <button type="button" id="spring" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="add spring">
+                                        spring
+                                    </button>
+                                    
+                                    
                                 <!-- <input type="image" id="free" class="vec_btn" src="./img/bas.png" data-toggle="popover" data-placement="right" data-content="free"> -->
                                 <!-- <label for="free">free</label> -->
                             <!-- </span>

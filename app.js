@@ -96,24 +96,27 @@ const App = {
                     { id:'c',p1:'B0', p2:'B',len:{type:'const'} },
                     { id:'d',p1:'B', p2:'D',len:{type:'const'} },
                     { id:'e',p1:'B0', p2:'D',ori:{type:'const'} },
-                    { id:'f',p1:'B', p2:'C',len:{type:'ref',ref:'e'},ori:{type:'const'} }
+                    { id:'f',p1:'B', p2:'C',len:{type:'ref',ref:'e'},ori:{type:'ref',ref:'b'} }
                 ],
                 shapes: [
                     {type:'wheel',p:'A0',r:40,wref:'a'},
                     {type:'fix',p:'A0'},
                     {type:'flt',p:'B0'},
                     {type:'beam',p:'B0',wref:'c',len:175},
-                    {type:'slider',p:'A',wref:'c'},
-                    {type:'img',uri:'./img/hand.png',p:'A0',wref:'a',xoff:140,yoff:80,scl:0.1,w0:-pi/2}
+                    {type:'slider',p:'A',wref:'c'}
+                    // {type:'img',uri:'./img/hand.png',p:'A0',wref:'a',xoff:140,yoff:80,scl:0.1,w0:-pi/2}
                 ],
                 loads: [
                     { type:'force',id:'F',p:'A', mode:'push' },
-                    { type:'spring',id:'F',p1:'A',p2:'B0' }
+                    { type:'spring',id:'S',p1:'A',p2:'B0' }
                 ]
-                // ,
-                // views: [
-                //     { id:'aly',type:'trace',p:'C',Dt:2 }
-                // ]
+                ,
+                views: [
+                    // { id:'aly',type:'trace',p:'C',Dt:2, stroke:'red' }
+                    // { id:'path',type:'trace',p:'C',Dt:3, fill:'orange' },
+                    // { id:'iA',type:'info',elem:'A',value:'velAbs' },
+                    // { id:'ia',type:'info',elem:'a',value:'w' }
+                ]
             };
             // this.model = {
             //     id:"len ref",
@@ -129,7 +132,7 @@ const App = {
             //     ]
             // };
 
-            this.VERSION = 'v0.4.8.4',
+            this.VERSION = 'v0.4.8.5',
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -152,26 +155,32 @@ const App = {
                 .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], (e) => { this.g.exe(editor.on(this.pntToUsr(Object.assign({}, e)))).exe(this.ctx); })  // apply events to g2 ...
                 .on(['pointer', 'drag', 'pan', 'fps', 'buttondown', 'buttonup', 'click', 'pointerenter', 'pointerleave'], () => this.showStatus())
                 .on('drag', (e) => {       // update tooltip info // kills performance (bug: lag but fps stiil max) and is basically redundant due to statbar. maybe disable tooltip
-                    tooltip.style.left = ((e.clientX) + 15) + 'px';
-                    tooltip.style.top = (e.clientY - 50) + 'px';
-                    tooltip.innerHTML = editor.dragInfo;
+                    // if (!this.dragMove) {
+                    //     tooltip.style.left = ((e.clientX) + 15) + 'px';
+                    //     tooltip.style.top = (e.clientY - 50) + 'px';
+                    //     tooltip.innerHTML = editor.dragInfo;
+                    // }
                     // this.model.asmPos();
+                    this.showTooltip(e)
                 })
                 .on('pan', (e) => {
                     this.pan(e);
                     this.g.exe(this.ctx);
                 })
-                .on('buttondown', (e) => {                     // show tooltip info
-                    // console.log(editor.dragInfo && !this.dragMove);
-                    if (editor.dragInfo && !this.dragMove) {
-                        tooltip.style.left = ((e.clientX) + 15) + 'px';
-                        tooltip.style.top = (e.clientY - 50) + 'px';
-                        tooltip.innerHTML = editor.dragInfo;
-                        tooltip.style.display = 'inline';
-                    }
-                })
+                .on('pointer',(e)=>this.showTooltip(e)) // show tooltip view info
+                // .on('buttondown', (e) => {          
+                    // if (editor.dragInfo && !this.dragMove) {  // show tooltip coord info
+                    //     tooltip.style.left = ((e.clientX) + 15) + 'px';
+                    //     tooltip.style.top = (e.clientY - 50) + 'px';
+                    //     tooltip.innerHTML = editor.dragInfo;
+                    //     tooltip.style.display = 'inline';
+                    // } else if (tooltip.style.display === 'inline') { // hide tooltip view info
+                    //     tooltip.style.display = 'none';
+                    // }
+                    // this.showTooltip(e);
+                // })
                 .on(['buttonup', 'click'], (e) => {             // hide tooltip info
-                    tooltip.style.display = 'none';
+                    this.hideTooltip()
                 })
                 .on('click', () => {
                     if (this.build) {
@@ -180,6 +189,8 @@ const App = {
                         if (this.build.mode === 'purgenode') this.clearNode(editor.curElm);
                         if (['free', 'tran', 'rot'].includes(this.build.mode)) this.addConstraint();
                         if (this.build.mode === 'drive') this.addActuator(editor.curElm);
+                        if (this.build.mode === 'force') this.addForce();
+                        if (this.build.mode === 'spring') this.addSpring();
                     }
                 })
                 .on('render', () => this.g.exe(this.ctx))      // redraw
@@ -199,6 +210,26 @@ const App = {
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
             // statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.dragMove?'move':'edit'}, dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}`
             statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.dragMove?'move':'edit'}, ${typeof this.model === 'object' ? `dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}` : `` }`
+        },
+
+        showTooltip(e) {
+            const info = this.model.info;
+            tooltip.style.left = ((e.clientX) + 15) + 'px';
+            tooltip.style.top = (e.clientY - 50) + 'px';
+            // type of info
+            if (editor.dragInfo && !this.dragMove) {
+                tooltip.innerHTML = editor.dragInfo;
+                tooltip.style.display = 'inline';
+            } else if (info && this.dragMove) { // don't show views in dragEdit mode
+                tooltip.innerHTML = info;
+                tooltip.style.display = 'inline';
+            }
+            else
+                this.hideTooltip();
+        },
+
+        hideTooltip() {
+            tooltip.style.display = 'none';
         },
 
         // step(e) {
@@ -301,8 +332,9 @@ const App = {
             dependants.forEach(el => el.init(this.model));
         },
 
-        toogleDarkmode() {
+        toggleDarkmode() {
             mec.darkmode = !mec.darkmode;
+            jsonEditor.setOption("theme",`${mec.darkmode ? 'lucario' : 'mdn-like'}`);
             this.cnv.style.backgroundColor = mec.darkmode ? '#344c6b' : 'rgb(250, 246, 209)';
             this.notify('render');
         },
@@ -388,7 +420,7 @@ const App = {
                     m: this.build.mode == 'addbasenode' ? Number.POSITIVE_INFINITY : 1
                 };
                 this.model.addNode(mec.node.extend(node)); // inherit prototype methods (extend) and add to model via model.addnode
-                this.model.nodeById(node.id).init(this.model);
+                node.init(this.model);
                 this.updateg(); // update graphics
             } else {
                 console.log('node already exists at this coordinates ...');
@@ -449,15 +481,6 @@ const App = {
 
                     this.model.addConstraint(mec.constraint.extend(constraint));
 
-                    // console.log(typeof (constraint.type))
-                    // switch (constraint.type) {
-                    //     case 'free': this.model.addConstraint(mec.constraint.free.extend(constraint)); break;
-                    //     case 'tran': this.model.addConstraint(mec.constraint.tran.extend(constraint)); break;
-                    //     case 'rot': this.model.addConstraint(mec.constraint.rot.extend(constraint)); break;
-                    //     case 'ctrl': this.model.addConstraint(mec.constraint.ctrl.extend(constraint)); break;
-                    //     default: console.log('something went wrong while adding constraint...'); break;
-                    // }
-                    // this.model.addConstraint(type.extend(constraint));
                     constraint.init(this.model);
                     this.updateg(); // update graphics
                 } else { // no node clicked
@@ -533,49 +556,104 @@ const App = {
             this.resetApp(); // reset state and instructions
         },
 
-        // changeConstraintType(elm, newtype) { // todo: check if still needed, guess is not...
-        //     console.log(newtype);
-        //     let newConstraint = {
-        //         id: elm.id,
-        //         p1: elm.p1.id,
-        //         p2: elm.p2.id,
-        //         state: elm.state // preserve state (otherwise contextmenu won't close and possibly other inconsistencies)
-        //     };
+        addForce() {
+            if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
+                let i = 0;
+                    this.model.loads.forEach(load => {
+                        if (load.type === 'force')
+                            i++
+                    });
+                    i+=1; // number of forces found +1
 
-        //     switch (newtype) { // todo: generalize in- and outputs
-        //         case 'rot':
-        //             newConstraint.len = { type: 'const' };
-        //             break;
-        //         case 'tran':
-        //             newConstraint.ori = { type: 'const' };
-        //             break;
-        //         case 'ctrl': // assume ori 'ref', not 'drive'. drive has to be added elsewhere, // maybe dont set stuff here but open second menu or form/modal to distinguish ori/len ref
-        //             newConstraint.len = { type: 'const' };
-        //             newConstraint.ori = {
-        //                 type: 'ref',
-        //                 ref: elm.p1.adjConstraintIds()[0] // reference the first found constraint of p1 for now ...
-        //             }; // todo: make select ref
-        //     }
+                let force = {
+                    type: this.build.mode,
+                    id: `F${i}`,
+                    p: editor.curElm.id
+                };
 
-        //     // replace old with new constraint in model and flag for rebuild
-        //     this.model.constraints.splice(this.model.constraints.indexOf(this.model.constraintById(elm.id)), 1) // get index of passed constraint and delete it from the model 
+                this.model.addLoad(mec.load.extend(force));
+                force.init(this.model);
 
-        //     this.model.addConstraint(mec.constraint.extend(newConstraint));
-        //     newConstraint.init(this.model);
+                this.updateg(); // update graphics
+            } else {
+                return;
+            }
+            document.body.style.cursor = 'default';
+            this.resetApp();
+        },
 
-        //     this.tempElm = { new: this.model.constraintById(elm.id).toJSON() };
+        addSpring() {
+            if (!this.build.firstnode) { // first invocation
+                if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
+                    this.build.firstnode = editor.curElm;
+                    this.instruct.innerHTML = 'select second node; &lt;ESC&gt; to cancel'
+                } else { // no node clicked
+                    return; // next clickevent invokes function again
+                };
+            } else { // second invocation
+                if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
+                    let i = 0;
+                    this.model.loads.forEach(load => {
+                        if (load.type === 'spring')
+                            i++
+                    });
+                    i+=1; // number of springs found +1
 
+                    let spring = {
+                        type: this.build.mode,
+                        id: `S${i}`,
+                        p1: this.build.firstnode.id,
+                        p2: editor.curElm.id,
+                    };
 
-        //     this.updateg(); // update graphics
-        // },
+                    this.model.addLoad(mec.load.extend(spring));
+
+                    spring.init(this.model);
+                    this.updateg(); // update graphics
+                } else { // no node clicked
+                    return; // next clickevent invokes function again
+                };
+                this.resetApp();
+            };
+        },
+
+        addTrace() {
+            trace = {
+                id:`trace${app.tempElm.old.id}`,
+                type:'trace',
+                p:app.tempElm.old.id,
+                Dt:2, 
+                stroke:'red' 
+            };
+            this.model.addView(mec.view.extend(trace));
+            trace.init(this.model);
+            this.updateg(); // update graphics
+        },
+
+        removeTrace() {
+            let traces = [];
+            this.model.dependentsOf(this.model.nodeById(app.tempElm.old.id)).views.forEach(el=>{
+                if (el.type === 'trace' && el.p.id === app.tempElm.old.id) {
+                    traces.push(el.id);
+                }
+            })
+            this.model.removeView(this.model.viewById(traces[0]));
+            this.updateg(); // update graphics
+        },
 
         initCtxm(elm) { // todo: remember to add option for drive func
-            console.log(elm.type);
+            console.log(elm.type)
 
             this.tempElm = {};  // save elm for eventlistener & state-check
-            this.tempElm.type = (!!elm.type && ['free', 'rot', 'tran', 'ctrl'].includes(elm.type)) ? 'constraint' : 'node'; // check elm type
-            this.tempElm.old = elm.toJSON();
-
+            // this.tempElm.type = (!!elm.type && ['free', 'rot', 'tran', 'ctrl'].includes(elm.type)) ? 'constraint' : 'node'; // checked elm type when node had no type
+            this.tempElm.type = ['free', 'rot', 'tran', 'ctrl'].includes(elm.type) ? 'constraint' : elm.type; // check elm type
+            this.tempElm.old = JSON.parse(elm.asJSON());
+            this.tempElm.new = JSON.parse(elm.asJSON());
+            if (!this.tempElm.new.ori)  // needs to exist because of minimal form of asJSON()
+                this.tempElm.new.ori = {type:'free'};
+            if (!this.tempElm.new.len) 
+                this.tempElm.new.len = {type:'free'};
+            
             // save label-state for resetting to it when closing ctxm
             this.tempElm.labelState = {nodes: mec.showNodeLabels, constraints: mec.showConstraintLabels, loads: mec.showLoadLabels};
             // show labels that are hidden
@@ -627,26 +705,47 @@ const App = {
             this.ctxmenuheader.innerHTML = ctxm.header(elm, type);
 
             //append new body
-            if (type === 'constraint') { // constraint
+            if (type === 'constraint') { // constraints
                 this.ctxmenubody.innerHTML += ctxm.sectionTitle('orientation');
                 this.ctxmenubody.innerHTML += ctxm.oriType(elm);
-                if (elm.ori.type === 'ref') {
+                if (!!elm.ori && elm.ori.type === 'ref') {
                     const oriRefId = !!elm.ori.ref ? elm.ori.ref : app.model.constraints[0].id;
                     this.ctxmenubody.innerHTML += ctxm.ref(elm, 'ori', oriRefId);
                 };
                 this.ctxmenubody.innerHTML += ctxm.sectionTitle('lenght');
                 this.ctxmenubody.innerHTML += ctxm.lenType(elm);
-                if (elm.len.type === 'ref') {
+                if (!!elm.len && elm.len.type === 'ref') {
                     const lenRefId = !!elm.len.ref ? elm.len.ref : app.model.constraints[0].id
                     this.ctxmenubody.innerHTML += ctxm.ref(elm, 'len', lenRefId);
                 };
                 this.ctxmenubody.innerHTML += ctxm.sectionTitle('nodes');
                 this.ctxmenubody.innerHTML += ctxm.nodes(elm);
                 this.ctxmenubody.innerHTML += ctxm.removeConstraintButton();
-            } else { // node
-                this.ctxmenubody.innerHTML += ctxm.nodeCoordinates(elm);
-                this.ctxmenubody.innerHTML += ctxm.nodeMass(elm);
             };
+            if (type === 'node') { // nodes
+                this.ctxmenubody.innerHTML += ctxm.nodeCoordinates(elm);
+                let traced = false;
+                this.model.dependentsOf(this.model.nodeById(elm.id)).views.forEach(el=>{
+                    if (!traced && el.type === 'trace') {
+                        traced = true;
+                    }
+                })
+                this.ctxmenubody.innerHTML += ctxm.nodeBase(elm,traced);
+            };
+            if (type === 'force') { // forces
+                this.ctxmenubody.innerHTML += ctxm.forceValue(elm);
+                this.ctxmenubody.innerHTML += ctxm.forceMode(elm);
+                this.ctxmenubody.innerHTML += ctxm.forceNode(elm);
+            };
+            if (type === 'spring') { // springs
+                // this.ctxmenubody.innerHTML += ctxm.springProps(elm);
+                this.ctxmenubody.innerHTML += ctxm.springNodes(elm);
+                this.ctxmenubody.innerHTML += ctxm.springLen(elm);
+                this.ctxmenubody.innerHTML += ctxm.springK(elm);
+                // this.ctxmenubody.innerHTML += ctxm.removeSpringButton();
+                // this.ctxmenubody.innerHTML += ctxm.springL0(elm);
+            };
+            
         },
 
         loadFromJSON(files) {
@@ -697,7 +796,7 @@ let modelModal = new Modal(document.getElementById('modelModal'), {
 
 let jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'), {
     mode: 'javascript',
-    theme: 'default',
+    theme: 'lucario',   // dark: dracula, lucario   light: default, mdn-like
     lineNumbers: true,
     styleActiveLine: true,
     matchBrackets: true,
@@ -715,7 +814,7 @@ window.onload = () => {
 
     // create App instance
     (app = App.create()).init();
-    app.toogleDarkmode(); // switch on, off by default
+    app.toggleDarkmode(); // switch on, off by default
     // fill graphics queue
     app.updateg();
 

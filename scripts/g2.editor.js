@@ -53,7 +53,7 @@ g2.editor.prototype = {
         this.curElm = elm; // provide element pointed at to api
         const {type,x,y,dx,dy} = this.evt;
         // console.log(`elm.id: ${elm === undefined ? 'undefined':elm.id}, x: ${x}, y: ${y}`);
-        if (!elm)   // commands without arguments object .. !
+        if (!elm || !(typeof elm.type === 'string'))   // commands without arguments object .. or beamshapes for whatever reason...!
             return false;
 
         if (!elm.state) {                                               // no mode
