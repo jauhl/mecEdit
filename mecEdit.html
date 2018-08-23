@@ -74,7 +74,67 @@
                         <a class="dropdown-item" id="dragmode">toggle drag mode</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" id="model-edit">model editor</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" id="nav-purgenode">purge node</a>
                         <!-- <label class="dropdown-item">Import linkage from *.JSON<input type="file" hidden></label> -->
+                    </div>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+                        Components
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <div class="btn-group dropright d-block hoverexpand">
+                            <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              nodes
+                            </a>
+                            <div class="dropdown-menu m-0">
+                                <a class="dropdown-item" id="nav-addbasenode">basenode</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-addnode">node</a>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="btn-group dropright d-block hoverexpand">
+                            <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              constraints
+                            </a>
+                            <div class="dropdown-menu m-0">
+                                <a class="dropdown-item" id="nav-free">free</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-tran">tran</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-rot">rot</a>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" id="nav-drive">drive</a>
+                        <div class="dropdown-divider"></div>
+                        <div class="btn-group dropright d-block hoverexpand">
+                            <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              loads
+                            </a>
+                            <div class="dropdown-menu m-0">
+                                <a class="dropdown-item" id="nav-force">force</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-spring">spring</a>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="btn-group dropright d-block hoverexpand">
+                            <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              shapes
+                            </a>
+                            <div class="dropdown-menu m-0">
+                                <a class="dropdown-item" id="nav-fix">fixed node</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-flt">floating node</a>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" id="nav-addview">views</a>
                     </div>
                 </li>
 
@@ -90,7 +150,9 @@
                                     </a>
                                     <div class="dropdown-menu m-0">
                                         <a class="dropdown-item" id="toggleNodeLabels">nodes</a>
+                                        <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" id="toggleConstraintLabels">constraints</a>
+                                        <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" id="toggleLoadLabels">loads</a>
                                     </div>
                             </div>
@@ -101,16 +163,9 @@
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" id="resetview">reset editor-view</a>
                     </div>
-                    <!-- <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" id="toggleNodeLabels" href="#">toggle node labels</a>
-                            <a class="dropdown-item" id="toggleConstraintLabels" href="#">toggle constraint labels</a>
-                            <a class="dropdown-item" id="toggleConstraintLabels" href="#">toggle load labels</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" id="resetview" href="#">reset editor-view</a>
-                    </div> -->
                 </li>
                 <li>
-                    <div class="btn-group ml-4" role="group" aria-label="controls-group">
+                    <div class="btn-group ml-5" role="group" aria-label="controls-group">
                         <button type="button" id="run" class="btn btn-dark border-secondary"><i class="fas fa-play"></i></button>
                         <button type="button" id="idle" class="btn btn-dark border-secondary"><i class="fas fa-pause"></i></button>
                         <button type="button" id="stop" class="btn btn-dark border-secondary"><i class="fas fa-stop"></i></button>
@@ -131,33 +186,7 @@
                             </svg>
                         </a>
                     </div>
-          
-                <!-- <li class="nav-item">
-                        <a class="nav-link">inverse kinematics:
-                                <input type="checkbox" id="inversekin" checked>
-                                <span class="text-muted" data-toggle="tooltip" data-original-title="disable to change constraints by dragging nodes">?</span>
-                        </a>
-                </li> -->
-                <!-- <li class="nav-item"> -->
-                    <!-- <span class="text-white nav-link">inverse kinematics:
-                        <input type="checkbox" id="inversekin" checked>
-                        <span id="popover-inverse" class="text-muted" data-toggle="popover" data-placement="bottom" data-content="disable this option to change constraint dimensions by dragging nodes">
-                            <i class="fas fa-question"></i>
-                        </span>
-                    </span> -->
-                <!--    <span class="text-white nav-link ">
-                        <div class="checkbox-slider  -->  <!--   --b pl-1"> -->
-                            <!-- <label class="mb-0">
-                                <input type="checkbox" id="inversekin" checked>
-                                <span>inverse kinematics</span>
-                            </label>
-                            <span id="popover-inverse" class="text-muted" data-toggle="popover" data-placement="bottom" data-content="disable this option to change constraint dimensions by dragging nodes">
-                                <i class="fas fa-question"></i>
-                            </span>
-                        </div>
-                    </span>
-                </li> -->
-            </div>
+                </div>
         </div>
     </nav>
 
@@ -212,8 +241,8 @@
 
                         <!-- <label class="nav-link greenish m-0">
                             <i class="fas fa-minus"></i> purge node:</label> -->
-                        <button type="button" id="purgenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="purge node">
-                            <i class="fas fa-trash-alt fa-lg"></i></button>
+                        <!-- <button type="button" id="purgenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="purge node">
+                            <i class="fas fa-trash-alt fa-lg"></i></button> -->
                     <!-- </li>
 
                     <li class="nav-item mb-1"> -->
@@ -307,13 +336,13 @@
                                         <i class="fas fa-cogs"></i>
                                     </button>
 
-                                    <button type="button" id="force" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="add force">
+                                    <!-- <button type="button" id="force" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="add force">
                                         force
                                     </button>
 
                                     <button type="button" id="spring" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="add spring">
                                         spring
-                                    </button>
+                                    </button> -->
                                     
                                     
                                 <!-- <input type="image" id="free" class="vec_btn" src="./img/bas.png" data-toggle="popover" data-placement="right" data-content="free"> -->
@@ -360,8 +389,18 @@
                     </div> -->
                 </div>
 
-                <div class="statbar">
-                    <span id="statbar" class="text-muted pl-1">X: 0, Y: 0</span>
+                <div id="statbar" class="statbar d-flex flex-row flex-nowrap">
+                    <div id="sbCoords" class="text-muted pl-1"></div>
+                    <div id="sbMode" class="text-muted pl-1"></div>
+                    <div id="sbCartesian" class="text-muted pl-1"></div>
+                    <div id="sbBtn" class="text-muted pl-1"></div>
+                    <div id="sbDbtn" class="text-muted pl-1"></div>
+                    <div id="sbFPS" class="text-muted pl-1"></div>
+                    <div id="sbState" class="text-muted pl-1"></div>
+                    <div id="sbDragging" class="text-muted pl-1"></div>
+                    <div id="sbDragmode" class="text-muted pl-1"></div>
+                    <div id="sbDOF" class="text-muted pl-1"></div>
+                    <div id="sbGravity" class="text-muted pl-1"></div>
                 </div>
             </main>
 
@@ -401,12 +440,12 @@
     <!-- <span id='info' data-toggle="popover" data-content="placeholder"></span> -->
     <span id='info' style="position:absolute;display:none;background-color:#ffb;border:1px solid black;padding:0.1em;font:0.9em monospace;">tooltip</span>
 
-    <!-- ========================== Custom Modal ========================== -->
+    <!-- ========================== Custom Editor Modal ========================== -->
     <div id="modelModal" class="modal fade" role="dialog" aria-labelledby="modelModallabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="myModalLabel">model editor</h5>
+                    <h5 class="modal-title">model editor</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
                 </div>
                 <div class="modal-body">
@@ -417,6 +456,25 @@
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" id="modalAccept">Apply changes</button>
                 </div>   
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================== Custom Viewcomponent Modal ========================== -->
+    <div id="viewModal" class="modal fade" role="dialog" aria-labelledby="viewModallabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered viewmodal" role="document">
+            <div class="modal-content">
+                <!-- <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">add view component</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+                    todo
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="modalAccept">Apply</button>
+                </div>    -->
             </div>
         </div>
     </div>

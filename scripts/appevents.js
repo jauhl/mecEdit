@@ -1,37 +1,80 @@
+'use strict';
 // define non-editor events
-const events = { 
+const events = {
+    preventDefaultCTXM: () => document.addEventListener('contextmenu', (e) => e.preventDefault()),
     sidebarClick: (id) => {
         /*********************************  sidebar click handler  ****************************************/ 
         document.getElementById(id).addEventListener('click', (e) => { // bind to parent
             console.log(e);
             // if (e.target && e.target.className == 'vec_btn') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
-            if (e.target && ['free', 'tran', 'rot','spring'].includes(e.target.id)) { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; }; // check for children
-            if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select a constraint to add an actuator to; &lt;ESC&gt; to cancel'; };
+            if (e.target && ['free', 'tran', 'rot'].includes(e.target.id)) { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'Select first node; &lt;ESC&gt; to cancel'; }; // check for children // ,'spring'
+            if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'Select a constraint to add a drive to; &lt;ESC&gt; to cancel'; };
             if (e.target && (e.target.id === 'addnode' || e.target.id == 'addbasenode')) {
                 app.build = { mode: e.target.id };
-                app.instruct.innerHTML = 'left-click on the canvas to place a new node; &lt;ESC&gt; to cancel';
+                app.instruct.innerHTML = 'Left-click on the canvas to place a new node; &lt;ESC&gt; to cancel';
                 document.body.style.cursor = 'crosshair';
             };
-            if (e.target && e.target.id === 'purgenode') {
-                app.build = { mode: e.target.id };
-                app.instruct.innerHTML = 'left-click on a node to delete it and all its dependants; &lt;ESC&gt; to cancel';
-                document.body.style.cursor = 'crosshair';
-            };
-            if (e.target && e.target.id === 'force') {
-                app.build = { mode: e.target.id };
-                app.instruct.innerHTML = 'left-click on a node to add a force; &lt;ESC&gt; to cancel';
-                document.body.style.cursor = 'crosshair';
-            };
+            // if (e.target && e.target.id === 'purgenode') {
+            //     app.build = { mode: e.target.id };
+            //     app.instruct.innerHTML = 'left-click on a node to delete it and all its dependants; &lt;ESC&gt; to cancel';
+            //     document.body.style.cursor = 'crosshair';
+            // };
+            // if (e.target && e.target.id === 'force') {
+            //     app.build = { mode: e.target.id };
+            //     app.instruct.innerHTML = 'left-click on a node to add a force; &lt;ESC&gt; to cancel';
+            //     document.body.style.cursor = 'crosshair';
+            // };
             // if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
         })
     },
     navbarClick: (id) => {
         /*********************************  navbar click handler  ****************************************/ 
         document.getElementById(id).addEventListener('click', (e) => {
+            // File
             if (e.target && e.target.id === 'newModel') { app.newModel(); };
             if (e.target && e.target.id === 'export') { app.saveToJSON(); };
-            if (e.target && e.target.id === 'dragmode') { app.dragMove = !app.dragMove; };
+            if (e.target && e.target.id === 'import') { app.importConfirmed = confirm('All unsaved changes will be lost! Continue?') ? true : (e.preventDefault(),false)}; // false -> dont open file window (and return undefined) and return false
+
+            // Edit
+            if (e.target && e.target.id === 'dragmode') { 
+                app.dragMove = !app.dragMove; 
+                if (!app.dragMove)
+                    app.reset();
+            };
             if (e.target && e.target.id === 'model-edit') { modelModal.show(); };
+            if (e.target && e.target.id === 'nav-purgenode') {
+                app.build = { mode: e.target.id.replace('nav-','') };
+                app.instruct.innerHTML = 'Left-click on a node to delete it and all its dependants; &lt;ESC&gt; to cancel';
+                document.body.style.cursor = 'crosshair';
+            };
+
+            // Components
+            if (e.target && (e.target.id === 'nav-addnode' || e.target.id == 'nav-addbasenode')) {
+                app.build = { mode: e.target.id.replace('nav-','') };
+                app.instruct.innerHTML = 'Left-click on the canvas to place a new node; &lt;ESC&gt; to cancel';
+                document.body.style.cursor = 'crosshair';
+            };
+            if (e.target && ['nav-free', 'nav-tran', 'nav-rot','nav-spring'].includes(e.target.id)) { 
+                app.build = { mode: e.target.id.replace('nav-','') };
+                app.instruct.innerHTML = 'select first node; &lt;ESC&gt; to cancel'; 
+            };
+            if (e.target && e.target.id === 'nav-drive') {
+                app.build = { mode: e.target.id.replace('nav-','') };
+                app.instruct.innerHTML = 'Select a constraint to add a drive to; &lt;ESC&gt; to cancel';
+            };            
+            if (e.target && e.target.id === 'nav-force') {
+                app.build = { mode: e.target.id.replace('nav-','') };
+                app.instruct.innerHTML = 'Left-click on a node to add a force; &lt;ESC&gt; to cancel';
+                document.body.style.cursor = 'crosshair';
+            };
+            if (e.target && (e.target.id === 'nav-fix' || e.target.id === 'nav-flt')) {
+                app.build = { mode: e.target.id.replace('nav-','') };
+                app.instruct.innerHTML = `Left-click on a node to add a ${app.build.mode}-shape; &lt;ESC&gt; to cancel`;
+                document.body.style.cursor = 'crosshair';
+            };
+            if (e.target && e.target.id === 'nav-addview') { app.initViewModal(); };
+
+            // View
             if (e.target && e.target.id === 'darkmode') { app.toggleDarkmode(); };
             if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
             if (e.target && e.target.id === 'toggleNodeLabels') { 
@@ -49,6 +92,7 @@ const events = {
                 if (!!app.tempElm.labelState) app.tempElm.labelState.loads = mec.showLoadLabels;
                 app.notify('render');
             };
+
             if (e.target && e.target.id === 'run') { app.run(); };
             if (e.target && e.target.id === 'idle') { app.idle(); };
             if (e.target && e.target.id === 'stop') { app.stop(); };
@@ -58,13 +102,13 @@ const events = {
     },
     navbarChange: (id) => {
         /*********************************  navbar change handler  ****************************************/ 
-        document.getElementById(id).addEventListener('change', (e) => app.loadFromJSON(e.target.files));
+        document.getElementById(id).addEventListener('change', e => app.loadFromJSON(e.target.files, true) );
     },
     keyboardDown: () => {
         /*********************************  global keyboard handler  ****************************************/ 
         document.addEventListener('keydown', (e) => {
             console.log(`Key pressed: ${e.key}`);
-            if (document.getElementById('modelModal').attributes['aria-hidden'].value === 'true') { // modal is hidden
+            if (document.getElementById('modelModal').attributes['aria-hidden'].value === 'true' && document.getElementById('viewModal').attributes['aria-hidden'].value === 'true') { // modals are hidden
                 if (e.key === 'Escape') {
                     if (app.build) {
                         // reset app.build-state on escapekey
@@ -76,11 +120,16 @@ const events = {
                 // some shortcuts
                 if (e.key === 'e')    
                     modelModal.show(); // open model editor
-                if (e.key === 'i')    
+                if (e.key === 'v') 
+                    app.initViewModal(); // open view modal
+                if (e.key === 'i') {
                     app.dragMove = !app.dragMove; // toggle drag-mode
+                    if (!app.dragMove)
+                        app.reset();
+                };    
                 if (e.key === 'p') {
                     app.build = { mode: 'purgenode' };
-                    app.instruct.innerHTML = 'left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
+                    app.instruct.innerHTML = 'Left-click on a node to delete it and all its adjacent constraints; &lt;ESC&gt; to cancel';
                     document.body.style.cursor = 'crosshair';
                 }
             }
@@ -106,7 +155,7 @@ const events = {
                     app.updateg();
                     app.hideCtxm('skipreplace');
                 } else {
-                    app.instruct.innerHTML = `<span class="blink" style="color:orange;">node has dependencies</span>`;
+                    app.instruct.innerHTML = `<span class="blink" style="color:orange;">Node has dependencies.</span>`;
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
                 }
             };
@@ -116,7 +165,7 @@ const events = {
                     app.updateg();
                     app.hideCtxm('skipreplace');
                 } else {
-                    app.instruct.innerHTML = `<span class="blink" style="color:orange;">constraint has dependencies</span>`;
+                    app.instruct.innerHTML = `<span class="blink" style="color:orange;">Constraint has dependencies.</span>`;
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
                 }
             };
@@ -126,7 +175,7 @@ const events = {
                     app.updateg();
                     app.hideCtxm('skipreplace');
                 } else {
-                    app.instruct.innerHTML = `<span class="blink" style="color:orange;">node has dependencies</span>`;
+                    app.instruct.innerHTML = `<span class="blink" style="color:orange;">Node has dependencies.</span>`;
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
                 }
             };
@@ -136,7 +185,7 @@ const events = {
                     app.updateg();
                     app.hideCtxm('skipreplace');
                 } else {
-                    app.instruct.innerHTML = `<span class="blink" style="color:orange;">node has dependencies</span>`;
+                    app.instruct.innerHTML = `<span class="blink" style="color:orange;">Node has dependencies.</span>`;
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
                 }
             };
@@ -155,6 +204,20 @@ const events = {
             // if (!app.tempElm.new) // declare new temporary constraint template if not done already
             //     app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
 
+            // constraints
+            if (e.target && e.target.id === 'ori-drive-Dt') { 
+                app.tempElm.new.ori.Dt = e.target.valueAsNumber;
+            };
+            if (e.target && e.target.id === 'len-drive-Dt') { 
+                app.tempElm.new.len.Dt = e.target.valueAsNumber;
+            };
+            if (e.target && e.target.id === 'ori-drive-Dw') { 
+                app.tempElm.new.ori.Dw = e.target.valueAsNumber;
+            };
+            if (e.target && e.target.id === 'len-drive-Dr') { 
+                app.tempElm.new.len.Dr = e.target.valueAsNumber;
+            };
+
             // nodes
             if (e.target && e.target.id === 'node-x') { 
                 // app.tempElm.new.x = e.target.valueAsNumber;
@@ -162,7 +225,7 @@ const events = {
                 app.model.nodeById(app.tempElm.old.id).updAdjConstraints();
                 app.notify('render');
                 // ctxmdirty = true; 
-                };
+            };
             if (e.target && e.target.id === 'node-y') {
                 // app.tempElm.new.y = e.target.valueAsNumber;
                 app.model.nodeById(app.tempElm.old.id).y = e.target.valueAsNumber;
@@ -177,14 +240,27 @@ const events = {
                 app.notify('render');
                 // ctxmdirty = true; 
             };
-            if (e.target && e.target.id === 'node-trace') { 
-                e.target.checked ? app.addTrace() : app.removeTrace() ;
-                app.notify('render');
-            };
+            // if (e.target && e.target.id === 'node-trace') { 
+            //     e.target.checked ? app.addTrace() : app.removeTrace() ;
+            //     app.notify('render');
+            // };
 
             // forces
             if (e.target && e.target.id === 'force-value') { 
-                app.model.loadById(app.tempElm.old.id).value = e.target.value;
+                app.model.loadById(app.tempElm.old.id).value = mec.from_N(+e.target.value);
+                app.notify('render');
+            };
+
+            // springs
+            if (e.target && e.target.id === 'spring-len0') {
+                console.log(app.model.loadById(app.tempElm.old.id).len0);
+                console.log(e.target.value);
+                app.model.loadById(app.tempElm.old.id).len0 = +e.target.value;
+                app.notify('render');
+            };
+
+            if (e.target && e.target.id === 'spring-k') { 
+                app.model.loadById(app.tempElm.old.id).k = mec.from_N_m(+e.target.value);
                 app.notify('render');
             };
 
@@ -262,12 +338,12 @@ const events = {
             c.width = main.clientWidth;
             c.height = main.clientHeight - 30;
         
-            let actcontainer = document.getElementById('actuators-container');
+            // let actcontainer = document.getElementById('actuators-container');
         
-            if (actcontainer.clientWidth > 1000) {
-                let mecsliders = document.querySelectorAll('.mec-slider');
-                let rangesliders = document.querySelectorAll('.custom-range');
-                let rangewidth = (app.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
+            // if (actcontainer.clientWidth > 1000) {
+            //     let mecsliders = document.querySelectorAll('.mec-slider');
+            //     let rangesliders = document.querySelectorAll('.custom-range');
+            //     let rangewidth = (app.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
         
                 // lagging
                 // let rangewidth;
@@ -281,12 +357,64 @@ const events = {
                 //     rangewidth = Math.trunc(actcontainer.clientWidth - 50);
                 // }
         
-                mecsliders.forEach(slider => { slider.width = `${rangewidth}`; })
-                rangesliders.forEach(slider => { slider.style.width = `${rangewidth}px` })
-            }
+            //     mecsliders.forEach(slider => { slider.width = `${rangewidth}`; })
+            //     rangesliders.forEach(slider => { slider.style.width = `${rangewidth}px` })
+            // }
         
             // app.model.dirty = true;
             app.notify('render');
         }
+    },
+    viewModalChange: (id) => {
+        /*********************************  viewmodal change handler  ****************************************/ 
+        document.getElementById(id).addEventListener('change', (e) => {
+            let skipUpdate = false;
+
+            if (e.target && e.target.id === 'input-view-id') {
+                app.updateTempElmNew('id',e.target.value);
+                skipUpdate = true;
+            }
+            if (e.target && e.target.id === 'select-view-type') {
+                app.updateTempElmNew('type',e.target.value);
+            };
+            if (e.target && e.target.id === 'select-view-p') {
+                app.updateTempElmNew('p',e.target.value);
+            };
+            if (e.target && e.target.id === 'select-view-elem') {
+                app.updateTempElmNew('elem',e.target.value);
+            };
+            if (e.target && e.target.id === 'select-view-value') {
+                app.updateTempElmNew('value',e.target.value);
+            };
+            if (e.target && e.target.id === 'view-stroke-color') {
+                app.updateTempElmNew('stroke',e.target.value);
+            };
+            if (e.target && e.target.id === 'view-fill-color') {
+                app.updateTempElmNew('fill',e.target.value);
+            };
+
+            if (!skipUpdate) { 
+                viewModal.setContent(ctxm.viewModal());
+                document.getElementById('view-fill-color-btn').style.backgroundColor = document.getElementById('view-fill-color').disabled ? 'transparent' : '#e9ecef';
+                viewModal.update();
+            }
+        });
+    },
+    viewModalClick: (id) => {
+        /*********************************  viewmodal click handler  ****************************************/ 
+        document.getElementById(id).addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'view-accept')
+                app.addViewFromModal();
+            if (e.target && e.target.id === 'view-fill-color-btn')
+                app.toggleViewfill();
+            // if (e.target && e.target.id === 'view-cancel') {
+            //     app.resetApp();
+            // };
+        });
+    },
+    viewModalHide: (id) => {
+        document.getElementById(id).addEventListener('hide.bs.modal', (e) => {
+            app.resetApp();
+        });
     }
 }

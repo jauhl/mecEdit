@@ -312,6 +312,13 @@ output.badge {
     border-radius: 0.25rem;
 }
 
+.ctxm-number {
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 .ctxm-right {
     position: absolute;
     top: 0.3rem;
@@ -336,6 +343,28 @@ output.badge {
     max-height: calc(70vh); /*if <pre> set max-height*/
 }
 
+.viewmodal {
+    max-width: 300px;
+}
+
+.view-inputtext {
+    width: 3.5rem;
+    justify-content: right;
+}
+
+input[type='color'] {
+    height: auto;
+    margin-left: .2rem;
+}
+
+#view-fill-color:disabled:parent:first-child {
+        background-color: red !important;
+}
+
+.modal-body .input-group:last-child {
+    margin-bottom: 0 !important;
+}
+
 /* pretty-print <pre>-content */
 .string { color: green; }
 .number { color: darkorange; }
@@ -355,6 +384,38 @@ output.badge {
     /* Vertically center the text there */
     background-color: #f5f5f5;
     overflow: hidden;
+    /* justify-content: left; */
+}
+
+#sbCoords {
+    min-width: 8rem;
+}
+#sbMode {
+    min-width: 9.5rem;
+}
+#sbCartesian {
+    min-width: 7rem;
+}
+#sbBtn {
+    min-width: 3.5rem;
+}
+#sbDbtn, #sbFPS {
+    min-width: 4rem;
+}
+#sbState {
+    min-width: 9rem;
+}
+#sbDragging {
+    min-width: 7.5rem;
+}
+#sbDragmode {
+    min-width: 9rem;
+}
+#sbDOF {
+    min-width: 4rem;
+}
+#sbGravity {
+    min-width: 6rem;
 }
 
 .label {

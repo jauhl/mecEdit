@@ -2,6 +2,17 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 
 # Changelog
 
+## v0.4.8.8 - more components, drives & views
+
+### general:
++ The `<add drive>` button in the sidebar now adds drives to constraint's `ori` and `len` types `free`.
++ Enabled `type` `drive` option in constraint contextmenus. This allows to set some limited optional properties. For additional properties refer to built-in the `JSON` model editor (Hotkey &lt;e&gt;).
++ Added a 'Components' menu to the navbar that will offer more components than the sidebar which only is intended for quick access.
++ Added `fix` and `flt` shapes to the navbar's 'Components' menu.
++ Added an option to define views to the navbar's 'Components' menu. This opens a modal to build the view-object. (Hotkey &lt;v&gt;)
+
+---
+
 ## v0.4.8.5 - loads & node-tracing
 
 ### general:

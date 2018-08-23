@@ -1,5 +1,31 @@
+/**
+ * mecEdit (c) 2018 Jan Uhlig
+ * email: jan.uhlig@web.de
+ * @license MIT License
+ * @requires ctxm-templates.js
+ * @requires appevents.js
+ * @requires g2.editor.js
+ * @requires mixin.js
+ * @requires mec2.js
+ * @requires g2.js
+ */
+'use strict';
+
 const tooltip = document.getElementById('info'),
+    // statusbar
     statusbar = document.getElementById('statbar'),
+    sbMode =  document.getElementById('sbMode'),
+    sbCoords =  document.getElementById('sbCoords'),
+    sbCartesian =  document.getElementById('sbCartesian'),
+    sbBtn =  document.getElementById('sbBtn'),
+    sbDbtn =  document.getElementById('sbDbtn'),
+    sbFPS =  document.getElementById('sbFPS'),
+    sbState =  document.getElementById('sbState'),
+    sbDragging =  document.getElementById('sbDragging'),
+    sbDragmode =  document.getElementById('sbDragmode'),
+    sbDOF =  document.getElementById('sbDOF'),
+    sbGravity =  document.getElementById('sbGravity'),
+
     editor = g2.editor(),
     pi = Math.PI;
 
@@ -53,71 +79,75 @@ const App = {
     },
     prototype: Object.assign({
         constructor() {
-            // this.model = {
-            //     id: 'linkage',
-            //     dt: 2 / 360,
-            //     gravity: false,
-            //     nodes: [
-            //         { id: 'A0', x: 100, y: 100, base: true },
-            //         { id: 'A', x: 100, y: 150 },
-            //         { id: 'B', x: 350, y: 220 },
-            //         { id: 'B0', x: 300, y: 100, base: true },
-            //         { id: 'C', x: 500, y: 220, m: 1 },
-            //         { id: 'D', x: 500, y: 100, m: 1 }
-            //     ],
-            //     constraints: [
-            //         { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
-            //         { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
-            //         { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
-            //         // { id: 'd', p1: 'B', p2: 'D', len: { type: 'const' } },
-            //         { id: 'e', p1: 'B0', p2: 'D', ori: { type: 'const' } },
-            //         { id: 'f', p1: 'B', p2: 'C', len: { type: 'ref', ref:'e' }, ori:{type:"const"} },
-            //     ]
-            // };
-
             this.model = {
-                id:"hand",
-                dt: 2 / 360,
-                gravity:true,
-                dirty: true,
+                id: 'linkage',
+                gravity: false,
                 nodes: [
-                    {id:'A0',x:100,y:100,base:true},
-                    {id:'A',x:100,y:150},
-                    {id:'B',x:350,y:220},
-                    {id:'C',x:250,y:250},
-                    {id:'D',x:600,y:100},
-                    {id:'B0',x:300,y:100,base:true},
+                    { id: 'A0', x: 100, y: 100, base: true },
+                    { id: 'A', x: 100, y: 150 },
+                    { id: 'B', x: 350, y: 220 },
+                    { id: 'B0', x: 300, y: 100, base: true },
+                    { id: 'C', x: 250, y: 320, m: 1 },
+                    { id: 'D', x: 500, y: 100, m: 1 }
                 ],
                 constraints: [
-                    { id:'a',p1:'A0',p2:'A',len:{type:'const'} },
-                    // { id:'a',p1:'A0',p2:'A',ori:{type:'drive',func:'quadratic',Dt:2,Dw:2*pi,input:true},len:{type:'drive',func:'sinoid',Dt:3,Dr:3*pi,input:true} },
-                    // { id:'a',p1:'A0',p2:'A',ori:{type:'drive',func:'quadratic',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'},len:{type:'const'} },
-                    { id:'b',p1:'A', p2:'B',len:{type:'const'} },
-                    { id:'c',p1:'B0', p2:'B',len:{type:'const'} },
-                    { id:'d',p1:'B', p2:'D',len:{type:'const'} },
-                    { id:'e',p1:'B0', p2:'D',ori:{type:'const'} },
-                    { id:'f',p1:'B', p2:'C',len:{type:'ref',ref:'e'},ori:{type:'ref',ref:'b'} }
+                    { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori: { type:'drive', Dt:3, Dw:2*pi} },
+                    { id: 'e', p1: 'B0', p2: 'D', len: { type: 'drive' }, ori: { type:'const'} },
+                    // { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
+                    { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
+                    { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
+                    { id: 'd', p1: 'B', p2: 'C', ori: { type:'ref', ref:'b'}, len: { type: 'const' } }
                 ],
-                shapes: [
-                    {type:'wheel',p:'A0',r:40,wref:'a'},
-                    {type:'fix',p:'A0'},
-                    {type:'flt',p:'B0'},
-                    {type:'beam',p:'B0',wref:'c',len:175},
-                    {type:'slider',p:'A',wref:'c'}
-                    // {type:'img',uri:'./img/hand.png',p:'A0',wref:'a',xoff:140,yoff:80,scl:0.1,w0:-pi/2}
-                ],
-                loads: [
-                    { type:'force',id:'F',p:'A', mode:'push' },
-                    { type:'spring',id:'S',p1:'A',p2:'B0' }
-                ]
-                ,
                 views: [
-                    // { id:'aly',type:'trace',p:'C',Dt:2, stroke:'red' }
-                    // { id:'path',type:'trace',p:'C',Dt:3, fill:'orange' },
-                    // { id:'iA',type:'info',elem:'A',value:'velAbs' },
-                    // { id:'ia',type:'info',elem:'a',value:'w' }
+                    { id:'view1',type:'trace',p:'C', fill:'rgba(255,235,13,.5)' },
+                    { id:'ia',type:'info',elem:'a',value:'w' },
+                    { id:'ia',type:'vector',p:'B',value:'vel' }
                 ]
             };
+
+            // this.model = {
+            //     id:"hand",
+            //     dt: 2 / 360,
+            //     gravity:true,
+            //     dirty: true,
+            //     nodes: [
+            //         {id:'A0',x:100,y:100,base:true},
+            //         {id:'A',x:100,y:150},
+            //         {id:'B',x:350,y:220},
+            //         {id:'C',x:250,y:250},
+            //         {id:'D',x:600,y:100},
+            //         {id:'B0',x:300,y:100,base:true},
+            //     ],
+            //     constraints: [
+            //         { id:'a',p1:'A0',p2:'A',len:{type:'const'} },
+            //         // { id:'a',p1:'A0',p2:'A',ori:{type:'drive',func:'quadratic',Dt:2,Dw:2*pi,input:true},len:{type:'drive',func:'sinoid',Dt:3,Dr:3*pi,input:true} },
+            //         // { id:'a',p1:'A0',p2:'A',ori:{type:'drive',func:'quadratic',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'},len:{type:'const'} },
+            //         { id:'b',p1:'A', p2:'B',len:{type:'const'} },
+            //         { id:'c',p1:'B0', p2:'B',len:{type:'const'} },
+            //         { id:'d',p1:'B', p2:'D',len:{type:'const'} },
+            //         { id:'e',p1:'B0', p2:'D',ori:{type:'const'} },
+            //         { id:'f',p1:'B', p2:'C',len:{type:'ref',ref:'e'},ori:{type:'ref',ref:'b'} }
+            //     ],
+            //     shapes: [
+            //         {type:'wheel',p:'A0',r:40,wref:'a'},
+            //         {type:'fix',p:'A0'},
+            //         {type:'flt',p:'B0'},
+            //         {type:'beam',p:'B0',wref:'c',len:175},
+            //         {type:'slider',p:'A',wref:'c'}
+            //         // {type:'img',uri:'./img/hand.png',p:'A0',wref:'a',xoff:140,yoff:80,scl:0.1,w0:-pi/2}
+            //     ],
+            //     loads: [
+            //         { type:'force',id:'F',p:'A', mode:'push' },
+            //         { type:'spring',id:'S',p1:'A',p2:'B0' }
+            //     ]
+            //     ,
+            //     views: [
+            //         // { id:'aly',type:'trace',p:'C',Dt:2, stroke:'red' }
+            //         // { id:'path',type:'trace',p:'C',Dt:3, fill:'orange' },
+            //         // { id:'iA',type:'info',elem:'A',value:'velAbs' },
+            //         // { id:'ia',type:'info',elem:'a',value:'w' }
+            //     ]
+            // };
             // this.model = {
             //     id:"len ref",
             //     nodes: [
@@ -132,7 +162,7 @@ const App = {
             //     ]
             // };
 
-            this.VERSION = 'v0.4.8.5',
+            this.VERSION = 'v0.4.8.8',
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -140,64 +170,49 @@ const App = {
 
             this.cnv = document.getElementById('c');
             this.ctx = this.cnv.getContext('2d');
-            this.build = false;
-            this.tempElm = false;
+            this.build = false;  // build state
+            this.tempElm = false;  // ctxm state
             this.instruct = document.getElementById('instructions');
             this.ctxmenu = document.getElementById('contextMenu');
             this.ctxmenuheader = document.getElementById("contextMenuHeader");
             this.ctxmenubody = document.getElementById("contextMenuBody");
-            this.imported = {}; // here goes the imported JSON model
+            this.importConfirmed = false; // skip conformdialogue helper
             this.dragMove = true;
+            this.nodeInfoValues = ['acc','accAbs','dof','energy','force','forceAbs','vel','velAbs'];
+            this.constraintInfoValues = ['w','dof','forceAbs','moment'];
+            this.nodeVectorValues = ['accAbs','energy','forceAbs','velAbs']; // or objects only?
 
             this.g = g2();
 
             this.registerEventsFor(this.ctx.canvas)
                 .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], (e) => { this.g.exe(editor.on(this.pntToUsr(Object.assign({}, e)))).exe(this.ctx); })  // apply events to g2 ...
                 .on(['pointer', 'drag', 'pan', 'fps', 'buttondown', 'buttonup', 'click', 'pointerenter', 'pointerleave'], () => this.showStatus())
-                .on('drag', (e) => {       // update tooltip info // kills performance (bug: lag but fps stiil max) and is basically redundant due to statbar. maybe disable tooltip
-                    // if (!this.dragMove) {
-                    //     tooltip.style.left = ((e.clientX) + 15) + 'px';
-                    //     tooltip.style.top = (e.clientY - 50) + 'px';
-                    //     tooltip.innerHTML = editor.dragInfo;
-                    // }
-                    // this.model.asmPos();
-                    this.showTooltip(e)
-                })
+                .on('drag', (e) => {
+                    if (!this.dragMove) { // dragEdit mode
+                        editor.curElm.x0 = editor.curElm.x;
+                        editor.curElm.y0 = editor.curElm.y;
+                    };
+                    this.showTooltip(e);
+                })  // update tooltip info // kills performance (bug: lag but fps stiil max) and is basically redundant due to statbar. maybe disable tooltip
                 .on('pan', (e) => {
                     this.pan(e);
                     this.g.exe(this.ctx);
                 })
                 .on('pointer',(e)=>this.showTooltip(e)) // show tooltip view info
-                // .on('buttondown', (e) => {          
-                    // if (editor.dragInfo && !this.dragMove) {  // show tooltip coord info
-                    //     tooltip.style.left = ((e.clientX) + 15) + 'px';
-                    //     tooltip.style.top = (e.clientY - 50) + 'px';
-                    //     tooltip.innerHTML = editor.dragInfo;
-                    //     tooltip.style.display = 'inline';
-                    // } else if (tooltip.style.display === 'inline') { // hide tooltip view info
-                    //     tooltip.style.display = 'none';
-                    // }
-                    // this.showTooltip(e);
-                // })
-                .on(['buttonup', 'click'], (e) => {             // hide tooltip info
-                    this.hideTooltip()
-                })
-                .on('click', () => {
+                .on(['buttonup', 'click'], () => this.hideTooltip()) // hide tooltip info
+                .on('buttondown', () => {
                     if (this.build) {
-                        // console.log(editor)
                         if (['addnode', 'addbasenode'].includes(this.build.mode)) this.addNode();
                         if (this.build.mode === 'purgenode') this.clearNode(editor.curElm);
                         if (['free', 'tran', 'rot'].includes(this.build.mode)) this.addConstraint();
-                        if (this.build.mode === 'drive') this.addActuator(editor.curElm);
+                        if (this.build.mode === 'drive') this.addDrive(editor.curElm);
                         if (this.build.mode === 'force') this.addForce();
                         if (this.build.mode === 'spring') this.addSpring();
+                        if (['fix', 'flt'].includes(this.build.mode)) this.addSupportShape();
                     }
                 })
                 .on('render', () => this.g.exe(this.ctx))      // redraw
-                // .on('step', () => this.model.pre().itr().post())
                 .on('tick', (e) => this.tick(e));
-                // .startTimer() // startTimer ...             // start synchronized ticks // now in init()
-                // .notify('render')   // send 'render' event
             
             this.state = 'created';
         }, // constructor
@@ -208,8 +223,23 @@ const App = {
 
         showStatus() {  // poor man's status bar
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
-            // statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.dragMove?'move':'edit'}, dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}`
-            statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.dragMove?'move':'edit'}, ${typeof this.model === 'object' ? `dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}` : `` }`
+            // statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.dragMove?'move':'edit'}, ${typeof this.model === 'object' ? `dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}` : `` }`
+            sbMode.innerHTML = `mode=${this.evt.type}`;
+            sbCoords.innerHTML = `x=${x}, y=${y}`;
+            sbCartesian.innerHTML = `cartesian=${this.cartesian}`;
+            sbBtn.innerHTML = `btn=${this.evt.btn}`;
+            sbDbtn.innerHTML = `dbtn=${this.evt.dbtn}`;
+            sbFPS.innerHTML = `fps=${this.fps}`;
+            sbState.innerHTML = `state=${g2.editor.state[editor.curState]}`;
+            sbDragging.innerHTML = `dragging=${this.dragging}`;
+            sbDragmode.innerHTML = `dragmode=${this.dragMove?'move':'edit'}`;
+            // if (typeof this.model === 'object') {
+            //     sbDOF.innerHTML = `dof=${this.model.dof}`;
+            //     sbGravity.innerHTML = `gravity=${this.model.hasGravity ? 'on' : 'off'}`;
+            // } else {
+            //     sbDOF.innerHTML = sbGravity.innerHTML = ``;
+            // };
+
         },
 
         showTooltip(e) {
@@ -231,17 +261,6 @@ const App = {
         hideTooltip() {
             tooltip.style.display = 'none';
         },
-
-        // step(e) {
-        //     if (!!this.model && (this.dragging || this.model.isRunning)) { // check if model is defined first
-        //         this.model.timer.dt = e.dt;
-        //         this.dragging ? this.dragMove ? this.model.pose() : editor.curElm.updDependants() 
-        //                       : this.model.pre().itr().post();
-        //         this.g.exe(this.ctx);
-        //     }
-        //     // this.model.tick(e.dt);
-        //     // this.g.exe(this.ctx);
-        // },
 
         tick(e) {
             if (!!this.model) { // check if model is defined first
@@ -281,13 +300,13 @@ const App = {
             this.model.init().asmPos();
             this.model.draw(this.g);
 
-            this.model.actcount = 0; // add counter to model
-            let actcontainer = document.getElementById('actuators-container');
-            for (let constraint in this.model.constraints) { // get amount of actuators in model
-                if (this.model.constraints[constraint].type === 'ctrl') this.model.actcount++
-            }
+            // this.model.actcount = 0; // add counter to model
+            // let actcontainer = document.getElementById('actuators-container');
+            // for (let constraint in this.model.constraints) { // get amount of actuators in model
+            //     if (this.model.constraints[constraint].type === 'ctrl') this.model.actcount++
+            // }
             // calculate range-input witdth
-            let rangewidth = (this.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
+            // let rangewidth = (this.model.actcount > 1) ? actcontainer.clientWidth / 2 - 150 : actcontainer.clientWidth - 150; // subtract space for controls & output
 
             // for (let constraint in this.model.constraints) {
             //     if (this.model.constraints[constraint].type === 'ctrl') {
@@ -391,7 +410,8 @@ const App = {
         },
 
         resetApp() {
-            app.build = false; // reset appstate
+            app.build = false; // reset build state
+            app.tempElm = false; // reset build state
             this.instruct.innerHTML = ''; // reset instructions
             this.notify('render');
         },
@@ -452,7 +472,7 @@ const App = {
             if (!this.build.firstnode) { // first invocation
                 if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
                     this.build.firstnode = editor.curElm;
-                    this.instruct.innerHTML = 'select second node; &lt;ESC&gt; to cancel'
+                    this.instruct.innerHTML = 'Select second node; &lt;ESC&gt; to cancel'
                 } else { // no node clicked
                     return; // next clickevent invokes function again
                 };
@@ -517,43 +537,42 @@ const App = {
         //     this.notify('render');
         // },
 
-        addActuator(elm) { // todo: can check type of passed object.. if it's a node, let choose second node and add a driven rot (most common) constraint 
-            console.log(elm);
-            if (elm.type === 'ctrl') {
-                this.instruct.innerHTML = 'this constraint is already actuated. select a different one or press &lt;ESC&gt to cancel'
+        addDrive(elm) { // todo: can check type of passed object.. if it's a node, let choose second node and add a driven rot (most common) constraint 
+            if (!(elm === undefined) && ['free', 'tran', 'rot'].includes(elm.type)) {
+                if(elm.ori.type === 'free')
+                    elm.ori.type = 'drive';
+                if(elm.len.type === 'free')
+                    elm.len.type = 'drive';
+            
+                elm.init(this.model);
+
+                this.updateg(); // update graphics
+                this.resetApp(); // reset state and instructions
+            } else if (elm === undefined) {
+                return;
+            } else {
+                this.instruct.innerHTML = "Can't add a drive to this element. Select a different one or press &lt;ESC&gt to cancel.";
+                setTimeout ( () => {app.instruct.innerHTML = 'Select a constraint to add a drive to; &lt;ESC&gt; to cancel'}, 2400 );
             }
-            let actuator = {
-                id: elm.id,
-                p1: elm.p1.id,
-                p2: elm.p2.id,
-            };
-            switch (elm.type) { // todo: generalize in- and outputs
-                case 'rot':
-                    actuator.ori = { type: 'drive', Dt: 2, Dw: 2 * pi, input: 'slider', output: 'slider_out' };
-                    actuator.len = { type: 'const' };
-                    break;
-                case 'tran':
-                    console.log('coming soon ...');
-                    // actuator.ori = {type:'const'};
-                    // actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'};
-                    break;
-                case 'free':
-                    console.log('coming soon ...');
-                // actuator.ori = {type:'drive',Dt:2,Dw:2*pi,input:'slider1',output:'slider_out1'};
-                // actuator.len = {type:'drive',Dt:2,Dw:2*pi,input:'slider2',output:'slider_out2'};
+        },
+
+        addSupportShape() {
+            if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
+
+                let shape = {
+                    type: this.build.mode,
+                    p: editor.curElm.id
+                };
+
+                this.model.addShape(mec.shape.extend(shape));
+                shape.init(this.model);
+
+                this.updateg(); // update graphics
+            } else {
+                return;
             }
-
-            // replace old with new constraint in model and flag for rebuild
-            this.model.constraints.splice(this.model.constraints.indexOf(this.model.constraintById(elm.id)), 1) // get index of passed constraint and delete it from the model 
-            // this.model.constraints.push(actuator); // add new contraint to model
-            // this.model.dirty = true;
-
-            this.model.addConstraint(mec.constraint.extend(actuator));
-            actuator.init(this.model);
-
-            this.updateg(); // update graphics
-
-            this.resetApp(); // reset state and instructions
+            document.body.style.cursor = 'default';
+            this.resetApp();
         },
 
         addForce() {
@@ -586,7 +605,7 @@ const App = {
             if (!this.build.firstnode) { // first invocation
                 if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
                     this.build.firstnode = editor.curElm;
-                    this.instruct.innerHTML = 'select second node; &lt;ESC&gt; to cancel'
+                    this.instruct.innerHTML = 'Select second node; &lt;ESC&gt; to cancel'
                 } else { // no node clicked
                     return; // next clickevent invokes function again
                 };
@@ -617,29 +636,52 @@ const App = {
             };
         },
 
-        addTrace() {
-            trace = {
-                id:`trace${app.tempElm.old.id}`,
-                type:'trace',
-                p:app.tempElm.old.id,
-                Dt:2, 
-                stroke:'red' 
-            };
-            this.model.addView(mec.view.extend(trace));
-            trace.init(this.model);
-            this.updateg(); // update graphics
+        initViewModal() {
+            if (!this.tempElm)
+                this.tempElm = {new:{id:'',type:'trace'}}; // default
+            viewModal.setContent(ctxm.viewModal());
+            document.getElementById('view-fill-color-btn').style.backgroundColor = 'transparent';
+            viewModal.show();
         },
 
-        removeTrace() {
-            let traces = [];
-            this.model.dependentsOf(this.model.nodeById(app.tempElm.old.id)).views.forEach(el=>{
-                if (el.type === 'trace' && el.p.id === app.tempElm.old.id) {
-                    traces.push(el.id);
-                }
-            })
-            this.model.removeView(this.model.viewById(traces[0]));
-            this.updateg(); // update graphics
+        closeViewModal() {
+            this.tempElm = false;
         },
+
+        addViewFromModal() {
+            if (this.tempElm.new.id.length === 0) // no id defined
+                this.tempElm.new.id = `view${this.model.views.length + 1}`;
+            this.model.addView(mec.view.extend(this.tempElm.new));
+            this.tempElm.new.init(this.model);
+            if (['trace','vector'].includes(this.tempElm.new.type))
+                this.updateg();
+            this.resetApp();
+            viewModal.hide()
+        },
+
+        // addTrace() {
+        //     let trace = {
+        //         id:`trace${app.tempElm.old.id}`,
+        //         type:'trace',
+        //         p:app.tempElm.old.id,
+        //         Dt:2, 
+        //         stroke:'red' 
+        //     };
+        //     this.model.addView(mec.view.extend(trace));
+        //     trace.init(this.model);
+        //     this.updateg(); // update graphics
+        // },
+
+        // removeTrace() {
+        //     let traces = [];
+        //     this.model.dependentsOf(this.model.nodeById(app.tempElm.old.id)).views.forEach(el=>{
+        //         if (el.type === 'trace' && el.p.id === app.tempElm.old.id) {
+        //             traces.push(el.id);
+        //         }
+        //     })
+        //     this.model.removeView(this.model.viewById(traces[0]));
+        //     this.updateg(); // update graphics
+        // },
 
         initCtxm(elm) { // todo: remember to add option for drive func
             console.log(elm.type)
@@ -708,29 +750,56 @@ const App = {
             if (type === 'constraint') { // constraints
                 this.ctxmenubody.innerHTML += ctxm.sectionTitle('orientation');
                 this.ctxmenubody.innerHTML += ctxm.oriType(elm);
+
+                if (!!elm.ori && elm.ori.type === 'drive') {
+
+                    if (!this.tempElm.new.ori.hasOwnProperty('Dt')) // make sure the JSON represantation has the optional properties
+                        this.tempElm.new.ori.Dt = 1;
+                    this.ctxmenubody.innerHTML += ctxm.Dt(elm, 'ori');
+
+                    if (!this.tempElm.new.ori.hasOwnProperty('Dw'))
+                        this.tempElm.new.ori.Dw = 2*pi;
+                    this.ctxmenubody.innerHTML += ctxm.Dw(elm, 'ori');
+                };
+
                 if (!!elm.ori && elm.ori.type === 'ref') {
                     const oriRefId = !!elm.ori.ref ? elm.ori.ref : app.model.constraints[0].id;
                     this.ctxmenubody.innerHTML += ctxm.ref(elm, 'ori', oriRefId);
                 };
+
                 this.ctxmenubody.innerHTML += ctxm.sectionTitle('lenght');
                 this.ctxmenubody.innerHTML += ctxm.lenType(elm);
+
+                if (!!elm.len && elm.len.type === 'drive') {
+
+                    if (!this.tempElm.new.len.hasOwnProperty('Dt'))
+                        this.tempElm.new.len.Dt = 1;
+                    this.ctxmenubody.innerHTML += ctxm.Dt(elm, 'len');
+
+                    if (!this.tempElm.new.ori.hasOwnProperty('Dr'))
+                        this.tempElm.new.ori.Dr = 100;
+                    this.ctxmenubody.innerHTML += ctxm.Dr(elm, 'len');
+                };
+
                 if (!!elm.len && elm.len.type === 'ref') {
                     const lenRefId = !!elm.len.ref ? elm.len.ref : app.model.constraints[0].id
                     this.ctxmenubody.innerHTML += ctxm.ref(elm, 'len', lenRefId);
                 };
+
                 this.ctxmenubody.innerHTML += ctxm.sectionTitle('nodes');
                 this.ctxmenubody.innerHTML += ctxm.nodes(elm);
                 this.ctxmenubody.innerHTML += ctxm.removeConstraintButton();
             };
             if (type === 'node') { // nodes
                 this.ctxmenubody.innerHTML += ctxm.nodeCoordinates(elm);
-                let traced = false;
-                this.model.dependentsOf(this.model.nodeById(elm.id)).views.forEach(el=>{
-                    if (!traced && el.type === 'trace') {
-                        traced = true;
-                    }
-                })
-                this.ctxmenubody.innerHTML += ctxm.nodeBase(elm,traced);
+                // let traced = false;
+                // this.model.dependentsOf(this.model.nodeById(elm.id)).views.forEach(el=>{
+                //     if (!traced && el.type === 'trace') {
+                //         traced = true;
+                //     }
+                // })
+                // this.ctxmenubody.innerHTML += ctxm.nodeBase(elm,traced);
+                this.ctxmenubody.innerHTML += ctxm.nodeBase(elm);
             };
             if (type === 'force') { // forces
                 this.ctxmenubody.innerHTML += ctxm.forceValue(elm);
@@ -751,11 +820,13 @@ const App = {
         loadFromJSON(files) {
             let file = files[0]
             let fr = new FileReader();
+            let model;
 
-            fr.onload = (() => {
+            fr.onload = (() => { // async
                 return (e) => {
-                    this.imported = JSON.parse(e.target.result);
-                    // console.log(this == app)
+                    model = JSON.parse(e.target.result);
+                    this.newModel(model);
+                    this.importConfirmed = false; // reset
                 }
             })(file);
             fr.readAsText(file);
@@ -770,14 +841,36 @@ const App = {
             a.click();
             document.body.removeChild(a);
         },
-        newModel() {
-            if (typeof this.model === 'object') {
+
+        newModel(model = {}) {
+            if (typeof this.model === 'object' && !this.importConfirmed) {
                 if (!confirm('All unsaved changes will be lost! Continue?'))
                     return;
             }
-            this.model = {};
+            delete this.model;  // not necessary but better safe than sorry
+            this.model = model;
+
+            this.init();
             this.updateg();
-            this.init(); // needs to be called after updateg() !
+            
+        },
+
+        updateTempElmNew(key, value) { // this seems to be a problem from appevents.js ...
+            this.tempElm.new[key] = value;
+        },
+
+        toggleViewfill() {
+            let fill = document.getElementById('view-fill-color');
+            let fillBtn = document.getElementById('view-fill-color-btn');
+
+            fill.disabled = !fill.disabled;
+            fillBtn.style.backgroundColor = fill.disabled ? 'transparent' : '#e9ecef';
+
+            if (fill.disabled && this.tempElm.new.hasOwnProperty('fill')) {
+                delete this.tempElm.new.fill;
+            } else if (!fill.disabled && !this.tempElm.new.hasOwnProperty('fill')) {
+                this.tempElm.new.fill = '#009900'
+            };
         }
     }, mixin.observable,      // for handling (custom) events ..
         mixin.pointerEventHdl, // managing (delegated) pointer events
@@ -792,6 +885,20 @@ let app;
 let modelModal = new Modal(document.getElementById('modelModal'), {
     backdrop: 'static',
     keyboard: true // dismiss with ESC key
+});
+let viewModal = new Modal(document.getElementById('viewModal'), {
+    backdrop: 'static'
+    // content: `<div class="modal-header bg-dark text-white">
+    //               <h5 class="modal-title">add view component</h5>
+    //               <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    //           </div>
+    //           <div class="modal-body">
+    //               ${ctxm.view()}
+    //           </div>
+    //           <div class="modal-footer">
+    //               <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+    //               <button type="button" class="btn btn-primary" id="modalAccept">Apply</button>
+    //           </div>`
 });
 
 let jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'), {
@@ -830,12 +937,16 @@ window.onload = () => {
     events.navbarChange('import');
     events.sidebarClick('sb-l');
     events.keyboardDown(); // binds to document
+    // events.preventDefaultCTXM(); // binds to document
     events.ctxmClick('contextMenu');
     events.ctxmInput('contextMenu');
     events.ctxmChange('contextMenu');
     events.resize(); // binds to window
     events.modalShown('modelModal');
     events.modalAccept('modalAccept');
+    events.viewModalChange('viewModal');
+    events.viewModalClick('viewModal');
+    events.viewModalHide('viewModal');
 
     // this fixes the initial sizing bug on laptops
     window.dispatchEvent(new Event('resize'));
