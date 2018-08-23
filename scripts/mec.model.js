@@ -6,6 +6,7 @@
  * @requires mec.constraint.js
  * @requires mec.drive.js
  * @requires mec.load.js
+ * @requires mec.view.js
  * @requires mec.shape.js
  */
 "use strict";
@@ -254,11 +255,13 @@ mec.model = {
          * @param {object} elem - element.
          * @returns {object} dictionary object containing dependent elements.
          */
-        dependentsOf(elem) {
-            const deps = {constraints:[],loads:[],views:[],shapes:[]};
+        dependentsOf(elem, deps) {
+            deps = deps || {constraints:[],loads:[],views:[],shapes:[]};
             for (const constraint of this.constraints)
-                if (constraint.dependsOn(elem))
+                if (constraint.dependsOn(elem)) {
+                    this.dependentsOf(constraint,deps);
                     deps.constraints.push(constraint);
+                }
             for (const load of this.loads)
                 if (load.dependsOn(elem))
                     deps.loads.push(load);

@@ -12,19 +12,15 @@
 /**
  * @method
  * @param {object} - plain javascript shape object.
- * @property {string} type - shape type ['fix'|'flt'|'slider'|'bar'|'beam'|'wheel'|'img'].
+ * @property {string} type - shape type ['fix'|'flt'|'slider'|'bar'|'beam'|'wheel'|'poly'|'img'].
  */
 mec.shape = {
     extend(shape) {
         if (shape.type && mec.shape[shape.type]) {
-            Object.setPrototypeOf(shape, Object.assign({},this.prototype,mec.shape[shape.type]));
+            Object.setPrototypeOf(shape, mec.shape[shape.type]);
             shape.constructor();
         }
         return shape; 
-    },
-    prototype: {
-        constructor() {}, // always parameterless .. !
-        dependsOn(elem) { return false; }
     }
 }
 
@@ -213,6 +209,45 @@ mec.shape.wheel = {
             .cir({x:0,y:0,r,ls:"@nodcolor",fs:"transparent",lw:1})
             .cir({x:0,y:0,r:r-5,ls:"@nodcolor",fs:"transparent",lw:1})
          .end()
+    }
+}
+
+
+/**
+ * @param {object} - filled polygon shape.
+ * @property {array} pts - array of points.
+ * @property {string} p - referenced node id for center point position.
+ * @property {string} wref - referenced constraint id for orientation.
+ * @property {string} [fill='#aaaaaa88'] - fill color.
+ * @property {string} [stroke='transparent'] - stroke color.
+ */
+mec.shape.poly = {
+    init(model) {
+        if (typeof this.p === 'string')
+            this.p = model.nodeById(this.p);
+        if (typeof this.wref === 'string')
+            this.wref = model.constraintById(this.wref);
+        this.fill = this.fill || '#aaaaaa88';
+        this.stroke = this.stroke || 'transparent';
+    },
+    get x0() { return  this.p.x0; },
+    get y0() { return  this.p.y0; },
+    get w0() { return  this.wref.w0; },
+    get w() { return  this.wref.w - this.wref.w0; },
+    get x() { 
+        const w = this.wref.w - this.wref.w0;
+        return this.p.x - Math.cos(w)*this.p.x0 + Math.sin(w)*this.p.y0;
+    },
+    get y() { 
+        const w = this.wref.w - this.wref.w0;
+        return this.p.y - Math.sin(w)*this.p.x0 - Math.cos(w)*this.p.y0;
+    },
+    dependsOn(elem) {
+        return this.p === elem || this.wref === elem;
+    },
+    asJSON() { return '{}'; },  // todo ..
+    draw(g) {
+        g.ply({pts:this.pts,closed:true,x:()=>this.x,y:()=>this.y,w:()=>this.w,fs:this.fill,ls:this.stroke})
     }
 }
 

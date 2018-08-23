@@ -43,7 +43,7 @@ mec.view.vector = {
     reset() {},
     asJSON() {
         return '{ "type":"'+this.type+'","id":"'+this.id+'","p":"'+this.p.id+'"'
-                + (this.value ? ',"value":'+this.value : '')
+                + (this.value ? ',"value":"'+this.value+'"' : '')
                 + ' }';
     },
     // interaction
@@ -80,8 +80,8 @@ mec.view.vector = {
 /**
  * @param {object} - trace view.
  * @property {string} p - referenced node id.
- * @property {number} Dt - trace duration [s].
- * @property {string} fill - web color.
+ * @property {number} [Dt] - trace duration [s].
+ * @property {string} [fill] - web color.
  */
 mec.view.trace = {
     constructor() {}, // always parameterless .. !
@@ -103,6 +103,13 @@ mec.view.trace = {
         this.pts.push({x:this.p.x,y:this.p.y});
         if (this.model.timer.t - this.t0 > this.Dt) // remove first trace point !
             this.pts.shift();
+    },
+    asJSON() {
+        return '{ "type":"'+this.type+'","id":"'+this.id+'","p":"'+this.p.id+'"'
+                + (this.Dt ? ',"Dt":'+this.Dt : '')
+                + (this.stroke ? ',"stroke":"'+this.stroke+'"' : '')
+                + (this.fill ? ',"fill":"'+this.fill+'"' : '')
+                + ' }';
     },
     // interaction
     get isSolid() { return false },
@@ -137,6 +144,12 @@ mec.view.info = {
         return this.elem === elem;
     },
     reset() {},
+    asJSON() {
+        return '{ "type":"'+this.type+'","id":"'+this.id+'","elem":"'+this.elem.id+'"'
+                + (this.value ? ',"value":"'+this.value+'"' : '')
+                + (this.name ? ',"name":"'+this.name+'"' : '')
+                + ' }';
+    },
     get hasInfo() {
         return this.elem.state === g2.OVER;  // exclude: OVER & DRAG
     },

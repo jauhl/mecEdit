@@ -16,6 +16,7 @@
  * @returns {object} constraint object.
  * @param {object} - plain javascript constraint object.
  * @property {string} id - constraint id.
+ * @property {string|number} [idloc='left'] - label location ['left','right',-1..1]
  * @property {string} p1 - first point id.
  * @property {string} p2 - second point id.
  * @property {object} [ori] - orientation object.
@@ -431,15 +432,15 @@ mec.constraint = {
             if (this.len && !(this.len.type === 'free')) {
                 jsonString += (this.len.type === 'const' ? ',"len":{ "type":"const"' : '')
                             + (this.len.type === 'ref' ? ',"len":{ "type":"ref","ref":"'+this.len.ref.id+'"' : '')
-                            + (this.len.type === 'drive' ? '"len":{ "type":"drive"' : '')
-                            + (this.len.r0 && this.len.r0 > 0.0001 ? ',"r0":"'+this.len.r0+'"' : '')
+                            + (this.len.type === 'drive' ? ',"len":{ "type":"drive"' : '')
+                            + (this.len.r0 && this.len.r0 > 0.0001 ? ',"r0":'+this.len.r0 : '')
                             + (this.len.refval ? ',"refval":"'+this.len.refval+'"' : '')
-                            + (this.len.ratio && Math.abs(this.len.ratio-1)>0.0001 ? ',"ratio":"'+this.len.ratio+'"' : '')
+                            + (this.len.ratio && Math.abs(this.len.ratio-1)>0.0001 ? ',"ratio":'+this.len.ratio : '')
                             + (this.len.func ? ',"func":"'+this.len.func+'"' : '')
                             + (this.len.arg ? ',"arg":"'+this.len.arg+'"' : '')
-                            + (this.len.t0 && this.len.t0 > 0.0001 ? ',"t0":"'+this.len.t0+'"' : '')
-                            + (this.len.Dt ? ',"Dt":"'+this.len.Dt+'"' : '')
-                            + (this.len.Dr ? ',"Dr":"'+this.len.Dr+'"' : '')
+                            + (this.len.t0 && this.len.t0 > 0.0001 ? ',"t0":'+this.len.t0 : '')
+                            + (this.len.Dt ? ',"Dt":'+this.len.Dt : '')
+                            + (this.len.Dr ? ',"Dr":'+this.len.Dr : '')
                             + (this.len.input ? ',"input":true' : '')
                             + ' }'
             };
@@ -447,15 +448,15 @@ mec.constraint = {
             if (this.ori && !(this.ori.type === 'free')) {
                 jsonString += (this.ori.type === 'const' ? ',"ori":{ "type":"const"' : '')
                             + (this.ori.type === 'ref' ? ',"ori":{ "type":"ref","ref":"'+this.ori.ref.id+'"' : '')
-                            + (this.ori.type === 'drive' ? '"ori":{ "type":"drive"' : '')
-                            + (this.ori.w0 && this.ori.w0 > 0.0001 ? ',"r0":"'+this.ori.w0+'"' : '')
+                            + (this.ori.type === 'drive' ? ',"ori":{ "type":"drive"' : '')
+                            + (this.ori.w0 && this.ori.w0 > 0.0001 ? ',"r0":'+this.ori.w0 : '')
                             + (this.ori.refval ? ',"refval":"'+this.ori.refval+'"' : '')
-                            + (this.ori.ratio && Math.abs(this.ori.ratio-1)>0.0001 ? ',"ratio":"'+this.ori.ratio+'"' : '')
+                            + (this.ori.ratio && Math.abs(this.ori.ratio-1)>0.0001 ? ',"ratio":'+this.ori.ratio : '')
                             + (this.ori.func ? ',"func":"'+this.ori.func+'"' : '')
                             + (this.ori.arg ? ',"arg":"'+this.ori.arg+'"' : '')
-                            + (this.ori.t0 && this.ori.t0 > 0.0001 ? ',"t0":"'+this.ori.t0+'"' : '')
-                            + (this.ori.Dt ? ',"Dt":"'+this.ori.Dt+'"' : '')
-                            + (this.ori.Dw ? ',"Dw":"'+this.ori.Dw+'"' : '')
+                            + (this.ori.t0 && this.ori.t0 > 0.0001 ? ',"t0":'+this.ori.t0 : '')
+                            + (this.ori.Dt ? ',"Dt":'+this.ori.Dt : '')
+                            + (this.ori.Dw ? ',"Dw":'+this.ori.Dw : '')
                             + (this.ori.input ? ',"input":true' : '')
                             + ' }'
             };
@@ -486,8 +487,13 @@ mec.constraint = {
 
             if (this.model.labels.constraints) {
                 let idstr = id || '?', cw = Math.cos(w), sw = Math.sin(w),
-                      xid = p1.x + 20*cw - 10*sw, 
-                      yid = p1.y + 20*sw + 10*cw;
+                    u = idloc === 'left' ? 0.5
+                      : idloc === 'right' ? -0.5
+                      : idloc + 0 === idloc ? idloc  // is numeric
+                      : 0.5,
+                    lam = Math.abs(u)*40, mu = u > 0 ? 10 : -15,
+                    xid = p1.x + lam*cw - mu*sw, 
+                    yid = p1.y + lam*sw + mu*cw;
                 if (this.ori.type === 'ref' || this.len.type === 'ref') {
                     const comma = this.ori.type === 'ref' && this.len.type === 'ref' ? ',' : '';
                     idstr += '('
