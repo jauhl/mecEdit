@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>mecEdit</title>
 
@@ -54,14 +54,35 @@
                         File
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" id="newModel">New model</a>
+                        <a class="dropdown-item" id="newModel">New Model</a>
+                        <div class="dropdown-divider"></div>
+                        <div class="btn-group dropright d-block hoverexpand">
+                            <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              Load Example
+                            </a>
+                            <div class="dropdown-menu m-0">
+                                <a class="dropdown-item" id="nav-example-crankrocker">Crank-Roker</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-example-slidercrank">Slider-Crank</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-example-7r">Stephenson II</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-example-9r">9R</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-example-basictruss">Basic Truss</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-example-truss">Truss</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" id="nav-example-pendulums">Pendulums</a>
+                            </div>
+                        </div>
                         <div class="dropdown-divider"></div>
                         <!-- <label class="dropdown-item">Import linkage from *.JSON<input type="file" hidden></label> -->
-                        <label class="btn btn-default btn-file dropdown-item">Import linkage from *.JSON
+                        <label class="btn btn-default btn-file dropdown-item">Import Linkage from *.JSON
                             <input type="file" id="import" style="display: none;" accept="application/json">
                         </label>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" id="export">Export linkage as *.JSON</a>
+                        <a class="dropdown-item" id="export">Export Linkage as *.JSON</a>
                     </div>
                 </li>
 
@@ -71,11 +92,11 @@
                         Edit
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" id="dragmode">toggle drag mode</a>
+                        <a class="dropdown-item" id="dragmode">Toggle Drag/Edit</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" id="model-edit">model editor</a>
+                        <a class="dropdown-item" id="model-edit">JSON-Editor</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" id="nav-purgenode">purge node</a>
+                        <a class="dropdown-item" id="nav-purgenode">Purge Node</a>
                         <!-- <label class="dropdown-item">Import linkage from *.JSON<input type="file" hidden></label> -->
                     </div>
                 </li>
@@ -88,53 +109,53 @@
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <div class="btn-group dropright d-block hoverexpand">
                             <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              nodes
+                              Nodes
                             </a>
                             <div class="dropdown-menu m-0">
-                                <a class="dropdown-item" id="nav-addbasenode">basenode</a>
+                                <a class="dropdown-item" id="nav-addbasenode">Basenode</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" id="nav-addnode">node</a>
+                                <a class="dropdown-item" id="nav-addnode">Node</a>
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
                         <div class="btn-group dropright d-block hoverexpand">
                             <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              constraints
+                              Constraints
                             </a>
                             <div class="dropdown-menu m-0">
-                                <a class="dropdown-item" id="nav-free">free</a>
+                                <a class="dropdown-item" id="nav-free">Free</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" id="nav-tran">tran</a>
+                                <a class="dropdown-item" id="nav-tran">Tran</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" id="nav-rot">rot</a>
+                                <a class="dropdown-item" id="nav-rot">Rot</a>
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" id="nav-drive">drive</a>
+                        <a class="dropdown-item" id="nav-drive">Drive</a>
                         <div class="dropdown-divider"></div>
                         <div class="btn-group dropright d-block hoverexpand">
                             <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              loads
+                              Loads
                             </a>
                             <div class="dropdown-menu m-0">
-                                <a class="dropdown-item" id="nav-force">force</a>
+                                <a class="dropdown-item" id="nav-force">Force</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" id="nav-spring">spring</a>
+                                <a class="dropdown-item" id="nav-spring">Spring</a>
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
                         <div class="btn-group dropright d-block hoverexpand">
                             <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              shapes
+                              Shapes
                             </a>
                             <div class="dropdown-menu m-0">
-                                <a class="dropdown-item" id="nav-fix">fixed node</a>
+                                <a class="dropdown-item" id="nav-fix">Fixed Node</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" id="nav-flt">floating node</a>
+                                <a class="dropdown-item" id="nav-flt">Floating Node</a>
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" id="nav-addview">views</a>
+                        <a class="dropdown-item" id="nav-addview">Views</a>
                     </div>
                 </li>
 
@@ -146,33 +167,33 @@
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <div class="btn-group dropright d-block hoverexpand">
                                     <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                      toggle labels
+                                      Toggle Labels
                                     </a>
                                     <div class="dropdown-menu m-0">
-                                        <a class="dropdown-item" id="toggleNodeLabels">nodes</a>
+                                        <a class="dropdown-item" id="toggleNodeLabels">Nodes</a>
                                         <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" id="toggleConstraintLabels">constraints</a>
+                                        <a class="dropdown-item" id="toggleConstraintLabels">Constraints</a>
                                         <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" id="toggleLoadLabels">loads</a>
+                                        <a class="dropdown-item" id="toggleLoadLabels">Loads</a>
                                     </div>
                             </div>
 
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" id="darkmode">toggle darkmode</a>
+                            <a class="dropdown-item" id="darkmode">Toggle Darkmode</a>
                             
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" id="resetview">reset editor-view</a>
+                            <a class="dropdown-item" id="resetview">Reset Editor-View</a>
                     </div>
                 </li>
                 <li>
                     <div class="btn-group ml-5" role="group" aria-label="controls-group">
-                        <button type="button" id="run" class="btn btn-dark border-secondary"><i class="fas fa-play"></i></button>
-                        <button type="button" id="idle" class="btn btn-dark border-secondary"><i class="fas fa-pause"></i></button>
-                        <button type="button" id="stop" class="btn btn-dark border-secondary"><i class="fas fa-stop"></i></button>
-                        <button type="button" id="reset" class="btn btn-dark border-secondary"><i class="fas fa-undo"></i></button>
+                        <button type="button" id="run" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="run"><i class="fas fa-play"></i></button>
+                        <button type="button" id="idle" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="idle"><i class="fas fa-pause"></i></button>
+                        <button type="button" id="stop" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="stop"><i class="fas fa-stop"></i></button>
+                        <button type="button" id="reset" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="reset"><i class="fas fa-undo"></i></button>
                     </div>
                     <div class="btn-group ml-2" role="group" aria-label="gravity-group">
-                        <button type="button" id="toggle-g" class="btn btn-dark border-secondary">g <i class="fas fa-long-arrow-alt-down"></i></button>
+                        <button type="button" id="toggle-g" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="toggle gravity">g <i class="fas fa-long-arrow-alt-down"></i></button>
                       </div>
                 </li>
                 </ul>
@@ -518,6 +539,8 @@
     <script src="./scripts/mixin.js"></script>
     <script src="./scripts/ctxm-templates.js"></script>
     <script src="./scripts/appevents.js"></script>
+    <script src="./scripts/examples.js"></script>
+
     <script src="./app.js"></script>
 
 

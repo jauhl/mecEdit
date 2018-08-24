@@ -88,85 +88,25 @@ const App = {
                     { id: 'B', x: 350, y: 220 },
                     { id: 'B0', x: 300, y: 100, base: true },
                     { id: 'C', x: 250, y: 320, m: 1 },
-                    { id: 'D', x: 500, y: 100, m: 1 }
                 ],
                 constraints: [
-                    { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori: { type:'drive', Dt:3, Dw:2*pi} },
-                    { id: 'e', p1: 'B0', p2: 'D', len: { type: 'drive' }, ori: { type:'const'} },
-                    // { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
+                    { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori: { type:'drive', Dt:3, Dw:2*pi, repeat:10 } },
                     { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
                     { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
                     { id: 'd', p1: 'B', p2: 'C', ori: { type:'ref', ref:'b'}, len: { type: 'const' } }
                 ],
                 views: [
                     { id:'view1',type:'trace',p:'C', fill:'rgba(255,235,13,.5)' },
-                    { id:'ia',type:'info',elem:'a',value:'w' },
-                    { id:'ia',type:'vector',p:'B',value:'vel' }
+                    { id:'view2',type:'info',elem:'a',value:'w' },
+                    { id:'view3',type:'vector',p:'B',value:'vel' }
                 ]
             };
 
-            // this.model = {
-            //     id:"hand",
-            //     dt: 2 / 360,
-            //     gravity:true,
-            //     dirty: true,
-            //     nodes: [
-            //         {id:'A0',x:100,y:100,base:true},
-            //         {id:'A',x:100,y:150},
-            //         {id:'B',x:350,y:220},
-            //         {id:'C',x:250,y:250},
-            //         {id:'D',x:600,y:100},
-            //         {id:'B0',x:300,y:100,base:true},
-            //     ],
-            //     constraints: [
-            //         { id:'a',p1:'A0',p2:'A',len:{type:'const'} },
-            //         // { id:'a',p1:'A0',p2:'A',ori:{type:'drive',func:'quadratic',Dt:2,Dw:2*pi,input:true},len:{type:'drive',func:'sinoid',Dt:3,Dr:3*pi,input:true} },
-            //         // { id:'a',p1:'A0',p2:'A',ori:{type:'drive',func:'quadratic',Dt:2,Dw:2*pi,input:'slider',output:'slider_out'},len:{type:'const'} },
-            //         { id:'b',p1:'A', p2:'B',len:{type:'const'} },
-            //         { id:'c',p1:'B0', p2:'B',len:{type:'const'} },
-            //         { id:'d',p1:'B', p2:'D',len:{type:'const'} },
-            //         { id:'e',p1:'B0', p2:'D',ori:{type:'const'} },
-            //         { id:'f',p1:'B', p2:'C',len:{type:'ref',ref:'e'},ori:{type:'ref',ref:'b'} }
-            //     ],
-            //     shapes: [
-            //         {type:'wheel',p:'A0',r:40,wref:'a'},
-            //         {type:'fix',p:'A0'},
-            //         {type:'flt',p:'B0'},
-            //         {type:'beam',p:'B0',wref:'c',len:175},
-            //         {type:'slider',p:'A',wref:'c'}
-            //         // {type:'img',uri:'./img/hand.png',p:'A0',wref:'a',xoff:140,yoff:80,scl:0.1,w0:-pi/2}
-            //     ],
-            //     loads: [
-            //         { type:'force',id:'F',p:'A', mode:'push' },
-            //         { type:'spring',id:'S',p1:'A',p2:'B0' }
-            //     ]
-            //     ,
-            //     views: [
-            //         // { id:'aly',type:'trace',p:'C',Dt:2, stroke:'red' }
-            //         // { id:'path',type:'trace',p:'C',Dt:3, fill:'orange' },
-            //         // { id:'iA',type:'info',elem:'A',value:'velAbs' },
-            //         // { id:'ia',type:'info',elem:'a',value:'w' }
-            //     ]
-            // };
-            // this.model = {
-            //     id:"len ref",
-            //     nodes: [
-            //         {id:'A0',x:100,y:100,base:true},
-            //         {id:'A',x:100,y:200},
-            //         {id:'B',x:300,y:200},
-            //         {id:'B0',x:300,y:100,base:true},
-            //     ],
-            //     constraints: [
-            //         { id:'a',p1:'A0',p2:'A',ori:{type:'const'} },
-            //         { id:'b',p1:'B0', p2:'B',len:{type:'ref',ref:'a'} },
-            //     ]
-            // };
-
-            this.VERSION = 'v0.4.8.8',
+            this.VERSION = 'v0.4.8.9',
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
-            this.view = { x: 50, y: 50, scl: 1, cartesian: true };
+            this.view = { x: 150, y: 150, scl: 1, cartesian: true };
 
             this.cnv = document.getElementById('c');
             this.ctx = this.cnv.getContext('2d');
@@ -211,7 +151,7 @@ const App = {
                         if (['fix', 'flt'].includes(this.build.mode)) this.addSupportShape();
                     }
                 })
-                .on('render', () => this.g.exe(this.ctx))      // redraw
+                .on('render', () => this.g.exe(this.ctx))
                 .on('tick', (e) => this.tick(e));
             
             this.state = 'created';
@@ -221,7 +161,7 @@ const App = {
         get height() { return this.ctx.canvas.height; },
         get dragging() { return !!(editor.curState & g2.DRAG) },
 
-        showStatus() {  // poor man's status bar
+        showStatus() {
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
             // statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.dragMove?'move':'edit'}, ${typeof this.model === 'object' ? `dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}` : `` }`
             sbMode.innerHTML = `mode=${this.evt.type}`;
@@ -233,13 +173,12 @@ const App = {
             sbState.innerHTML = `state=${g2.editor.state[editor.curState]}`;
             sbDragging.innerHTML = `dragging=${this.dragging}`;
             sbDragmode.innerHTML = `dragmode=${this.dragMove?'move':'edit'}`;
-            // if (typeof this.model === 'object') {
-            //     sbDOF.innerHTML = `dof=${this.model.dof}`;
-            //     sbGravity.innerHTML = `gravity=${this.model.hasGravity ? 'on' : 'off'}`;
-            // } else {
-            //     sbDOF.innerHTML = sbGravity.innerHTML = ``;
-            // };
-
+            if (!!this.model.nodes && this.model.nodes.length > 0 ) { // only useful when model has nodes
+                sbDOF.innerHTML = `dof=${this.model.dof}`;
+                sbGravity.innerHTML = `gravity=${this.model.hasGravity ? 'on' : 'off'}`;
+            } else {
+                sbDOF.innerHTML = sbGravity.innerHTML = ``;
+            };
         },
 
         showTooltip(e) {
@@ -697,11 +636,11 @@ const App = {
                 this.tempElm.new.len = {type:'free'};
             
             // save label-state for resetting to it when closing ctxm
-            this.tempElm.labelState = {nodes: mec.showNodeLabels, constraints: mec.showConstraintLabels, loads: mec.showLoadLabels};
+            this.tempElm.labelState = {nodes: this.model.labels.nodes, constraints: this.model.labels.constraints, loads: this.model.labels.loads};
             // show labels that are hidden
-            if (!mec.showNodeLabels) mec.showNodeLabels = true;
-            if (!mec.showConstraintLabels) mec.showConstraintLabels = true;
-            if (!mec.showLoadLabels) mec.showLoadLabels = true;
+            if (!this.model.labels.nodes) this.model.labels.nodes = true;
+            if (!this.model.labels.constraints) this.model.labels.constraints = true;
+            if (!this.model.labels.loads) this.model.labels.loads = true;
             // render labels
             app.notify('render');
 
@@ -723,11 +662,11 @@ const App = {
                 this.replaceConstraint(this.tempElm.old, this.tempElm.new);
                 // this.tempElm.type === 'constraint' ? this.replaceConstraint(this.tempElm.old, this.tempElm.new) : this.replaceNode(this.tempElm.old, this.tempElm.new);
 
-            // this.tempElm.labelState = {nodes: mec.showNodeLabels, constraints: mec.showConstraintLabels, loads: mec.showLoadLabels};
+            // this.tempElm.labelState = {nodes: this.model.labels.nodes, constraints: this.model.labels.constraints, loads: this.model.labels.loads};
             // show labels that are hidden
-            if (this.tempElm.labelState.nodes !== mec.showNodeLabels) mec.showNodeLabels = this.tempElm.labelState.nodes;
-            if (this.tempElm.labelState.constraints !== mec.showConstraintLabels) mec.showConstraintLabels = this.tempElm.labelState.constraints;
-            if (this.tempElm.labelState.loads !== mec.showLoadLabels) mec.showLoadLabels = this.tempElm.labelState.loads;
+            if (this.tempElm.labelState.nodes !== this.model.labels.nodes) this.model.labels.nodes = this.tempElm.labelState.nodes;
+            if (this.tempElm.labelState.constraints !== this.model.labels.constraints) this.model.labels.constraints = this.tempElm.labelState.constraints;
+            if (this.tempElm.labelState.loads !== this.model.labels.loads) this.model.labels.loads = this.tempElm.labelState.loads;
 
             // reset app edit-state
             this.tempElm = false;
@@ -834,7 +773,8 @@ const App = {
 
         saveToJSON() {
             let a = document.createElement('a');
-            let file = new Blob([JSON.stringify(this.model)], { type: 'application/json' }); // model now has toJSON (constraints not fully implemented) which gets automazically invoked by stringify
+            // let file = new Blob([JSON.stringify(this.model)], { type: 'application/json' }); // model now has toJSON (constraints not fully implemented) which gets automazically invoked by stringify
+            let file = new Blob([this.model.asJSON()], { type: 'application/json' });
             a.href = URL.createObjectURL(file);
             a.download = 'linkage.json';
             document.body.appendChild(a); // Firefox needs the element to be added to the DOM for this to work, Chrome & Edge ¯\_(ツ)_/¯
@@ -846,16 +786,16 @@ const App = {
             if (typeof this.model === 'object' && !this.importConfirmed) {
                 if (!confirm('All unsaved changes will be lost! Continue?'))
                     return;
-            }
+            };
+
             delete this.model;  // not necessary but better safe than sorry
             this.model = model;
 
             this.init();
             this.updateg();
-            
         },
 
-        updateTempElmNew(key, value) { // this seems to be a problem from appevents.js ...
+        updateTempElmNew(key, value) { // this seems to be a problem from appevents.js since tempElm is sometimes falsely undefined ...
             this.tempElm.new[key] = value;
         },
 

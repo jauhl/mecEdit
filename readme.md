@@ -2,14 +2,21 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 
 # Changelog
 
+## v0.4.8.9 - Examples
+
+### general:
++ Added examples for models `examples.js` which can be found under File -> Load Example.
+
+---
+
 ## v0.4.8.8 - more components, drives & views
 
 ### general:
 + The `<add drive>` button in the sidebar now adds drives to constraint's `ori` and `len` types `free`.
-+ Enabled `type` `drive` option in constraint contextmenus. This allows to set some limited optional properties. For additional properties refer to built-in the `JSON` model editor (Hotkey &lt;e&gt;).
++ Enabled `type` `drive` option in constraint contextmenus. This allows to set some limited optional properties. For additional properties refer to the built-in `JSON` model editor (Hotkey `[e]`).
 + Added a 'Components' menu to the navbar that will offer more components than the sidebar which only is intended for quick access.
 + Added `fix` and `flt` shapes to the navbar's 'Components' menu.
-+ Added an option to define views to the navbar's 'Components' menu. This opens a modal to build the view-object. (Hotkey &lt;v&gt;)
++ Added an option to define views to the navbar's 'Components' menu. This opens a modal to build the view-object. (Hotkey `[v]`)
 
 ---
 
@@ -41,7 +48,7 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 
 ### general:
 + merged changes from mec2 library (initital release)
-+ added a model-editor where the user can directly edit the code (in `JSON`) that defines the model. menu -> edit -> model editor (or keyboard [e])
++ added a model-editor where the user can directly edit the code (in `JSON`) that defines the model. menu -> edit -> model editor (or Hotkey `[e]`)
 + added dependency [CodeMirror](https://codemirror.net/) for sytaxhighlighting in the model-editor
 + added entry 'New model' to the Navbarmenu. This discards the current model and initializes an empty one.
 
@@ -51,9 +58,9 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 ### mixin.js:
 + mousemove events now distinguish between pressed buttons.
 
-    + left-mousebutton for dragging nodes
-    + middle-mousebutton OR [Ctrl] + left-mousebutton for panning
-    + right-mousebutton is a pointer eventtype
+    + `left-mousebutton` for dragging nodes
+    + `middle-mousebutton` OR `[Ctrl]` + `left-mousebutton` for panning
+    + `right-mousebutton` is a pointer eventtype
 
 ---
 
@@ -176,7 +183,7 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 ### main.js:
 + fully implemented `deleteNode()`
 + changed graphicsqueue approach -> adding & deleting elements from `app.model` now rebuilds the queue, thus maintainig the correct order/layer of graphicelements
-+ added global escape event -> pressing &lt;Escape&gt; now leaves and resets `app.edit`-state at any time
++ added global escape event -> pressing `[Escape]` now leaves and resets `app.edit`-state at any time
 + model properties for actuator angle representation (e.g. `app.model.phi`) are now added dynamically and thus can be omitted in JSON-files
 + fixed bug: clicking in empty space when adding a constraint no longer freezes the app
 

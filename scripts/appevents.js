@@ -32,6 +32,7 @@ const events = {
         document.getElementById(id).addEventListener('click', (e) => {
             // File
             if (e.target && e.target.id === 'newModel') { app.newModel(); };
+            if (e.target && e.target.id.includes('nav-example-')) { app.newModel(examples[e.target.id.replace('nav-example-','')]); };
             if (e.target && e.target.id === 'export') { app.saveToJSON(); };
             if (e.target && e.target.id === 'import') { app.importConfirmed = confirm('All unsaved changes will be lost! Continue?') ? true : (e.preventDefault(),false)}; // false -> dont open file window (and return undefined) and return false
 
@@ -78,18 +79,18 @@ const events = {
             if (e.target && e.target.id === 'darkmode') { app.toggleDarkmode(); };
             if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
             if (e.target && e.target.id === 'toggleNodeLabels') { 
-                mec.showNodeLabels = !mec.showNodeLabels;
-                if (!!app.tempElm.labelState) app.tempElm.labelState.nodes = mec.showNodeLabels;
+                app.model.labels.nodes = !app.model.labels.nodes;
+                if (!!app.tempElm.labelState) app.tempElm.labelState.nodes = app.model.labels.nodes;
                 app.notify('render');
             };
             if (e.target && e.target.id === 'toggleConstraintLabels') {
-                mec.showConstraintLabels = !mec.showConstraintLabels;
-                if (!!app.tempElm.labelState) app.tempElm.labelState.constraints = mec.showConstraintLabels;
+                app.model.labels.constraints = !app.model.labels.constraints;
+                if (!!app.tempElm.labelState) app.tempElm.labelState.constraints = app.model.labels.constraints;
                 app.notify('render');
             };
             if (e.target && e.target.id === 'toggleLoadLabels') {
-                mec.showLoadLabels = !mec.showLoadLabels;
-                if (!!app.tempElm.labelState) app.tempElm.labelState.loads = mec.showLoadLabels;
+                app.model.labels.loads = !app.model.labels.loads;
+                if (!!app.tempElm.labelState) app.tempElm.labelState.loads = app.model.labels.loads;
                 app.notify('render');
             };
 
