@@ -680,10 +680,10 @@ mec.model = {
                 shape.draw(g);
             for (const view of this.views)
                 g.ins(view);
-            for (const load of this.loads)
-                g.ins(load);
             for (const constraint of this.constraints)
                 g.ins(constraint);
+            for (const load of this.loads)
+                g.ins(load);
             for (const node of this.nodes)
                 g.ins(node);
             return this;
