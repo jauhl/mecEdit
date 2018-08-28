@@ -32,17 +32,23 @@
  * @property {number} [ori.t0] - drive parameter start value.
  * @property {number} [ori.Dt] - drive parameter value range.
  * @property {number} [ori.Dw] - drive angular range [rad].
+ * @property {boolean} [ori.bounce=false] - drive oscillate between drivestart and driveend.
+ * @property {number} [ori.repeat] - drive parameter scaling Dt.
+ * @property {boolean} [ori.input=false] - drive flags for actuation via an existing range-input with the same id.
  * @property {object} [len] - length object.
  * @property {string} [len.type] - type of length constraint ['free'|'const'|'ref'|'drive'].
  * @property {number} [len.r0] - initial length.
  * @property {string} [len.ref] - referenced constraint id.
  * @property {string} [len.refval] - referencing other orientation or length value ['ori'|'len'].
- * @property {number} [ori.ratio] - ratio to referencing value.
+ * @property {number} [len.ratio] - ratio to referencing value.
  * @property {string} [len.func] - drive function name ['linear'|'quadratic', ...].
  * @property {string} [len.arg] - drive function argument.
  * @property {number} [len.t0] - drive parameter start value.
  * @property {number} [len.Dt] - drive parameter value range.
  * @property {number} [len.Dr] - drive linear range [rad].
+ * @property {boolean} [len.bounce=false] - drive oscillate between drivestart and driveend.
+ * @property {number} [len.repeat] - drive parameter scaling Dt.
+ * @property {boolean} [len.input=false] - drive flags for actuation via an existing range-input with the same id.
  */
 mec.constraint = {
     extend(c) { Object.setPrototypeOf(c, this.prototype); c.constructor(); return c; },
@@ -441,6 +447,8 @@ mec.constraint = {
                             + (this.len.t0 && this.len.t0 > 0.0001 ? ',"t0":'+this.len.t0 : '')
                             + (this.len.Dt ? ',"Dt":'+this.len.Dt : '')
                             + (this.len.Dr ? ',"Dr":'+this.len.Dr : '')
+                            + (this.len.bounce ? ',"bounce":true' : '')
+                            + (this.len.repeat ? ',"repeat":'+this.len.repeat : '')
                             + (this.len.input ? ',"input":true' : '')
                             + ' }'
             };
@@ -457,6 +465,8 @@ mec.constraint = {
                             + (this.ori.t0 && this.ori.t0 > 0.0001 ? ',"t0":'+this.ori.t0 : '')
                             + (this.ori.Dt ? ',"Dt":'+this.ori.Dt : '')
                             + (this.ori.Dw ? ',"Dw":'+this.ori.Dw : '')
+                            + (this.ori.bounce ? ',"bounce":true' : '')
+                            + (this.ori.repeat ? ',"repeat":'+this.len.repeat : '')
                             + (this.ori.input ? ',"input":true' : '')
                             + ' }'
             };
@@ -477,36 +487,39 @@ mec.constraint = {
         },
         // drawing
         g2() {
-            const {p1,p2,w,r,type,ls,ls2,lw,id,idloc} = this,
-                  g = g2().beg({x:p1.x,y:p1.y,w,scl:1,lw:2,
-                                ls:mec.constraintVectorColor,fs:'@ls',lc:'round',sh:()=>this.sh})
-                            .stroke({d:`M50,0 ${r},0`,ls:()=>this.color,
-                                    lw:lw+1,lsh:true})
-                            .drw({d:mec.constraint.arrow[type],lsh:true})
-                          .end();
+            let g = g2();
+            if (this.model.graphics.linkage.constraints) {
+                const {p1,p2,w,r,type,ls,ls2,lw,id,idloc} = this;
 
-            if (this.model.labels.constraints) {
-                let idstr = id || '?', cw = Math.cos(w), sw = Math.sin(w),
-                    u = idloc === 'left' ? 0.5
-                      : idloc === 'right' ? -0.5
-                      : idloc + 0 === idloc ? idloc  // is numeric
-                      : 0.5,
-                    lam = Math.abs(u)*40, mu = u > 0 ? 10 : -15,
-                    xid = p1.x + lam*cw - mu*sw, 
-                    yid = p1.y + lam*sw + mu*cw;
-                if (this.ori.type === 'ref' || this.len.type === 'ref') {
-                    const comma = this.ori.type === 'ref' && this.len.type === 'ref' ? ',' : '';
-                    idstr += '('
-                          +  (this.ori.type === 'ref' ? this.ori.ref.id : '')
-                          +  comma
-                          +  (this.len.type === 'ref' ? this.len.ref.id : '')
-                          +')';
-                    xid -= 3*sw;
-                    yid += 3*cw;
-                }
-                g.txt({str:idstr,x:xid,y:yid,thal:'center',tval:'middle', ls:mec.txtColor})
-            }
+                g.beg({x:p1.x,y:p1.y,w,scl:1,lw:2,
+                        ls:mec.constraintVectorColor,fs:'@ls',lc:'round',sh:()=>this.sh})
+                    .stroke({d:`M50,0 ${r},0`,ls:()=>this.color,
+                            lw:lw+1,lsh:true})
+                    .drw({d:mec.constraint.arrow[type],lsh:true})
+                  .end();
 
+                if (this.model.graphics.labels.constraints) {
+                    let idstr = id || '?', cw = Math.cos(w), sw = Math.sin(w),
+                        u = idloc === 'left' ? 0.5
+                          : idloc === 'right' ? -0.5
+                          : idloc + 0 === idloc ? idloc  // is numeric
+                          : 0.5,
+                        lam = Math.abs(u)*40, mu = u > 0 ? 10 : -15,
+                        xid = p1.x + lam*cw - mu*sw, 
+                        yid = p1.y + lam*sw + mu*cw;
+                    if (this.ori.type === 'ref' || this.len.type === 'ref') {
+                        const comma = this.ori.type === 'ref' && this.len.type === 'ref' ? ',' : '';
+                        idstr += '('
+                              +  (this.ori.type === 'ref' ? this.ori.ref.id : '')
+                              +  comma
+                              +  (this.len.type === 'ref' ? this.len.ref.id : '')
+                              +')';
+                        xid -= 3*sw;
+                        yid += 3*cw;
+                    };
+                    g.txt({str:idstr,x:xid,y:yid,thal:'center',tval:'middle', ls:mec.txtColor})
+                };
+            };
             return g;
         }
     },

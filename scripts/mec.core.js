@@ -72,7 +72,16 @@ corrMax: 64,
 labels: {
     nodes: false,
     constraints: true,
-    loads: true
+    loads: true,
+},
+/**
+ * flags for showing linkage.
+ * @const
+ * @type {object}
+ */
+linkage: {
+    nodes: true,
+    constraints: true,
 },
 /**
  * place and show labels with elements (depricated !!) 

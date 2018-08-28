@@ -160,19 +160,23 @@ mec.node = {
         // graphics ...
         get r() { return mec.node.radius; },
         g2() {
-            const loc = mec.node.locdir[this.idloc || 'n'],
-                  xid = this.x + 3*this.r*loc[0], 
-                  yid = this.y + 3*this.r*loc[1],
-                  g = this.base 
-                    ? g2().beg({x:this.x,y:this.y,sh:this.sh})
-                          .cir({x:0,y:0,r:5,ls:"@nodcolor",fs:"@nodfill"})
-                          .p().m({x:0,y:5}).a({dw:Math.PI/2,x:-5,y:0}).l({x:5,y:0})
-                          .a({dw:-Math.PI/2,x:0,y:-5}).z().fill({fs:"@nodcolor"})
-                          .end()
-                    : g2().cir({x:this.x,y:this.y,r:this.r,
-                                ls:'#333',fs:'#eee',sh:()=>this.sh});
-            if (this.model.labels.nodes)
-                g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle',ls:mec.txtColor});
+            let g = g2();
+            if (this.model.graphics.linkage.nodes) {
+                const loc = mec.node.locdir[this.idloc || 'n'],
+                      xid = this.x + 3*this.r*loc[0], 
+                      yid = this.y + 3*this.r*loc[1];
+                
+                      g = this.base 
+                        ? g2().beg({x:this.x,y:this.y,sh:this.sh})
+                              .cir({x:0,y:0,r:5,ls:"@nodcolor",fs:"@nodfill"})
+                              .p().m({x:0,y:5}).a({dw:Math.PI/2,x:-5,y:0}).l({x:5,y:0})
+                              .a({dw:-Math.PI/2,x:0,y:-5}).z().fill({fs:"@nodcolor"})
+                              .end()
+                        : g2().cir({x:this.x,y:this.y,r:this.r,
+                                    ls:'#333',fs:'#eee',sh:()=>this.sh});
+                if (this.model.graphics.labels.nodes)
+                    g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle',ls:mec.txtColor});
+            };
             return g;
         }
     },

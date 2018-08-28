@@ -62,7 +62,13 @@ mec.model = {
             else if (!this.gravity)
                 this.gravity = Object.assign({},mec.gravity,{active:false});
 
-            this.labels = Object.assign({},mec.labels,this.labels||null);
+            this.graphics = {
+                labels: Object.assign({},mec.labels,!!this.graphics?this.graphics.labels:null),
+                linkage: Object.assign({},mec.linkage,!!this.graphics?this.graphics.linkage:null)
+            };
+
+            // this.labels = Object.assign({},mec.labels,this.labels||null);
+            // this.graphics = Object.assign({},mec.labels,this.labels||null);
 
             for (const node of this.nodes)
                 node.init(this);
@@ -527,13 +533,13 @@ mec.model = {
                       + (this.gravity.active ? ',\n  "gravity":true' : '')  // in case of true, should also look at vector components  .. !
                       + (nodeCnt ? ',\n  "nodes": [\n' : '')
                       + (nodeCnt ? this.nodes.map((n,i) => '    '+n.asJSON()+comma(i,nodeCnt)+'\n').join('') : '')
-                      + (nodeCnt ? contraintCnt ? '  ],\n' : '  ]\n' : '')
+                      + (nodeCnt ? (contraintCnt || loadCnt || shapeCnt || viewCnt) ? '  ],\n' : '  ]\n' : '')
                       + (contraintCnt ? '  "constraints": [\n' : '')
                       + (contraintCnt ? this.constraints.map((n,i) => '    '+n.asJSON()+comma(i,contraintCnt)+'\n').join('') : '')
-                      + (contraintCnt ? loadCnt ? '  ],\n' : '  ]\n' : '')
+                      + (contraintCnt ? (loadCnt || shapeCnt || viewCnt) ? '  ],\n' : '  ]\n' : '')
                       + (loadCnt ? '  "loads": [\n' : '')
                       + (loadCnt ? this.loads.map((n,i) => '    '+n.asJSON()+comma(i,loadCnt)+'\n').join('') : '')
-                      + (loadCnt ? shapeCnt ? '  ],\n' : '  ]\n' : '')
+                      + (loadCnt ? (shapeCnt || viewCnt) ? '  ],\n' : '  ]\n' : '')
                       + (shapeCnt ? '  "shapes": [\n' : '')
                       + (shapeCnt ? this.shapes.map((n,i) => '    '+n.asJSON()+comma(i,shapeCnt)+'\n').join('') : '')
                       + (shapeCnt ? viewCnt ? '  ],\n' : '  ]\n' : '')
