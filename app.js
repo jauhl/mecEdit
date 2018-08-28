@@ -2,6 +2,7 @@
  * mecEdit (c) 2018 Jan Uhlig
  * email: jan.uhlig@web.de
  * @license MIT License
+ * @requires examples.js
  * @requires ctxm-templates.js
  * @requires appevents.js
  * @requires g2.editor.js
@@ -90,7 +91,7 @@ const App = {
                     { id: 'C', x: 250, y: 320, m: 1 },
                 ],
                 constraints: [
-                    { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori: { type:'drive', Dt:3, Dw:2*pi, repeat:10 } },
+                    { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori: { type:'drive', Dt:3, Dw:2*pi } },
                     { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
                     { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
                     { id: 'd', p1: 'B', p2: 'C', ori: { type:'ref', ref:'b'}, len: { type: 'const' } }
@@ -102,7 +103,7 @@ const App = {
                 ]
             };
 
-            this.VERSION = 'v0.4.8.9',
+            this.VERSION = 'v0.4.9.0',
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -133,7 +134,7 @@ const App = {
                         editor.curElm.y0 = editor.curElm.y;
                     };
                     this.showTooltip(e);
-                })  // update tooltip info // kills performance (bug: lag but fps stiil max) and is basically redundant due to statbar. maybe disable tooltip
+                })
                 .on('pan', (e) => {
                     this.pan(e);
                     this.g.exe(this.ctx);
@@ -287,7 +288,16 @@ const App = {
                 if (constraint.dependsOn(elm))
                     dependants.push(constraint);
             }
-            dependants.forEach(el => el.init(this.model));
+            // dependants.forEach(el => el.init(this.model));
+            dependants.forEach(el => {
+                el.init(this.model);
+                if (el.type === 'ctrl' && ( el.ori.type === 'drive' || el.len.type === 'drive' )) { // each init of constraint-drives multiplies 'Dt' with 'repeat', so this value either has to be saved and restored or simply canceled out by dividing ... 
+                    if (!!el.ori.repeat)
+                        el.ori.Dt /= el.ori.repeat;
+                    if (!!el.len.repeat)
+                        el.len.Dt /= el.len.repeat;
+                };       
+            });
         },
 
         toggleDarkmode() {
@@ -636,11 +646,11 @@ const App = {
                 this.tempElm.new.len = {type:'free'};
             
             // save label-state for resetting to it when closing ctxm
-            this.tempElm.labelState = {nodes: this.model.labels.nodes, constraints: this.model.labels.constraints, loads: this.model.labels.loads};
+            this.tempElm.labelState = {nodes: this.model.graphics.labels.nodes, constraints: this.model.graphics.labels.constraints, loads: this.model.graphics.labels.loads};
             // show labels that are hidden
-            if (!this.model.labels.nodes) this.model.labels.nodes = true;
-            if (!this.model.labels.constraints) this.model.labels.constraints = true;
-            if (!this.model.labels.loads) this.model.labels.loads = true;
+            if (!this.model.graphics.labels.nodes) this.model.graphics.labels.nodes = true;
+            if (!this.model.graphics.labels.constraints) this.model.graphics.labels.constraints = true;
+            if (!this.model.graphics.labels.loads) this.model.graphics.labels.loads = true;
             // render labels
             app.notify('render');
 
@@ -662,11 +672,11 @@ const App = {
                 this.replaceConstraint(this.tempElm.old, this.tempElm.new);
                 // this.tempElm.type === 'constraint' ? this.replaceConstraint(this.tempElm.old, this.tempElm.new) : this.replaceNode(this.tempElm.old, this.tempElm.new);
 
-            // this.tempElm.labelState = {nodes: this.model.labels.nodes, constraints: this.model.labels.constraints, loads: this.model.labels.loads};
+            // this.tempElm.labelState = {nodes: this.model.graphics.labels.nodes, constraints: this.model.graphics.labels.constraints, loads: this.model.graphics.labels.loads};
             // show labels that are hidden
-            if (this.tempElm.labelState.nodes !== this.model.labels.nodes) this.model.labels.nodes = this.tempElm.labelState.nodes;
-            if (this.tempElm.labelState.constraints !== this.model.labels.constraints) this.model.labels.constraints = this.tempElm.labelState.constraints;
-            if (this.tempElm.labelState.loads !== this.model.labels.loads) this.model.labels.loads = this.tempElm.labelState.loads;
+            if (this.tempElm.labelState.nodes !== this.model.graphics.labels.nodes) this.model.graphics.labels.nodes = this.tempElm.labelState.nodes;
+            if (this.tempElm.labelState.constraints !== this.model.graphics.labels.constraints) this.model.graphics.labels.constraints = this.tempElm.labelState.constraints;
+            if (this.tempElm.labelState.loads !== this.model.graphics.labels.loads) this.model.graphics.labels.loads = this.tempElm.labelState.loads;
 
             // reset app edit-state
             this.tempElm = false;
@@ -776,7 +786,7 @@ const App = {
             // let file = new Blob([JSON.stringify(this.model)], { type: 'application/json' }); // model now has toJSON (constraints not fully implemented) which gets automazically invoked by stringify
             let file = new Blob([this.model.asJSON()], { type: 'application/json' });
             a.href = URL.createObjectURL(file);
-            a.download = 'linkage.json';
+            a.download = (!!this.model.id && this.model.id.length > 0) ? `${this.model.id}.json` : 'linkage.json';
             document.body.appendChild(a); // Firefox needs the element to be added to the DOM for this to work, Chrome & Edge ¯\_(ツ)_/¯
             a.click();
             document.body.removeChild(a);

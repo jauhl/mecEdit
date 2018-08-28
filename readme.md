@@ -2,6 +2,20 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 
 # Changelog
 
+## v0.4.9.0 - bugfixes & hiding graphics
+
+### general:
++ Additionally to hiding labels, the linkage can now be hidden from the Navbar -> View -> Togggle Graphics.
+
+### appevents.js:
++ Models from `examples.js` are now passed as copies.
++ Added events for hiding model.
+
+### app.js:
++ Dragging in ´dragEDIT´ mode now correctly restores `Dt`-value of drives.
+
+---
+
 ## v0.4.8.9 - Examples
 
 ### general:
