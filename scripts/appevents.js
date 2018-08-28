@@ -78,6 +78,14 @@ const events = {
             // View
             if (e.target && e.target.id === 'darkmode') { app.toggleDarkmode(); };
             if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
+            if (e.target && e.target.id === 'toggleNodes') { 
+                app.model.graphics.linkage.nodes = !app.model.graphics.linkage.nodes;
+                app.notify('render');
+            };
+            if (e.target && e.target.id === 'toggleConstraints') { 
+                app.model.graphics.linkage.constraints = !app.model.graphics.linkage.constraints;
+                app.notify('render');
+            };
             if (e.target && e.target.id === 'toggleNodeLabels') { 
                 app.model.graphics.labels.nodes = !app.model.graphics.labels.nodes;
                 if (!!app.tempElm.labelState) app.tempElm.labelState.nodes = app.model.graphics.labels.nodes;
