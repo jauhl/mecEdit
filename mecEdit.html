@@ -51,11 +51,11 @@
                     </a>
                 </li> -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                    <a class="nav-link dropdown-toggle" id="FileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         File
                     </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <div class="dropdown-menu" aria-labelledby="FileDropdown">
                         <a class="dropdown-item" id="newModel">New Model</a>
                         <div class="dropdown-divider"></div>
                         <div class="btn-group dropright d-block hoverexpand">
@@ -89,11 +89,11 @@
                 </li>
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                    <a class="nav-link dropdown-toggle" id="EditDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         Edit
                     </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <div class="dropdown-menu" aria-labelledby="EditDropdown">
                         <a class="dropdown-item" id="dragmode">Toggle Drag/Edit</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" id="model-edit">JSON-Editor</a>
@@ -104,11 +104,11 @@
                 </li>
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                    <a class="nav-link dropdown-toggle" id="ComponentsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         Components
                     </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <div class="dropdown-menu" aria-labelledby="ComponentsDropdown">
                         <div class="btn-group dropright d-block hoverexpand">
                             <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                               Nodes
@@ -162,11 +162,11 @@
                 </li>
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                    <a class="nav-link dropdown-toggle" id="ViewDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         View
                     </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <div class="dropdown-menu" aria-labelledby="ViewDropdown">
                             <div class="btn-group dropright d-block hoverexpand">
                                     <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                       Toggle Graphics
@@ -230,7 +230,14 @@
                             <a class="dropdown-item" id="resetview">Reset Editor-View</a>
                     </div>
                 </li>
-                <li>
+
+                <li class="nav-item">
+                    <a class="nav-link" id="aboutModal-trigger" role="button" data-toggle="modal" data-target="#aboutModal" aria-haspopup="true">
+                        About
+                    </a>
+                </li>
+
+                <li class="d-inline-flex">
                     <div class="btn-group ml-5" role="group" aria-label="controls-group">
                         <button type="button" id="run" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="run"><i class="fas fa-play"></i></button>
                         <button type="button" id="idle" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="idle"><i class="fas fa-pause"></i></button>
@@ -437,7 +444,7 @@
                 <!-- <main class="col p-0 main-container"> -->
                 <!-- <canvas-area id="ca" width="1200" height="820" cartesian="true" resizable="both"> -->
                 <div id="canvas-container" class="p-0">
-                    <canvas id="c" class="canvas" width="1200" height="820"></canvas>
+                    <canvas id="canvas" class="canvas" width="1200" height="820"></canvas>
                 </div>
                 <!-- </canvas-area> -->
                 <div id="instructions"></div>
@@ -541,6 +548,14 @@
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="modalAccept">Apply</button>
                 </div>    -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================== About Modal ========================== -->
+    <div id="aboutModal" class="modal fade" role="dialog" aria-labelledby="aboutModallabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width:400px" role="document">
+            <div class="modal-content">
             </div>
         </div>
     </div>

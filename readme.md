@@ -2,6 +2,20 @@ currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit
 
 # Changelog
 
+## v0.4.9.2 - Inputs
+
+### general:
++ [WIP] Inputs are back. Driven constraints allow now to toggle an input element via the contextmenu which gets added to or removed from the DOM. Constraints with `input: true` automatically get an input element on initialisation. Currently only `ori` inputs are supported!
++ Holding the `[Shift]` key while clicking a button to add nodes or constraints from the sidebar keeps the respective build state after finishing. This allows for a chained adding of elements without having to click the button again. When you're done adding elements, simply press `[Esc]` as adviced by the GUI.
+
+### g2.editor.js:
++ Disallowed views from being detected.
+
+### mec.slider.js:
++ [WIP] Updated to utilize `inputCallbacks` and `tick`. While `func` works, `Dt` is disregarded at the moment so all forward/backward takes always 5 seconds.
+
+---
+
 ## v0.4.9.0 - bugfixes & hiding graphics
 
 ### general:

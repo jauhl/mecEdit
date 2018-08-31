@@ -72,7 +72,7 @@ i, svg {
 
 #actuators-container {
     position: absolute;
-    left: 0px;
+    left: 4rem;
     bottom: 35px;
     width: 100%;
     /* height: auto; */
@@ -94,6 +94,10 @@ i, svg {
 
 output.badge {
     margin-left: 1px;
+}
+
+.badge {
+    padding-top: .25rem !important;
 }
 
 /* open dropdown on hover in addition to clicking */
@@ -350,6 +354,10 @@ output.badge {
 .view-inputtext {
     width: 3.5rem;
     justify-content: right;
+}
+
+#aboutModal-trigger:hover {
+    cursor: pointer;
 }
 
 input[type='color'] {

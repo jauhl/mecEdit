@@ -53,7 +53,7 @@ g2.editor.prototype = {
         this.curElm = elm; // provide element pointed at to api
         const {type,x,y,dx,dy} = this.evt;
         // console.log(`elm.id: ${elm === undefined ? 'undefined':elm.id}, x: ${x}, y: ${y}`);
-        if (!elm || !(typeof elm.type === 'string'))   // commands without arguments object .. or beamshapes for whatever reason...!
+        if (!elm || !(typeof elm.type === 'string') || ['vector','trace','info'].includes(elm.type))   // commands without arguments object or mec2.views.. or beamshapes for whatever reason...!
             return false;
 
         if (!elm.state) {                                               // no mode
@@ -88,7 +88,7 @@ g2.editor.prototype = {
             }
         }
         else if (elm.state & g2.EDIT) {                                 // in EDIT mode
-            if (type === 'click') {                                     // leave EDIT mode ..
+            if (type === 'buttondown') {                                // leave EDIT mode .. (was 'click')
                 elm.state ^= g2.EDIT;
                 let ctxMenuStyle = document.getElementById('contextMenu').style;
                 if (ctxMenuStyle.display === 'block') {     // ctxmenu is shown

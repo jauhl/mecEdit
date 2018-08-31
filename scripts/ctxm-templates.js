@@ -74,18 +74,22 @@ ctxm = {
         template += (type === 'ori') ?              
               `<input type="number" class="custom-number-input ctxm-number" id="ori-drive-Dt" step="any" value="${elm.ori.Dt.toFixed(3)}">`
             : `<input type="number" class="custom-number-input ctxm-number" id="len-drive-Dt" step="any" value="${elm.len.Dt.toFixed(3)}">`;
-        template +=`</li>`;
+        template +=`<a style="margin-left:.6rem;margin-top:auto;">input?</a></li>`;
 
         return template;
     },
     Dw: (elm) => `<li class="input-group" style="padding:.1rem;">
                       <label class="ctxm-input-label" style="width:2.5rem;">Dw: </label>            
                       <input type="number" class="custom-number-input ctxm-number" id="ori-drive-Dw" step="any" value="${elm.ori.Dw.toFixed(3)}">
+                      <input type="checkbox" id="ori-input" class="cbx d-none" ${(!!document.getElementById(elm.id) ? 'checked' : '')}>
+                      <label class="lbl" for="ori-input" style="margin-left:.8rem"></label>
                   </li>`
     ,
     Dr: (elm) => `<li class="input-group" style="padding:.1rem;">
                       <label class="ctxm-input-label" style="width:2.5rem;">Dr: </label>            
                       <input type="number" class="custom-number-input ctxm-number" id="len-drive-Dr" step="any" value="${elm.len.Dr.toFixed(3)}">
+                      <input type="checkbox" id="len-input" class="cbx d-none">
+                      <label class="lbl" for="len-input" style="margin-left:.8rem"></label>
                   </li>`
     ,
     removeConstraintButton: () => `<div class="section-divider"></div><li class="input-group" style="height:28px;"><div id="constraint-trash" class="ctxm-right"><i class="fas fa-trash-alt fa-lg"></i></div></li>`,
