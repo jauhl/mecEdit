@@ -34,8 +34,19 @@ i, svg {
         max-width: none !important;
     }
 
+    .mobile-neg-margin {
+        margin-left: calc(50vw - 300px) !important;
+    }
+
     .main-container {
         height: inherit !important;
+    }
+    
+}
+
+@media (max-width: 440px) {
+    .mobile-neg-margin {
+        margin-left: calc(50vw - 300px) !important;
     }
     
 }
@@ -51,7 +62,7 @@ i, svg {
     background-color: #ffffff;
 }
 
-#c {
+#canvas {
     position: absolute;
     top: 0px;
     left: 0px;
@@ -154,6 +165,20 @@ output.badge {
     width:25px;
     height:25px;
     margin-top: .3rem;
+}
+
+/* fix nav-toogle button jumping left/right */
+.navbar {
+    justify-content: unset !important
+}
+
+.navbar-toggler {
+    margin-right: 1rem;
+}
+
+.dropdown-toggle::after {
+    margin-top: .7rem !important;
+    margin-left: .3rem !important;
 }
 
 /* disable horizontal scrolling here because it is inconsistent in sb classes */

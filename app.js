@@ -84,50 +84,49 @@ const App = {
     },
     prototype: Object.assign({
         constructor() {
+            this.model = {
+                id: 'linkage',
+                // gravity: false,
+                // nodes: [
+                //     { id:"A",x:72,y:310,base:true },
+                //     { id:"B",x:562,y:309,base:true },
+                //     { id:"C",x:71,y:401 },
+                //     { id:"D",x:670,y:534 },
+                //     { id:"E",x:273,y:595 }
+                //   ],
+                // constraints: [
+                //     { id:"b",p1:"C",p2:"D",len:{ type:"const" } },
+                //     { id:"c",p1:"D",p2:"B",len:{ type:"const" } },
+                //     { id:"d",p1:"C",p2:"E",len:{ type:"const" },ori:{ type:"ref",ref:"b" } },
+                //     { id:"a",p1:"A",p2:"C",len:{ type:"const" },ori:{ type:"drive",Dt:3,Dw:6.283185307179586,repeat:1000 } }
+                //   ],
+                // views: [
+                //     { type:"info",id:"view1",elem:"D",value:"vel" },
+                //     { type:"info",id:"view2",elem:"b",value:"w" },
+                //     { type:"trace",id:"view3",p:"E",stroke:"#ff0000",fill:"#009900" }
+                // ]
+            };
             // this.model = {
-            //     id: 'linkage',
+            //     id: '5bar',
             //     gravity: false,
             //     nodes: [
-            //         { id: 'A0', x: 100, y: 100, base: true },
-            //         { id: 'A', x: 100, y: 150 },
-            //         { id: 'B', x: 350, y: 220 },
-            //         { id: 'B0', x: 300, y: 100, base: true },
-            //         { id: 'C', x: 250, y: 320, m: 1 },
+            //         {id:'A0',x:100,y:100,base:true},
+            //         {id:'A',x:100,y:150},
+            //         {id:'B',x:350,y:220},
+            //         {id:'B0',x:300,y:100,base:true},
+            //         {id:'C',x:400,y:350},
+            //         {id:'D',x:550,y:150},
+            //         {id:'D0',x:500,y:100,base:true}
             //     ],
             //     constraints: [
-            //         { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori: { type:'drive', Dt:1, Dw:2*pi, input:true } },
-            //         // { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori: { type:'free' } },
-            //         { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
-            //         { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
-            //         { id: 'd', p1: 'B', p2: 'C', ori: { type:'ref', ref:'b'}, len: { type: 'const' } }
-            //     ],
-            //     views: [
-            //         { id:'view1',type:'trace',p:'C', fill:'rgba(255,235,13,.5)' },
-            //         { id:'view2',type:'info',elem:'a',value:'w' },
-            //         { id:'view3',type:'vector',p:'B',value:'vel' }
+            //         { id:'a',p1:'A0',p2:'A',len:{type:'const'},ori:{type:'drive',func:'sinoid',Dt:50,Dw:2*Math.PI,input:true} },
+            //         { id:'b',p1:'A', p2:'B',len:{type:'const'} },
+            //         { id:'c',p1:'B0', p2:'B',len:{type:'const'} },
+            //         { id:'d',p1:'B', p2:'C',len:{type:'const'} },
+            //         { id:'e',p1:'C', p2:'D',len:{type:'const'} },
+            //         { id:'f',p1:'D0', p2:'D',len:{type:'const'},ori:{type:'drive',func:'sinoid',Dt:50,Dw:2*Math.PI,input:true} }
             //     ]
             // };
-            this.model = {
-                id: '5bar',
-                gravity: false,
-                nodes: [
-                    {id:'A0',x:100,y:100,base:true},
-                    {id:'A',x:100,y:150},
-                    {id:'B',x:350,y:220},
-                    {id:'B0',x:300,y:100,base:true},
-                    {id:'C',x:400,y:350},
-                    {id:'D',x:550,y:150},
-                    {id:'D0',x:500,y:100,base:true}
-                ],
-                constraints: [
-                    { id:'a',p1:'A0',p2:'A',len:{type:'const'},ori:{type:'drive',func:'sinoid',Dt:50,Dw:2*Math.PI,input:true} },
-                    { id:'b',p1:'A', p2:'B',len:{type:'const'} },
-                    { id:'c',p1:'B0', p2:'B',len:{type:'const'} },
-                    { id:'d',p1:'B', p2:'C',len:{type:'const'} },
-                    { id:'e',p1:'C', p2:'D',len:{type:'const'} },
-                    { id:'f',p1:'D0', p2:'D',len:{type:'const'},ori:{type:'drive',func:'sinoid',Dt:50,Dw:2*Math.PI,input:true} }
-                ]
-            };
 
             this.VERSION = '0.4.9.2';
 
@@ -146,11 +145,12 @@ const App = {
             this.build = false;  // build state
             this.tempElm = false;  // ctxm state
 
+            this.devmode = false;
             this.importConfirmed = false; // skip conformdialogue helper
             this.dragMove = true;
             this.nodeInfoValues = ['acc','accAbs','dof','energy','force','forceAbs','vel','velAbs'];
             this.constraintInfoValues = ['w','dof','forceAbs','moment'];
-            this.nodeVectorValues = ['accAbs','energy','forceAbs','velAbs']; // or objects only?
+            this.nodeVectorValues = ['acc','energy','force','vel']; // or objects only?
 
             this.g = g2();
 
@@ -194,21 +194,24 @@ const App = {
         showStatus() {
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
             // statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.dragMove?'move':'edit'}, ${typeof this.model === 'object' ? `dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}` : `` }`
-            sbMode.innerHTML = `mode=${this.evt.type}`;
             sbCoords.innerHTML = `x=${x}, y=${y}`;
-            sbCartesian.innerHTML = `cartesian=${this.cartesian}`;
-            sbBtn.innerHTML = `btn=${this.evt.btn}`;
-            sbDbtn.innerHTML = `dbtn=${this.evt.dbtn}`;
-            sbFPS.innerHTML = `fps=${this.fps}`;
-            sbState.innerHTML = `state=${g2.editor.state[editor.curState]}`;
-            sbDragging.innerHTML = `dragging=${this.dragging}`;
             sbDragmode.innerHTML = `dragmode=${this.dragMove?'move':'edit'}`;
+            sbFPS.innerHTML = `fps=${this.fps}`;
             if (!!this.model.nodes && this.model.nodes.length > 0 ) { // only useful when model has nodes
                 sbDOF.innerHTML = `dof=${this.model.dof}`;
-                sbGravity.innerHTML = `gravity=${this.model.hasGravity ? 'on' : 'off'}`;
+                if (this.devmode)
+                    sbGravity.innerHTML = `gravity=${this.model.hasGravity ? 'on' : 'off'}`;
             } else {
                 sbDOF.innerHTML = sbGravity.innerHTML = ``;
             };
+            if (this.devmode) {
+                sbMode.innerHTML = `mode=${this.evt.type}`;
+                sbCartesian.innerHTML = `cartesian=${this.cartesian}`;
+                sbBtn.innerHTML = `btn=${this.evt.btn}`;
+                sbDbtn.innerHTML = `dbtn=${this.evt.dbtn}`;
+                sbState.innerHTML = `state=${g2.editor.state[editor.curState]}`;
+                sbDragging.innerHTML = `dragging=${this.dragging}`;
+            };            
         },
 
         showTooltip(e) {
@@ -249,18 +252,6 @@ const App = {
                     this.g.exe(this.ctx);
                 }
             }
-
-            // if (!!this.model && (this.dragging || this.model.isRunning)) { // check if model is defined first
-            //     this.model.timer.dt = e.dt;
-            //     this.dragging ? 
-            //                     this.dragMove ? 
-            //                                     this.model.pose() 
-            //                                     : this.updDependants(editor.curElm) // null, if updating on dragend via editor
-            //                   : this.model.pre().itr().post();
-            //     this.g.exe(this.ctx);
-            // }
-            // this.model.tick(e.dt);
-            // this.g.exe(this.ctx);
         },
 
         init() { // evaluate how many actuators and add init add controlled properties to model instead of typing them there
@@ -270,7 +261,7 @@ const App = {
             this.model.draw(this.g);
 
             this.model.drivecount = 0;  // add drive counter to model
-            this.model.drives = [];     // track drives by id and dof for responsive input sizing
+            this.model.drives = [];     // track drives by id and dof for responsive range-input sizing
 
             let drv, prv=false;
             while (drv = this.driveByInput(prv)) {
@@ -302,6 +293,14 @@ const App = {
         },
         reset() { 
             this.model.reset();
+
+            // reset drive-inputs
+            for (const drive in this.model.drives) {
+                this.model.constraintById(this.model.drives[drive].id)[this.model.drives[drive].dof].inputCallbk({target:{value:0}}); // reset driven constraints
+                document.getElementById(this.model.drives[drive].id).value = 0;
+                this.notify(this.model.drives[drive].id,0);
+            };
+
             this.notify('render');
             this.state = (this.model.drivecount > 0) ? 'input' : 'reset'; 
         },
@@ -410,8 +409,7 @@ const App = {
         },
 
         addNode() {
-            if (editor.curElm === undefined || !editor.curElm.hasOwnProperty('m')) { // objects with a mass are considered nodes
-                // if (editor.curElm === undefined || !editor.curElm.isSolid) { // also works but throws type-error over empty space
+            if (editor.curElm === undefined || !editor.curElm.hasOwnProperty('m')) { // no node at coords; objects with a mass are considered nodes
                 let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
                 let node = {
                     id: this.getNewChar(),
@@ -422,9 +420,8 @@ const App = {
                 this.model.addNode(mec.node.extend(node)); // inherit prototype methods (extend) and add to model via model.addnode
                 node.init(this.model);
                 this.updateg(); // update graphics
-            } else {
-                console.log('node already exists at this coordinates ...');
-                editor.curElm.drag = false;
+            } else { // existing node at coords
+                return;
             };
             
             if (!this.build.continue) {
@@ -512,6 +509,12 @@ const App = {
                 };
             } else { // second invocation
                 if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
+
+                    if (editor.curElm.id === this.build.firstnode.id) {  // handle invalid selection of identical node as start and end of constraint
+                        app.instruct.classList.add('blink');
+                        setTimeout(() => { app.instruct.classList.remove('blink'); }, 1400);
+                        return;
+                    };
 
                     // build template
                     let tmplen = false;

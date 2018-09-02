@@ -1,4 +1,29 @@
-currently unlisted but available @[Github Pages](https://jauhl.github.io/mecEdit/mecEdit.html "mecEdit")
+
+---
+## [Try **_mecEdit_** out here!](https://jauhl.github.io/mecEdit/mecEdit.html "mecEdit")
+---
+
+
+**_mecEdit_** is a web-app that helps you
+
+build
+
+![build](./img/build.gif)
+
+simulate
+
+![simulate](./img/simulate.gif)
+
+and analyze
+
+![analyze](./img/analyze.gif)
+
+planar linkages.
+<br><br>
+**_mecEdit_** utilizes [mec2](https://github.com/goessner/mec2) as a physics engine and [g2](https://github.com/goessner/g2) for most graphical elements.
+
+---
+<br><br>
 
 # Changelog
 

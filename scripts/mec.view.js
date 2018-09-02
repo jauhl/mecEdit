@@ -118,12 +118,12 @@ mec.view.trace = {
         return false;
     },
     g2() {
-        return g2().ply({pts:this.pts,
-                         format:'{x,y}',
+        return g2().ply({pts: this.pts,
+                         format: '{x,y}',
                          ls: this.stroke || 'navy',
-                         lw:1.5,
+                         lw: 1.5,
                          fs: this.fill || 'transparent',
-                         sh:this.sh
+                         sh: this.sh
         });
     }
 }

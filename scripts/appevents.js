@@ -8,7 +8,7 @@ const events = {
             console.log(e);
             // if (e.target && e.target.className == 'vec_btn') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; [ESC] to cancel'; }; // check for children
             if (e.target && ['free', 'tran', 'rot'].includes(e.target.id)) { app.build = { mode: e.target.id, continue: e.shiftKey?true:false }; app.instruct.innerHTML = 'Select first node; [ESC] to cancel'; }; // check for children // ,'spring'
-            if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'Select a constraint to add a drive to; [ESC] to cancel'; };
+            if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.model.reset(); app.instruct.innerHTML = 'Select a constraint to add a drive to; [ESC] to cancel'; };
             if (e.target && (e.target.id === 'addnode' || e.target.id == 'addbasenode')) {
                 app.build = { mode: e.target.id, continue: e.shiftKey?true:false };
                 app.instruct.innerHTML = 'Left-click on the canvas to place a new node; [ESC] to cancel';
@@ -424,7 +424,8 @@ const events = {
 
             if (!skipUpdate) { 
                 viewModal.setContent(ctxm.viewModal());
-                document.getElementById('view-fill-color-btn').style.backgroundColor = document.getElementById('view-fill-color').disabled ? 'transparent' : '#e9ecef';
+                if (!!document.getElementById('view-fill-color-btn'))
+                    document.getElementById('view-fill-color-btn').style.backgroundColor = document.getElementById('view-fill-color').disabled ? 'transparent' : '#e9ecef';
                 viewModal.update();
             }
         });

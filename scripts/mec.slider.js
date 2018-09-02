@@ -92,7 +92,7 @@ mecSlider.prototype = {
     },
     fwdStep: function() {
         let delta = this.value + this.anistep < this.max ? this.anistep : Math.max(this.max - this.value,0);
-        console.log(`delta: ${delta}, anistep: ${this.anistep}`);
+        // console.log(`delta: ${delta}, anistep: ${this.anistep}`);
         if (delta) {  // proceed ...
             this.value += delta;
             this.iCbk({target:{value:this.value}});     // move drive

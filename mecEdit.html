@@ -36,14 +36,14 @@
 
     <!-- ========================== navbar ========================== -->
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top flex-nowrap">
-        <a class="navbar-brand" >mecEdit</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navcollapse" aria-controls="navcollapse"
+        <a class="navbar-brand order-0" >mecEdit</a>
+        <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navcollapse" aria-controls="navcollapse"
             aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
 
-        <div class="collapse navbar-collapse" id="navcollapse">
+        <div class="collapse navbar-collapse order-2" id="navcollapse">
             <ul class="navbar-nav mr-auto">
                 <!-- <li class="nav-item">
                     <a class="nav-link" href="#">Home
@@ -51,7 +51,7 @@
                     </a>
                 </li> -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="FileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                    <a class="nav-link dropdown-toggle d-inline-flex" id="FileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         File
                     </a>
@@ -89,7 +89,7 @@
                 </li>
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="EditDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                    <a class="nav-link dropdown-toggle d-inline-flex" id="EditDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         Edit
                     </a>
@@ -104,7 +104,7 @@
                 </li>
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="ComponentsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                    <a class="nav-link dropdown-toggle d-inline-flex" id="ComponentsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         Components
                     </a>
@@ -162,7 +162,7 @@
                 </li>
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="ViewDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                    <a class="nav-link dropdown-toggle d-inline-flex" id="ViewDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         View
                     </a>
@@ -238,7 +238,7 @@
                 </li>
 
                 <li class="d-inline-flex">
-                    <div class="btn-group ml-5" role="group" aria-label="controls-group">
+                    <div class="btn-group ml-5 mobile-neg-margin" role="group" aria-label="controls-group">
                         <button type="button" id="run" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="run"><i class="fas fa-play"></i></button>
                         <button type="button" id="idle" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="idle"><i class="fas fa-pause"></i></button>
                         <button type="button" id="stop" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="stop"><i class="fas fa-stop"></i></button>
@@ -464,16 +464,16 @@
 
                 <div id="statbar" class="statbar d-flex flex-row flex-nowrap">
                     <div id="sbCoords" class="text-muted pl-1"></div>
+                    <div id="sbDragmode" class="text-muted pl-1"></div>
+                    <div id="sbDOF" class="text-muted pl-1"></div>                    
+                    <div id="sbFPS" class="text-muted pl-1"></div>
+                    <div id="sbGravity" class="text-muted pl-1"></div>
                     <div id="sbMode" class="text-muted pl-1"></div>
                     <div id="sbCartesian" class="text-muted pl-1"></div>
                     <div id="sbBtn" class="text-muted pl-1"></div>
                     <div id="sbDbtn" class="text-muted pl-1"></div>
-                    <div id="sbFPS" class="text-muted pl-1"></div>
                     <div id="sbState" class="text-muted pl-1"></div>
                     <div id="sbDragging" class="text-muted pl-1"></div>
-                    <div id="sbDragmode" class="text-muted pl-1"></div>
-                    <div id="sbDOF" class="text-muted pl-1"></div>
-                    <div id="sbGravity" class="text-muted pl-1"></div>
                 </div>
             </main>
 
