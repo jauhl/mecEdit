@@ -34,10 +34,6 @@ i, svg {
         max-width: none !important;
     }
 
-    .mobile-neg-margin {
-        margin-left: calc(50vw - 300px) !important;
-    }
-
     .main-container {
         height: inherit !important;
     }
@@ -48,7 +44,6 @@ i, svg {
     .mobile-neg-margin {
         margin-left: calc(50vw - 300px) !important;
     }
-    
 }
 
 /* @media (max-width:420px) and (min-width:400px) {
@@ -176,7 +171,7 @@ output.badge {
     margin-right: 1rem;
 }
 
-.dropdown-toggle::after {
+.navafter::after {
     margin-top: .7rem !important;
     margin-left: .3rem !important;
 }
