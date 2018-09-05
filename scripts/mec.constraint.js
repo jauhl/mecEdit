@@ -445,10 +445,13 @@ mec.constraint = {
                             + (this.len.func ? ',"func":"'+this.len.func+'"' : '')
                             + (this.len.arg ? ',"arg":"'+this.len.arg+'"' : '')
                             + (this.len.t0 && this.len.t0 > 0.0001 ? ',"t0":'+this.len.t0 : '')
-                            + (this.len.Dt ? ',"Dt":'+this.len.Dt : '')
+                            + (this.len.Dt ? 
+                                this.len.repeat ? 
+                                    ',"Dt":'+this.len.Dt/this.len.repeat+',"repeat":'+this.len.repeat 
+                                    : ',"Dt":'+this.len.Dt 
+                                : '')
                             + (this.len.Dr ? ',"Dr":'+this.len.Dr : '')
                             + (this.len.bounce ? ',"bounce":true' : '')
-                            + (this.len.repeat ? ',"repeat":'+this.len.repeat : '')
                             + (this.len.input ? ',"input":true' : '')
                             + ' }'
             };
@@ -463,10 +466,13 @@ mec.constraint = {
                             + (this.ori.func ? ',"func":"'+this.ori.func+'"' : '')
                             + (this.ori.arg ? ',"arg":"'+this.ori.arg+'"' : '')
                             + (this.ori.t0 && this.ori.t0 > 0.0001 ? ',"t0":'+this.ori.t0 : '')
-                            + (this.ori.Dt ? ',"Dt":'+this.ori.Dt : '')
+                            + (this.ori.Dt ? 
+                                this.ori.repeat ? 
+                                    ',"Dt":'+this.ori.Dt/this.ori.repeat+',"repeat":'+this.ori.repeat 
+                                    : ',"Dt":'+this.ori.Dt 
+                                : '')
                             + (this.ori.Dw ? ',"Dw":'+this.ori.Dw : '')
                             + (this.ori.bounce ? ',"bounce":true' : '')
-                            + (this.ori.repeat ? ',"repeat":'+this.len.repeat : '')
                             + (this.ori.input ? ',"input":true' : '')
                             + ' }'
             };

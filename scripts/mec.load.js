@@ -109,7 +109,7 @@ mec.load.force = {
                             lc:'round',sh:()=>this.sh,fs:'@ls'})
                       .drw({d:mec.load.force.arrow,lsh:true})
                       .end();
-        if (this.model.labels.loads)
+        if (this.model.graphics.labels.loads)
             g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle',ls:mec.txtColor});
         return g;
     },
