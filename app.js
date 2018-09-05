@@ -128,7 +128,7 @@ const App = {
             //     ]
             // };
 
-            this.VERSION = '0.4.9.2';
+            this.VERSION = '0.4.9.3';
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -173,7 +173,7 @@ const App = {
                 .on('buttondown', () => {
                     if (this.build) {
                         if (['addnode', 'addbasenode'].includes(this.build.mode)) this.addNode();
-                        if (this.build.mode === 'purgenode') this.clearNode(editor.curElm);
+                        if (this.build.mode === 'purgeelement') this.purgeElement(editor.curElm);
                         if (['free', 'tran', 'rot'].includes(this.build.mode)) this.addConstraint();
                         if (this.build.mode === 'drive') this.addDrive(editor.curElm);
                         if (this.build.mode === 'force') this.addForce();
@@ -331,6 +331,14 @@ const App = {
             this.notify('render');
         },
 
+        resetView() {
+            this.view.x = 150; 
+            this.view.y = 150;
+            this.view.scl = 1;
+            this.view.cartesian = true;
+            this.notify('render');
+        },
+
         createActuatorElm(actuated, width) { // todo: currently only for ori
             let template = document.createElement('template')
             template.innerHTML = `<input type="range" id="${actuated}" class="mec-slider d-inline-flex nowrap ml-2 mr-1 mt-1" style="width:${width}px" min="0" max="${Math.round(mec.toDeg(this.model.constraintById(actuated).ori.Dw))}" step="1" value="0"></input>`
@@ -430,15 +438,25 @@ const App = {
             };
         },
 
-        clearNode(node) {  // remove passed node and all its dependants
-            if (!!node && node.hasOwnProperty('m')) { // check if clicked object is a node
-                app.model.purgeNode(node)
-
+        purgeElement(elem) {  // identify and remove passed element and all its dependants
+            if (!!elem) { // check if an actual element was passed and not 'undefined'
+                if (elem.type === 'node') {
+                    app.model.purgeNode(elem);
+                } else if (['free','tran','rot','ctrl'].includes(elem.type)) {
+                    app.model.purgeConstraint(elem);
+                } else if (['force','spring'].includes(elem.type)) {
+                    app.model.purgeLoad(elem);
+                } else if (['vector','trace','info'].includes(elem.type)) { // not detectable yet
+                    app.model.purgeView(elem);
+                } else { // propably misclicked
+                    return;
+                }
+            
                 this.updateg(); // update graphics
 
                 document.body.style.cursor = 'default';
-                this.resetApp();
-            };           
+                this.resetApp(); 
+            };         
         },
 
         replaceConstraint(oldC, newC) {
@@ -581,7 +599,7 @@ const App = {
         // },
 
         addDrive(elm) { // todo: can check type of passed object.. if it's a node, let choose second node and add a driven rot (most common) constraint 
-            if (!(elm === undefined) && ['free', 'tran', 'rot'].includes(elm.type)) {
+            if (!!elm && ['free', 'tran', 'rot'].includes(elm.type)) {
                 if(elm.ori.type === 'free')
                     elm.ori.type = 'drive';
                 if(elm.len.type === 'free')
@@ -937,20 +955,7 @@ let modelModal = new Modal(document.getElementById('modelModal'), {
 
 let viewModal = new Modal(document.getElementById('viewModal'), {
     backdrop: 'static'
-    // content: `<div class="modal-header bg-dark text-white">
-    //               <h5 class="modal-title">add view component</h5>
-    //               <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-    //           </div>
-    //           <div class="modal-body">
-    //               ${ctxm.view()}
-    //           </div>
-    //           <div class="modal-footer">
-    //               <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-    //               <button type="button" class="btn btn-primary" id="modalAccept">Apply</button>
-    //           </div>`
 });
-
-
 
 let jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'), {
     mode: 'javascript',
@@ -961,8 +966,6 @@ let jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'
     viewportMargin: Infinity,
     lineWrapping: true
   });
-
-  let inc;
 
 //   jsonEditor.on('change', function (editor) {
 //     app.tempElm = jsonEditor.getValue();
@@ -986,7 +989,7 @@ window.onload = () => {
     let rangewidth = (c.width - 350)/2;
     for (const drive in app.model.drives) {
         document.getElementById(app.model.drives[drive].id).slider.style.width = `${rangewidth}px`
-    }
+    };
 
     // render graphics
     app.notify('render');
@@ -1026,6 +1029,11 @@ window.onload = () => {
         &#169; 2018 Jan Uhlig [jan.uhlig@web.de]
         </div>`
     });
+
+    new Modal(document.getElementById('keysModal'), {
+        keyboard: true, // dismiss with ESC key
+    });
+
 
     // dispatch 'resize' event to fix the initial sizing bug on laptops
     // window.dispatchEvent(new Event('resize')); // shouldn't be a new Event

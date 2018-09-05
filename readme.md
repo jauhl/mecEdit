@@ -27,6 +27,15 @@ planar linkages.
 
 # Changelog
 
+## v0.4.9.3 - Quality of life
+
+### general:
++ Added some additional keyboard shortcuts and documented them under Navbar -> Help -> Keyboard Shortcuts
++ Generalized purging elements via Navbar -> Edit -> Purge Element by replacing `app.clearNode()` with `app.purgeElement()`
++ Replaced the 'Run' and 'Idle' buttons with a combined buttton that takes `app.state` into account
+
+---
+
 ## v0.4.9.2 - Inputs
 
 ### general:

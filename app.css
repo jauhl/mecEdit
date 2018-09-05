@@ -42,7 +42,7 @@ i, svg {
 
 @media (max-width: 440px) {
     .mobile-neg-margin {
-        margin-left: calc(50vw - 300px) !important;
+        margin-left: calc(50vw - 280px) !important;
     }
 }
 

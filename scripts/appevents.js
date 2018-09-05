@@ -8,7 +8,7 @@ const events = {
             console.log(e);
             // if (e.target && e.target.className == 'vec_btn') { app.build = { mode: e.target.id }; app.instruct.innerHTML = 'select first node; [ESC] to cancel'; }; // check for children
             if (e.target && ['free', 'tran', 'rot'].includes(e.target.id)) { app.build = { mode: e.target.id, continue: e.shiftKey?true:false }; app.instruct.innerHTML = 'Select first node; [ESC] to cancel'; }; // check for children // ,'spring'
-            if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.model.reset(); app.instruct.innerHTML = 'Select a constraint to add a drive to; [ESC] to cancel'; };
+            if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.model.reset(); app.notify('render'); app.instruct.innerHTML = 'Select a constraint to add a drive to; [ESC] to cancel'; };
             if (e.target && (e.target.id === 'addnode' || e.target.id == 'addbasenode')) {
                 app.build = { mode: e.target.id, continue: e.shiftKey?true:false };
                 app.instruct.innerHTML = 'Left-click on the canvas to place a new node; [ESC] to cancel';
@@ -43,10 +43,9 @@ const events = {
                     app.reset();
             };
             if (e.target && e.target.id === 'model-edit') { modelModal.show(); };
-            if (e.target && e.target.id === 'nav-purgenode') {
+            if (e.target && e.target.id === 'nav-purgeelement') {
                 app.build = { mode: e.target.id.replace('nav-','') };
-                app.instruct.innerHTML = 'Left-click on a node to delete it and all its dependants; [ESC] to cancel';
-                document.body.style.cursor = 'crosshair';
+                app.instruct.innerHTML = 'Left-click on an element to delete it and all its dependants; [ESC] to cancel';
             };
 
             // Components
@@ -66,18 +65,16 @@ const events = {
             if (e.target && e.target.id === 'nav-force') {
                 app.build = { mode: e.target.id.replace('nav-','') };
                 app.instruct.innerHTML = 'Left-click on a node to add a force; [ESC] to cancel';
-                document.body.style.cursor = 'crosshair';
             };
             if (e.target && (e.target.id === 'nav-fix' || e.target.id === 'nav-flt')) {
                 app.build = { mode: e.target.id.replace('nav-','') };
                 app.instruct.innerHTML = `Left-click on a node to add a ${app.build.mode}-shape; [ESC] to cancel`;
-                document.body.style.cursor = 'crosshair';
             };
             if (e.target && e.target.id === 'nav-addview') { app.initViewModal(); };
 
             // View
             if (e.target && e.target.id === 'darkmode') { app.toggleDarkmode(); };
-            if (e.target && e.target.id === 'resetview') { app.view.x = 50; app.view.y = 50; app.view.scl = 1; app.notify('render'); };
+            if (e.target && e.target.id === 'resetview') { app.resetView(); };
             if (e.target && e.target.id === 'toggleNodes') { 
                 app.model.graphics.linkage.nodes = !app.model.graphics.linkage.nodes;
                 app.notify('render');
@@ -102,7 +99,15 @@ const events = {
                 app.notify('render');
             };
 
-            if (e.target && e.target.id === 'run') { app.run(); };
+            // if (e.target && e.target.id === 'run') { app.run(); };
+            if (e.target && e.target.id === 'run') {
+                if (app.state === 'active') {
+                    app.idle();
+                } else {
+                    app.run();
+                };
+                e.target.innerHTML = app.state === 'active' ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            };
             if (e.target && e.target.id === 'idle') { app.idle(); };
             if (e.target && e.target.id === 'stop') { app.stop(); };
             if (e.target && e.target.id === 'reset') { app.reset(); };
@@ -127,8 +132,15 @@ const events = {
                     // todo: make editor & element state resetable
                 };
                 // some shortcuts
+                console.log(e);
                 if (e.key === 'e')    
                     modelModal.show(); // open model editor
+                if (e.key === 'r')    
+                    app.resetView();
+                if (e.key === 'g') { 
+                    app.model.gravity.active = !app.model.gravity.active; 
+                    app.updateg(); 
+                };
                 if (e.key === 'v') 
                     app.initViewModal(); // open view modal
                 if (e.key === 'i') {
@@ -137,9 +149,8 @@ const events = {
                         app.reset();
                 };    
                 if (e.key === 'p') {
-                    app.build = { mode: 'purgenode' };
-                    app.instruct.innerHTML = 'Left-click on a node to delete it and all its adjacent constraints; [ESC] to cancel';
-                    document.body.style.cursor = 'crosshair';
+                    app.build = { mode: 'purgeelement' };
+                    app.instruct.innerHTML = 'Left-click on an element to delete it and all its adjacent constraints; [ESC] to cancel';
                 }
             }
         });

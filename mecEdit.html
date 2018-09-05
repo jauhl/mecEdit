@@ -98,7 +98,7 @@
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" id="model-edit">JSON-Editor</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" id="nav-purgenode">Purge Node</a>
+                        <a class="dropdown-item" id="nav-purgeelement">Purge Element</a>
                         <!-- <label class="dropdown-item">Import linkage from *.JSON<input type="file" hidden></label> -->
                     </div>
                 </li>
@@ -184,16 +184,16 @@
                                             </div>
                                             <div class="dropdown-divider"></div>
                                             <div class="btn-group dropright d-block hoverexpand">
-                                                    <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                      Labels
-                                                    </a>
-                                                    <div class="dropdown-menu m-0">
-                                                        <a class="dropdown-item" id="toggleNodeLabels">Nodes</a>
-                                                        <div class="dropdown-divider"></div>
-                                                        <a class="dropdown-item" id="toggleConstraintLabels">Constraints</a>
-                                                        <div class="dropdown-divider"></div>
-                                                        <a class="dropdown-item" id="toggleLoadLabels">Loads</a>
-                                                    </div>
+                                                <a class="dropdown-item dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Labels
+                                                </a>
+                                                <div class="dropdown-menu m-0">
+                                                    <a class="dropdown-item" id="toggleNodeLabels">Nodes</a>
+                                                    <div class="dropdown-divider"></div>
+                                                    <a class="dropdown-item" id="toggleConstraintLabels">Constraints</a>
+                                                    <div class="dropdown-divider"></div>
+                                                    <a class="dropdown-item" id="toggleLoadLabels">Loads</a>
+                                                </div>
                                             </div>
                                     </div>
                             </div>
@@ -231,21 +231,36 @@
                     </div>
                 </li>
 
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" id="aboutModal-trigger" role="button" data-toggle="modal" data-target="#aboutModal" aria-haspopup="true">
                         About
                     </a>
+                </li> -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-inline-flex navafter" id="FileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+                        Help
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="FileDropdown">
+                        <a class="dropdown-item" id="keysModal-trigger" role="button" data-toggle="modal" data-target="#keysModal" aria-haspopup="true">
+                            Keyboard Shortcuts
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" id="aboutModal-trigger" role="button" data-toggle="modal" data-target="#aboutModal" aria-haspopup="true">
+                            About
+                        </a>
+                    </div>
                 </li>
 
                 <li class="d-inline-flex">
                     <div class="btn-group ml-5 mobile-neg-margin" role="group" aria-label="controls-group">
-                        <button type="button" id="run" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="run"><i class="fas fa-play"></i></button>
-                        <button type="button" id="idle" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="idle"><i class="fas fa-pause"></i></button>
-                        <button type="button" id="stop" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="stop"><i class="fas fa-stop"></i></button>
-                        <button type="button" id="reset" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="reset"><i class="fas fa-undo"></i></button>
+                        <button type="button" id="run" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="Run / Idle"><i class="fas fa-play"></i></button>
+                        <!-- <button type="button" id="idle" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="Idle"><i class="fas fa-pause"></i></button> -->
+                        <button type="button" id="stop" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="Stop"><i class="fas fa-stop"></i></button>
+                        <button type="button" id="reset" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="Reset"><i class="fas fa-undo"></i></button>
                     </div>
                     <div class="btn-group ml-2" role="group" aria-label="gravity-group">
-                        <button type="button" id="toggle-g" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="toggle gravity">g <i class="fas fa-long-arrow-alt-down"></i></button>
+                        <button type="button" id="toggle-g" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="Toggle gravity">g <i class="fas fa-long-arrow-alt-down"></i></button>
                       </div>
                 </li>
                 </ul>
@@ -279,7 +294,7 @@
                             <i class="fas fa-plus"></i> add node:</label> -->
                         <!-- <div class="text-center m-1"> -->
                             <!-- <div class="btn-group btn-group-justified" role="group" aria-label="nodebuttons"> -->
-                                <button type="button" id="addbasenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="base node">
+                                <button type="button" id="addbasenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="Basenode">
                                     <svg viewBox="0 0 60 60" transform="scale(.7)">
                                         <circle cx="30" cy="30" r="20" stroke="white" stroke-width="3" fill="none"/>
                                         <path d='M 50,30 
@@ -293,7 +308,7 @@
                                         />
                                     </svg>
                                 </button>
-                                <!-- <button type="button" id="addbasenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="base node">
+                                <!-- <button type="button" id="addbasenode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="Basenode">
                                     <i class="fas fa-circle"></i></button> -->
                                 <!-- <button type="button" id="addnode" class="btn btn-dark">
                                     <i class="far fa-circle"></i> normal</button> -->
@@ -302,7 +317,7 @@
                     <!-- </li>
 
                     <li class="nav-item mb-1"> -->
-                            <button type="button" id="addnode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="node">
+                            <button type="button" id="addnode" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="Node">
                                     <svg viewBox="0 0 60 60" transform="scale(.7)">
                                         <circle cx="30" cy="30" r="20" stroke="white" stroke-width="3" fill="white"/>
                                     </svg>
@@ -320,7 +335,7 @@
 
                     <li class="nav-item mb-1"> -->
                             <!-- <span class="fl-w"> -->
-                                <button type="button" id="free" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="free">
+                                <button type="button" id="free" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="FREE">
                                     <svg viewBox="-10 -20 60 60"> 
                                         <path d='M8,6 
                                                  C 12 2, 12 -2, 8 -6'
@@ -350,7 +365,7 @@
                                               transform="translate(0,30) rotate(-45) scale(1.2)"/>
                                     </svg>
                                 </button>
-                                    <button type="button" id="tran" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="tran">
+                                    <button type="button" id="tran" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="TRAN">
                                         <svg viewBox="-10 -20 60 60"> 
                                             <path d='M 0,0 
                                                      L 12,0
@@ -377,7 +392,7 @@
                                                   transform="translate(0,30) rotate(-45) scale(1.2)"/>
                                         </svg>
                                     </button>
-                                    <button type="button" id="rot" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="rot">
+                                    <button type="button" id="rot" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="ROT">
                                         <svg viewBox="-10 -20 60 60"> 
                                             <path d='M8,6 
                                                      C 12 2, 12 -2, 8 -6'
@@ -405,7 +420,7 @@
                                         </svg>
                                     </button>
 
-                                    <button type="button" id="drive" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="add drive">
+                                    <button type="button" id="drive" class="btn btn-dark svg-btn mb-1" data-toggle="popover" data-placement="right" data-content="Add drive">
                                         <i class="fas fa-cogs"></i>
                                     </button>
 
@@ -556,6 +571,58 @@
     <div id="aboutModal" class="modal fade" role="dialog" aria-labelledby="aboutModallabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width:400px" role="document">
             <div class="modal-content">
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================== Keys Modal ========================== -->
+    <div id="keysModal" class="modal fade" role="dialog" aria-labelledby="keysModallabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width:400px" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Keyboard Shortcuts</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body text-center">
+                        <table class="table table-striped">
+                            <thead>
+                              <tr>
+                                <th scope="col">Key</th>
+                                <th scope="col">Function</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <th scope="row"><kbd>Esc</kbd></th>
+                                <td>Cancel current function</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"><kbd>E</kbd></th>
+                                <td>Open JSON editor</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"><kbd>R</kbd></th>
+                                <td>Reset editor view</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"><kbd>I</kbd></th>
+                                <td>Toggle Drag/Edit</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"><kbd>V</kbd></th>
+                                <td>Add view component</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"><kbd>P</kbd></th>
+                                <td>Purge element</td>
+                              </tr>
+                              <tr>
+                                <th scope="row">Sidebar:<br> <kbd>Ctrl</kbd>+<kbd>Leftclick</kbd></th>
+                                <td>Chain adding nodes & constraints</td>
+                              </tr>
+                            </tbody>
+                        </table>
+                </div>
             </div>
         </div>
     </div>
