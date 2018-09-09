@@ -106,9 +106,8 @@ const events = {
                 } else {
                     app.run();
                 };
-                e.target.innerHTML = app.state === 'active' ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
             };
-            if (e.target && e.target.id === 'idle') { app.idle(); };
+            // if (e.target && e.target.id === 'idle') { app.idle(); };
             if (e.target && e.target.id === 'stop') { app.stop(); };
             if (e.target && e.target.id === 'reset') { app.reset(); };
             if (e.target && e.target.id === 'toggle-g') { app.model.gravity.active = !app.model.gravity.active; app.updateg(); };
@@ -150,7 +149,7 @@ const events = {
                 };    
                 if (e.key === 'p') {
                     app.build = { mode: 'purgeelement' };
-                    app.instruct.innerHTML = 'Left-click on an element to delete it and all its adjacent constraints; [ESC] to cancel';
+                    app.instruct.innerHTML = 'Left-click on an element to delete it and all its dependants; [ESC] to cancel';
                 }
             }
         });
@@ -159,7 +158,7 @@ const events = {
         /*********************************  contextmenu click handler  ****************************************/ 
         document.getElementById(id).addEventListener('click', (e) => {
             console.log('ctxmClick fired');
-            let ctxmdirty = false;
+            let ctxmdirty = false;  // this flag is necessary even if every case in this listener flags true because this listener can fire in the wave of other events due to delegation
             // console.log(app.tempElm.new);
             // if (app.tempELm && !app.tempELm.hasOwnProperty('new')) // declare new temporary constraint template if not done already
             //     app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
@@ -182,6 +181,7 @@ const events = {
             if (e.target && e.target.id === 'constraint-trash') {
                 // app.tempElm.new = false; 
                 if (app.model.removeConstraint(app.model.constraintById(app.tempElm.old.id))) {
+                    app.removeInput(app.tempElm.old.id); // try removing inputs
                     app.updateg();
                     app.hideCtxm('skipreplace');
                 } else {
@@ -209,10 +209,22 @@ const events = {
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
                 }
             };
-            
+            if (e.target && e.target.id === 'ori-input') {
+                if (e.target.checked && !app.tempElm.new.ori.input) {
+                    app.tempElm.new.ori.input = true;
+                } else if (!e.target.checked && app.tempElm.new.ori.input) {
+                    delete app.tempElm.new.ori.input;
+                }
+            };
+            if (e.target && e.target.id === 'len-input') {
+                if (e.target.checked && !app.tempElm.new.len.input) {
+                    app.tempElm.new.len.input = true;
+                } else if (!e.target.checked && app.tempElm.new.len.input) {
+                    delete app.tempElm.new.len.input;
+                }
+            };
 
             if (ctxmdirty)
-                // todo: check for consistency issues and maybe mark with red border
                 app.updateCtxm(app.tempElm.new, app.tempElm.type);
         });
     },
@@ -237,13 +249,34 @@ const events = {
             if (e.target && e.target.id === 'len-drive-Dr') { 
                 app.tempElm.new.len.Dr = e.target.valueAsNumber;
             };
-            if (e.target && e.target.id === 'ori-input') {
-                if (e.target.checked && !app.tempElm.new.ori.input) {
-                    app.tempElm.new.ori.input = true;
-                } else if (!e.target.checked && app.tempElm.new.ori.input) {
-                        delete app.tempElm.new.ori.input;
-                }
-            };
+            // if (e.target && e.target.id === 'ori-input') {
+            //     if (e.target.checked && !app.tempElm.new.ori.input) {
+            //         app.tempElm.new.ori.input = true;
+            //     } else if (!e.target.checked && app.tempElm.new.ori.input) {
+            //         delete app.tempElm.new.ori.input;
+            //     }
+            // };
+            // if (e.target && e.target.id === 'len-input') {
+            //     if (e.target.checked && !app.tempElm.new.len.input) {
+            //         app.tempElm.new.len.input = true;
+            //     } else if (!e.target.checked && app.tempElm.new.len.input) {
+            //         delete app.tempElm.new.len.input;
+            //     }
+            // };
+            // if (e.target && e.target.id === 'ori-input') {
+            //     if (e.target.checked && !app.tempElm.new.ori.input) {
+            //         app.tempElm.new.ori.input = true;
+            //     } else if (!e.target.checked && app.tempElm.new.ori.input) {
+            //         delete app.tempElm.new.ori.input;
+            //     }
+            // };
+            // if (e.target && e.target.id === 'len-input') {
+            //     if (e.target.checked && !app.tempElm.new.len.input) {
+            //         app.tempElm.new.len.input = true;
+            //     } else if (!e.target.checked && app.tempElm.new.len.input) {
+            //         delete app.tempElm.new.len.input;
+            //     }
+            // };
             // disabled until range id problem clarified
             // if (e.target && e.target.id === 'len-input') {
             //     if (e.target.checked && !app.tempElm.new.len.input) {
@@ -309,7 +342,8 @@ const events = {
         document.getElementById(id).addEventListener('change', (e) => {
             console.log('ctxmChange fired');
             if(app.tempElm) {
-                let ctxmdirty = false;
+                let ctxmdirty = false; // this flag is necessary even if every case in this listener flags true because this listener can fire in the wave of other events due to delegation
+                let doftypechanged = false;
                 // if (!app.tempElm.new)  // declare new temporary constraint template if not done already
                 //     app.tempElm.new = JSON.parse(JSON.stringify(app.tempElm.old)); // deep copy object (shallow-copy (i.e. Object.assign()) would only reference sub level (nested) objects)
                 // if (!app.tempELm.new.ori) 
@@ -320,8 +354,18 @@ const events = {
                 // constraints
                 if (e.target && e.target.id === 'select-p1') { app.tempElm.new.p1 = e.target.value; ctxmdirty = true; }; // todo: prevent applying same p1 & p2 when updating model
                 if (e.target && e.target.id === 'select-p2') { app.tempElm.new.p2 = e.target.value; ctxmdirty = true; };
-                if (e.target && e.target.id === 'select-ori-type') { app.tempElm.new.ori.type = e.target.value; ctxmdirty = true; };
-                if (e.target && e.target.id === 'select-len-type') { app.tempElm.new.len.type = e.target.value; ctxmdirty = true; };
+                if (e.target && e.target.id === 'select-ori-type') { 
+                    app.tempElm.new.ori.type = e.target.value; 
+                    ctxmdirty = true;
+                    if (!doftypechanged)
+                        doftypechanged = [];
+                    doftypechanged.push('ori'); };
+                if (e.target && e.target.id === 'select-len-type') { 
+                    app.tempElm.new.len.type = e.target.value; 
+                    ctxmdirty = true;
+                    if (!doftypechanged)
+                        doftypechanged = [];
+                    doftypechanged.push('len'); };
                 if (e.target && e.target.id === 'select-ori-ref') { app.tempElm.new.ori.ref = e.target.value; ctxmdirty = true; };
                 if (e.target && e.target.id === 'select-len-ref') { app.tempElm.new.len.ref = e.target.value; ctxmdirty = true; };
 
@@ -330,7 +374,7 @@ const events = {
                     console.log(e.target);
                     app.model.loadById(app.tempElm.old.id).p = app.model.nodeById(e.target.value);
                     app.notify('render');
-                    ctxmdirty = true;
+                    ctxmdirty = true; 
                 };
                 if (e.target && e.target.id === 'select-force-mode') {
                     app.model.loadById(app.tempElm.old.id).mode = e.target.value;
@@ -338,14 +382,12 @@ const events = {
                     ctxmdirty = true; 
                 };
                 
-                
-                // if (e.target && e.target.id === 'node-x') { app.tempElm.new.x = e.target.valueAsNumber; ctxmdirty = true; };
-                // if (e.target && e.target.id === 'node-y') { app.tempElm.new.y = e.target.valueAsNumber; ctxmdirty = true; };
-                // if (e.target && e.target.id === 'node-mass') { e.target.checked ? app.tempElm.new.m = Number.POSITIVE_INFINITY : app.tempElm.new.m = 1; ctxmdirty = true; };
+                // if (e.target && e.target.id === 'node-x') { app.tempElm.new.x = e.target.valueAsNumber; };
+                // if (e.target && e.target.id === 'node-y') { app.tempElm.new.y = e.target.valueAsNumber; };
+                // if (e.target && e.target.id === 'node-mass') { e.target.checked ? app.tempElm.new.m = Number.POSITIVE_INFINITY : app.tempElm.new.m = 1; };
                 
                 if (ctxmdirty)
-                    // todo: check for consistency issues and maybe mark with red border
-                    app.updateCtxm(app.tempElm.new, app.tempElm.type);
+                    app.updateCtxm(app.tempElm.new, app.tempElm.type, doftypechanged);
             }
         });
     },
@@ -374,8 +416,11 @@ const events = {
             c.height = main.clientHeight - 30;
 
             let rangewidth = (c.width - 350)/2;
-            for (const drive in app.model.drives) {
-                document.getElementById(app.model.drives[drive].id).slider.style.width = `${rangewidth}px`
+            for (const drive in app.model.inputs) {
+                // document.getElementById(app.model.inputs[drive].id).slider.style.width = `${rangewidth}px`;
+                // document.getElementById(app.model.inputs[drive].id+'-'+app.model.inputs[drive].dof).slider.style.width = `${rangewidth}px`;
+                document.getElementById(app.model.inputs[drive]).slider.style.width = `${rangewidth}px`;
+
             };
         
             // let actcontainer = document.getElementById('actuators-container');

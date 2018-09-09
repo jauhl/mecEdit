@@ -1,6 +1,6 @@
 
 ---
-## [Try **_mecEdit_** out here!](https://jauhl.github.io/mecEdit/mecEdit.html "mecEdit")
+## [Try **_mecEdit_** out!](https://jauhl.github.io/mecEdit/mecEdit.html "mecEdit")
 ---
 
 
@@ -27,12 +27,19 @@ planar linkages.
 
 # Changelog
 
+## v0.5.0.0 - Length-Inputs
+
+### general:
++ Enabled automatic (on initialization) and manual (via contextmenu) adding and removal of range-inputs for driven constraint dofs. This entails various internal changes in `app.js`, `appevents.js`, `ctxm-template.js` and `slider.js` (formerly `mec.slider.js`).
+
+---
+
 ## v0.4.9.3 - Quality of life
 
 ### general:
-+ Added some additional keyboard shortcuts and documented them under Navbar -> Help -> Keyboard Shortcuts
-+ Generalized purging elements via Navbar -> Edit -> Purge Element by replacing `app.clearNode()` with `app.purgeElement()`
-+ Replaced the 'Run' and 'Idle' buttons with a combined buttton that takes `app.state` into account
++ Added some additional keyboard shortcuts and documented them under Navbar -> Help -> Keyboard Shortcuts.
++ Generalized purging elements via Navbar -> Edit -> Purge Element by replacing `app.clearNode()` with `app.purgeElement()`.
++ Replaced the 'Run' and 'Idle' buttons with a combined buttton that takes `app.state` into account.
 
 ---
 

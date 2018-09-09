@@ -34,26 +34,29 @@ ctxm = {
 
         return select;
     },
-    oriType: (elm) => `<li class="input-group">
+    oriType: (elm) => {
+        console.log(app.model.constraints.length);
+        let str = `<li class="input-group">
                             <label class="ctxm-input-label">type: </label>
                             <select class="custom-select" id="select-ori-type">
                                 <option value="free" ${((!elm.ori || elm.ori.type === 'free') ? 'selected' : '')}>free</option>
-                                <option value="const"  ${((!!elm.ori && elm.ori.type === 'const') ? 'selected' : '')}>const</option>
-                                <option value="ref"  ${((!!elm.ori && elm.ori.type === 'ref') ? 'selected' : '')}>ref</option>
-                                <option value="drive" ${((!!elm.ori && elm.ori.type === 'drive') ? 'selected' : '')}>drive</option>
-                            </select>
-                        </li>`
-    ,
-    lenType: (elm) => `<li class="input-group">
-                            <label class="ctxm-input-label">type: </label>
-                            <select class="custom-select" id="select-len-type">
-                                <option value="free" ${((!elm.len || elm.len.type === 'free') ? 'selected' : '')}>free</option>
-                                <option value="const"  ${((!!elm.len && elm.len.type === 'const') ? 'selected' : '')}>const</option>
-                                <option value="ref"  ${((!!elm.len && elm.len.type === 'ref') ? 'selected' : '')}>ref</option>
-                                <option value="drive" ${((!!elm.len && elm.len.type === 'drive') ? 'selected' : '')}>drive</option>
-                            </select>
-                        </li>`
-    ,
+                                <option value="const"  ${((!!elm.ori && elm.ori.type === 'const') ? 'selected' : '')}>const</option>`;
+        if (app.model.constraints.length > 1) // min 2 contraints for ref
+            str += `<option value="ref"  ${((!!elm.ori && elm.ori.type === 'ref') ? 'selected' : '')}>ref</option>`;
+        str += `<option value="drive" ${((!!elm.ori && elm.ori.type === 'drive') ? 'selected' : '')}>drive</option></select></li>`;
+        return str;
+    },
+    lenType: (elm) => {
+        let str = `<li class="input-group">
+                        <label class="ctxm-input-label">type: </label>
+                        <select class="custom-select" id="select-len-type">
+                            <option value="free" ${((!elm.len || elm.len.type === 'free') ? 'selected' : '')}>free</option>
+                            <option value="const"  ${((!!elm.len && elm.len.type === 'const') ? 'selected' : '')}>const</option>`;
+        if (app.model.constraints.length > 1) // min 2 contraints for ref
+            str += `<option value="ref"  ${((!!elm.len && elm.len.type === 'ref') ? 'selected' : '')}>ref</option>`;
+        str += `<option value="drive" ${((!!elm.len && elm.len.type === 'drive') ? 'selected' : '')}>drive</option></select></li>`;
+        return str;
+    },
     ref: (elm, type = 'ori', refId) => {
         let select = `<div class="input-group">
         <label class="ctxm-input-label">referenced: </label>
@@ -81,14 +84,14 @@ ctxm = {
     Dw: (elm) => `<li class="input-group" style="padding:.1rem;">
                       <label class="ctxm-input-label" style="width:2.5rem;">Dw: </label>            
                       <input type="number" class="custom-number-input ctxm-number" id="ori-drive-Dw" step="any" value="${elm.ori.Dw.toFixed(3)}">
-                      <input type="checkbox" id="ori-input" class="cbx d-none" ${(!!document.getElementById(elm.id) ? 'checked' : '')}>
+                      <input type="checkbox" id="ori-input" class="cbx d-none" ${(elm.ori.hasOwnProperty('input') && elm.ori.input ? 'checked' : '')}>
                       <label class="lbl" for="ori-input" style="margin-left:.8rem"></label>
                   </li>`
     ,
     Dr: (elm) => `<li class="input-group" style="padding:.1rem;">
                       <label class="ctxm-input-label" style="width:2.5rem;">Dr: </label>            
                       <input type="number" class="custom-number-input ctxm-number" id="len-drive-Dr" step="any" value="${elm.len.Dr.toFixed(3)}">
-                      <input type="checkbox" id="len-input" class="cbx d-none">
+                      <input type="checkbox" id="len-input" class="cbx d-none" ${(elm.len.hasOwnProperty('input') && elm.len.input ? 'checked' : '')}>
                       <label class="lbl" for="len-input" style="margin-left:.8rem"></label>
                   </li>`
     ,
@@ -306,6 +309,7 @@ ctxm = {
                             <select class="custom-select" id="select-view-value">`; // add head
 
             //  add options
+            console.log(app.model.elementById(app.tempElm.new.elem).type);
             if (app.tempElm.new.type === 'info' && app.model.elementById(app.tempElm.new.elem).type === 'node') {
                 app.nodeInfoValues.forEach(value => {
                     template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
@@ -314,7 +318,7 @@ ctxm = {
                 app.nodeVectorValues.forEach(value => {
                     template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
                 });
-            } else if (app.tempElm.new.type === 'info' && ['free','tran','rot'].includes(app.model.elementById(app.tempElm.new.elem).type)) {
+            } else if (app.tempElm.new.type === 'info' && ['free','tran','rot','ctrl'].includes(app.model.elementById(app.tempElm.new.elem).type)) {
                 app.constraintInfoValues.forEach(value => {
                     template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
                 });
