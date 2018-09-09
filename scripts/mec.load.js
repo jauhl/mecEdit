@@ -73,13 +73,14 @@ mec.load.force = {
     get Qy() { return this.value*Math.sin(this.w)},
     reset() {},
     apply() {
-        this.p.Qx += mec.from_N(this.Qx);
-        this.p.Qy += mec.from_N(this.Qy);
+        this.p.Qx += this.Qx;
+        this.p.Qy += this.Qy;
     },
+    // analysis getters
+    get forceAbs() { return this.value; },
     // interaction
     get isSolid() { return false },
-    // get sh() { return this.state & g2.OVER ? [0,0,4,"gray"] : false },
-    get sh() { return this.state & g2.OVER ? [0, 0, 10, 'white'] : this.state & g2.EDIT ? [0, 0, 10, 'yellow'] : false; },
+    get sh() { return this.state & g2.OVER ? [0, 0, 10, mec.hoveredElmColor] : this.state & g2.EDIT ? [0, 0, 10, 'yellow'] : false; },
     hitContour({x,y,eps}) {
         const len = 45,   // const length for all force arrows
               p = this.p,
@@ -160,7 +161,7 @@ mec.load.spring = {
     // cartesian components
     get len() { return Math.hypot(this.p2.y-this.p1.y,this.p2.x-this.p1.x); },
     get w() { return Math.atan2(this.p2.y-this.p1.y,this.p2.x-this.p1.x); },
-    get force() { return this.k*(this.len - this.len0); },
+    get force() { return this.k*(this.len - this.len0); },                           // todo: rename due to analysis convention .. !
     get Qx() { return this.force*Math.cos(this.w)},
     get Qy() { return this.force*Math.sin(this.w)},
     reset() {},
@@ -172,10 +173,12 @@ mec.load.spring = {
         this.p2.Qx -= Qx;
         this.p2.Qy -= Qy;
     },
+    // analysis getters
+    get forceAbs() { return this.force; },  
     // interaction
     get isSolid() { return false },
     // get sh() { return this.state & g2.OVER ? [0,0,4,"gray"] : false },
-    get sh() { return this.state & g2.OVER ? [0, 0, 10, 'white'] : this.state & g2.EDIT ? [0, 0, 10, 'yellow'] : false; },
+    get sh() { return this.state & g2.OVER ? [0, 0, 10, mec.hoveredElmColor] : this.state & g2.EDIT ? [0, 0, 10, 'yellow'] : false; },
     hitContour({x,y,eps}) {
         const p1 = this.p1, p2 = this.p2,
               cw = Math.cos(this.w), sw = Math.sin(this.w),

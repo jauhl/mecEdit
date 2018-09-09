@@ -174,10 +174,11 @@ mec.model = {
         get valid() { return this.state.valid; },
         set valid(q) { this.state.valid = q; },
         get info() {
+            let str = '';
             for (const view of this.views)
                 if (view.hasInfo)
-                    return view.infoString();
-            return false; 
+                    str += view.infoString()+'<br>';
+            return str.length === 0 ? false : str; 
         },
         /**
          * Number of positional iterations.

@@ -118,7 +118,7 @@ get forceColor() { return this.darkmode ? 'crimson' : 'orange' },
  * color for drawing springs.
  * @return {string}
  */
-get springColor() { return this.darkmode ? 'lightslategray' : '@linkcolor' },
+get springColor() { return this.darkmode ? 'lightslategray' : '#aaa' },
 /**
  * color for vectortypes of constraints.
  * @return {string}

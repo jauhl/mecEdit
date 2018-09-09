@@ -54,7 +54,7 @@ mec.view.vector = {
         const v = this.p[this.value];
         const vabs = Math.hypot(v.y,v.x);
         const vview = !mec.isEps(vabs) 
-                    ? mec.asympClamp(scale*vabs,25,150)
+                    ? mec.asympClamp(scale*vabs,25,100)
                     : 0;
         return { p1:this.p, 
                  p2:{ x:this.p.x + v.x/vabs*vview, y:this.p.y + v.y/vabs*vview }
