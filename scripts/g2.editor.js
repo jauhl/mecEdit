@@ -16,7 +16,6 @@ var g2 = g2 || { prototype:{} };  // for jsdoc only ...
 // extend prototypes for argument objects
 g2.editor = function() {
     if (this instanceof g2.editor) {
-//        this.dragging = false;
         this.draggable = false;
         this.handles = g2();
         return this;
@@ -52,7 +51,6 @@ g2.editor.prototype = {
     hit(elm) {
         this.curElm = elm; // provide element pointed at to api
         const {type,x,y,dx,dy} = this.evt;
-        // console.log(`elm.id: ${elm === undefined ? 'undefined':elm.id}, x: ${x}, y: ${y}`);
         if (!elm || !(typeof elm.type === 'string') || ['vector','trace'].includes(elm.type))   // commands without arguments object or mec2.views.. or beamshapes for whatever reason...!
             return false;
 
@@ -68,11 +66,9 @@ g2.editor.prototype = {
             else if (type === 'buttonup') {                             // leave DRAG mode ..
                 elm.state ^= g2.DRAG;
                 this.draggable = false;
-                // if (!app.dragMove) app.updDependants(elm);   // this is faster than updating on drag but less impressive
                 if (elm.selectEnd) elm.selectEnd(this.evt);
             }
             else if (type === 'click' && !app.build) {                  // enter EDIT mode .. // dont set EDIT when building mechanism
-                // todo: if (elm.model.isRunning) set freeze & save state to reset to after leaving EDIT
                 if(elm.state === 3) elm.state = elm.state ^ g2.DRAG;    // remove DRAG state
                 elm.state = elm.state ^ g2.OVER | g2.EDIT;
                 app.initCtxm(elm); 
@@ -93,7 +89,6 @@ g2.editor.prototype = {
                 let ctxMenuStyle = document.getElementById('contextMenu').style;
                 if (ctxMenuStyle.display === 'block') {     // ctxmenu is shown
                     app.hideCtxm()                          // hide ctxmenu
-                    // app.tempElm = false;                    // reset is now directly in hideCtxm()
                 }
             }
         }
@@ -110,25 +105,6 @@ g2.editor.prototype = {
         return elm.isSolid ? elm.hitInner   && elm.hitInner({x,y,eps})
                            : elm.hitContour && elm.hitContour({x,y,eps});
     },
-/*
-    elementDragBeg(elm,e) {
-        elm.state |= g2.DRAG;
-        this.draggable = elm;
-        if (elm.dragBeg) elm.dragBeg(e);
-    },
-    elementDragEnd(elm,e) {
-        elm.state ^= g2.DRAG;
-        this.draggable = false;
-        if (elm.dragEnd) elm.dragEnd(e);
-    },
-    elementEdit(elm) { 
-        elm.state ^= g2.EDIT;
-        if ('handles' in elm) {
-            elm.state = elm.state ^ (g2.OVER | g2.EDIT);
-            elm.handles(this.handles);
-        }
-    },
-*/
 };
 
 // implement zoom agnostic handle ...

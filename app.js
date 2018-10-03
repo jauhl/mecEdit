@@ -9,6 +9,7 @@
  * @requires appevents.js
  * @requires g2.editor.js
  * @requires mixin.js
+ * @requires slider.js
  * @requires mec2.js
  * @requires g2.js
  */
@@ -85,66 +86,11 @@ const App = {
     },
     prototype: Object.assign({
         constructor() {
-            // this.model = {
-            //     id: 'linkage',
-                // gravity: false,
-                // nodes: [
-                //     { id:"A",x:72,y:310,base:true },
-                //     { id:"B",x:562,y:309,base:true },
-                //     { id:"C",x:71,y:401 },
-                //     { id:"D",x:670,y:534 },
-                //     { id:"E",x:273,y:595 }
-                //   ],
-                // constraints: [
-                //     { id:"b",p1:"C",p2:"D",len:{ type:"const" } },
-                //     { id:"c",p1:"D",p2:"B",len:{ type:"const" } },
-                //     { id:"d",p1:"C",p2:"E",len:{ type:"const" },ori:{ type:"ref",ref:"b" } },
-                //     { id:"a",p1:"A",p2:"C",len:{ type:"const" },ori:{ type:"drive",Dt:3,Dw:6.283185307179586,repeat:1000 } }
-                //   ],
-                // views: [
-                //     { type:"info",id:"view1",elem:"D",value:"vel" },
-                //     { type:"info",id:"view2",elem:"b",value:"w" },
-                //     { type:"trace",id:"view3",p:"E",stroke:"#ff0000",fill:"#009900" }
-                // ]
-            // };
             this.model = {
                 id: 'linkage'
-                // nodes: [
-                //     {id:'A0',x:100,y:100,base:true},
-                //     {id:'A',x:100,y:200}
-                // ],
-                // constraints: [
-                //     { id:'a',p1:'A0',p2:'A',len:{type:'drive',func:'linear',Dt:2,Dr:100,input:true},ori:{type:'drive',func:'linear',Dt:3,Dw:2*Math.PI,input:true} },
-                // ],
-                // views: [
-                //     { id:"v1",type:'info',elem:'a',value:'r' },
-                //     { id:"v2",type:'info',elem:'a',value:'wt' },
-                //     { id:"v3",type:'info',elem:'a',value:'wtt' },
-                // ]
             };
-            // this.model = {
-            //     id: '5bar',
-            //     gravity: false,
-            //     nodes: [
-            //         {id:'A0',x:100,y:100,base:true},
-            //         {id:'A',x:100,y:150},
-            //         {id:'B',x:350,y:220},
-            //         {id:'B0',x:300,y:100,base:true},
-            //         {id:'C',x:400,y:350},
-            //         {id:'D',x:550,y:150},
-            //         {id:'D0',x:500,y:100,base:true}
-            //     ],
-            //     constraints: [
-            //         { id:'a',p1:'A0',p2:'A',len:{type:'const'},ori:{type:'drive',func:'sinoid',Dt:5,Dw:2*Math.PI,input:true} },
-            //         { id:'b',p1:'A', p2:'B',len:{type:'const'} },
-            //         { id:'c',p1:'B0', p2:'B',len:{type:'const'} },
-            //         { id:'d',p1:'B', p2:'C',len:{type:'const'} },
-            //         { id:'e',p1:'C', p2:'D',len:{type:'const'} },
-            //         { id:'f',p1:'D0', p2:'D',len:{type:'const'},ori:{type:'drive',func:'sinoid',Dt:5,Dw:2*Math.PI,input:true} }
-            //     ]
-            // };
 
-            this.VERSION = '0.5.0.0';
+            this.VERSION = '0.5.0.2';
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -209,7 +155,6 @@ const App = {
 
         showStatus() {
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
-            // statusbar.innerHTML = `mode=${this.evt.type}, x=${x}, y=${y}, cartesian=${this.cartesian}, btn=${this.evt.btn}, dbtn=${this.evt.dbtn}, fps=${this.fps}, state=${g2.editor.state[editor.curState]}, dragging=${this.dragging}, dragmode=${this.dragMove?'move':'edit'}, ${typeof this.model === 'object' ? `dof=${this.model.dof}, gravity=${this.model.hasGravity ? 'on' : 'off'}` : `` }`
             sbCoords.innerHTML = `x=${x}, y=${y}`;
             sbDragmode.innerHTML = `dragmode=${this.dragMove?'move':'edit'}`;
             sbFPS.innerHTML = `fps=${this.fps}`;
@@ -252,10 +197,8 @@ const App = {
 
         tick(e) {
             if (!!this.model) { // check if model is defined first
-                console.log(this.state);
                 if (this.dragging) {
                     this.dragMove ? this.model.pose() : this.updDependants(editor.curElm); // null, if updating on dragend via editor
-                    // this.model.pose();                  // try to bring mechanism to valid current pose
                     this.g.exe(this.ctx);
                 }
                 else if (this.state === 'active') {     // perform time step
@@ -273,7 +216,6 @@ const App = {
 
         init() { // evaluate how many drives and add init add controlled properties to model instead of typing them there
             mec.model.extend(this.model);
-            // this.model.dirty = true;
             this.model.init().asmPos();
             this.model.draw(this.g);
 
@@ -283,7 +225,6 @@ const App = {
             let drv, prv=false;
             while (drv = this.driveByInput(prv)) {
                 let id = drv.constraint.id+'-'+drv.value;
-                // let offset = (drv.value === 'ori') ? Math.round(drv.constraint.w0*180/pi) : Math.round(drv.constraint.r0);
                 let max = (drv.value === 'ori') ? Math.round(drv.constraint.ori.Dw*180/pi) : Math.round(drv.constraint.len.Dr); // max value of range input (min always 0)
                 actcontainer.appendChild(this.createInputSlider(id, (this.cnv.width - 150)/2, max));
 
@@ -292,11 +233,9 @@ const App = {
                 elm.initEventHandling(this, id, this.model.constraintById(drv.constraint.id)[drv.value].inputCallbk);
                 this.model.drivecount++;
                 this.model.inputs.push(id);
-                // console.log(...this.model.inputs);
                 prv = drv;
             };
 
-            // (this.mainLoop.ptr || (this.mainLoop.ptr = this.mainLoop.bind(this)))(this.mainLoop.t0 = performance.now());
             if (typeof t === 'undefined' || t === null) {  // dont start second timer if init() is called again
                 this.startTimer() // startTimer ...             // start synchronized ticks 
                     .notify('render');                          // send 'render' event
@@ -335,13 +274,11 @@ const App = {
         },
 
         updDependants(elm) {
-            // const dependants = this.model.dependentsOf(this); // currently only constraints need to be updated
             let dependants = [];
             for (const constraint of this.model.constraints) {
                 if (constraint.dependsOn(elm))
                     dependants.push(constraint);
-            }
-            // dependants.forEach(el => el.init(this.model));
+            };
             dependants.forEach(el => {
                 el.init(this.model);
                 if (el.type === 'ctrl' && ( el.ori.type === 'drive' || el.len.type === 'drive' )) { // each init of constraint-drives multiplies 'Dt' with 'repeat', so this value either has to be saved and restored or simply canceled out by dividing ... 
@@ -368,34 +305,11 @@ const App = {
             this.notify('render');
         },
 
-        // createActuatorElm(actuated, width) { // todo: currently only for ori
-        //     let template = document.createElement('template')
-        //     template.innerHTML = `<input type="range" id="${actuated}" class="mec-slider d-inline-flex nowrap ml-2 mr-1 mt-1" style="width:${width}px" min="0" max="${Math.round(mec.toDeg(this.model.constraintById(actuated).ori.Dw))}" step="1" value="0"></input>`
-        //     return template.content.firstChild;
-        // },
-
         createInputSlider(actuated, width, max) {
             let template = document.createElement('template');
             template.innerHTML = `<mecedit-slider id="${actuated}" class="mecedit-slider d-inline-flex nowrap ml-2 mr-1 mt-1" width="${width}" min="0" max="${max}" step="1" value="" valstr="${actuated}={value}${actuated.includes('ori')?'°':'u'}"></mecedit-slider>`
             return template.content.firstChild;
         },
-
-        // createActuatorElm2(actuated, width) {
-        //     let template = document.createElement('template')
-        //     // template.innerHTML = `<mec-slider id="${actuated}" class="mec-slider d-inline-flex nowrap ml-2 mr-1 mt-1" width="${width}" min="0" max="360" step="1" value="" valstr="${actuated}={value}°"></mec-slider>`
-        //     template.innerHTML = `<actuator><input id="${actuated}" type="range" style="min-width:${width}px;margin:0;" min="0" max="2" value="0" step="0.0055555"/><output id="${actuated}_out" style="width:4em; text-align:right;"></output></actuator>`
-        //     console.log(template.content.firstChild);
-        //     return template.content.firstChild;
-        // },
-
-        // mainLoop(t) {
-        //     if (this.model.dirty) { // model.dirty for inverse
-        //         this.model.dirty = false;
-        //         this.notify('step');
-        //         this.notify('render');
-        //     }
-        //     requestAnimationFrame(this.mainLoop.ptr);
-        // },
 
         updateg() {
             let apphasmodel = typeof this.model === 'object' && Object.keys(this.model).length ? true : false;
@@ -432,17 +346,10 @@ const App = {
             this.notify('render');
         },
 
-        replaceNode(oldN, newN) { // todo: bug: this function does not set the new mass in p1/p2 of adjacent constraints!!
-            // this.model.nodes.splice(this.model.nodes.indexOf(oldN), 1); // remove old node from model
-            // this.model.addNode(mec.node.extend(newN));
-            // newN.init(this.model);
-            // this.model.nodeById(newN.id).updAdjConstraints();
-            // this.updateg(); // update graphics
-
+        replaceNode(oldN, newN) {
             if (!(oldN.x === newN.x)) this.model.nodeById(oldN.id).x = newN.x;
             if (!(oldN.y === newN.y)) this.model.nodeById(oldN.id).y = newN.y;
             if (!(oldN.m === newN.m)) this.model.nodeById(oldN.id).m = newN.m;
-            // this.model.dirty = true;
         },
 
         addNode() {
@@ -510,9 +417,9 @@ const App = {
             };         
         },
 
-        replaceConstraint(oldC, newC) {  // todo: rework/fix to support len
+        replaceConstraint(oldC, newC) {
             this.reset();
-            console.log(this.state);
+            // console.log(this.state);
 
             let rebindorilistener = false;
             let rebindlenlistener = false;
@@ -542,7 +449,7 @@ const App = {
             this.model.addConstraint(mec.constraint.extend(newC)); // add new constraint
             newC.init(this.model); // init new constraint
             this.updateg(); // update graphics
-            console.log(newC);
+            // console.log(newC);
 
             if ( (lendrv && !this.model.inputs.includes(newC.id+'-len')) || (oridrv && !this.model.inputs.includes(newC.id+'-ori')) ) { // drive has no input yet
                 let drv, prv=false;
@@ -569,42 +476,10 @@ const App = {
                 this.model.drivecount--;
             };
             
-            
-            // // ori
-            // if (!!newC.ori.input && !document.getElementById(newC.id)) {
-            //     actcontainer.appendChild(this.createInputSlider(oridrv.newC.id+'-ori', (this.cnv.width - 350)/2), Math.round(newC.ori.Dw*180/pi));
-            //     let elm = document.getElementById(`${oridrv.newC.id}`);
-            //     mecESlider.RegisterElm(elm);
-            //     // actcontainer.appendChild(this.createActuatorElm(newC.id, 400));
-            //     this.model.drivecount++;
-            //     this.model.inputs.push(oridrv.newC.id+'-'+oridrv.value);
-            //     addevlist = true;
-            // } else if (!newC.ori.input && !!document.getElementById(newC.id)) {
-            //     actcontainer.removeChild(document.getElementById(newC.id+'-ori'));
-            //     this.model.inputs.splice(this.model.inputs.findIndex((el)=>el.id === newC.id),1)  // todo: fix
-            //     this.model.drivecount--;
-            // };
-
-            // // len
-            // if (!!newC.len.input && !document.getElementById(newC.id)) {
-            //     actcontainer.appendChild(this.createInputSlider(lendrv.newC.id+'-len', (this.cnv.width - 350)/2), Math.round(newC.len.Dr));
-            //     let elm = document.getElementById(`${lendrv.newC.id}`);
-            //     mecESlider.RegisterElm(elm);
-            //     // actcontainer.appendChild(this.createActuatorElm(newC.id, 400));
-            //     this.model.drivecount++;
-            //     this.model.inputs.push(lendrv.newC.id+'-'+lendrv.value);
-            //     addevlist = true;
-            // } else if (!newC.len.input && !!document.getElementById(newC.id)) {
-            //     actcontainer.removeChild(document.getElementById(newC.id+'-len'));
-            //     this.model.inputs.splice(this.model.inputs.findIndex((el)=>el.id === newC.id),1)  // todo: fix
-            //     this.model.drivecount--;
-            // };
-
             if (rebindorilistener) 
                 document.getElementById(oridrv.newC.id+'-ori').initEventHandling(this, oridrv.newC.id, this.model.constraintById(oridrv.newC.id)[oridrv.value].inputCallbk );
             if (rebindlenlistener) 
                 document.getElementById(lendrv.newC.id+'-len').initEventHandling(this, lendrv.newC.id, this.model.constraintById(lendrv.newC.id)[lendrv.value].inputCallbk );
-                // document.getElementById(oridrv.newC.id).addEventListener('input',newC[oridrv.value].inputCallbk,false);
 
             this.state = (this.model.inputs.length > 0) ? 'input' : 'initialized';
         },
@@ -700,13 +575,7 @@ const App = {
             return char;
         },
 
-        // build() { // rename if needed again
-        //     this.model = mec.model.extend(this.model);
-        //     this.model.init().draw(this.g);
-        //     this.notify('render');
-        // },
-
-        addDrive(elm) { // todo: can check type of passed object.. if it's a node, let choose second node and add a driven rot (most common) constraint 
+        addDrive(elm) {
             if (!!elm && ['free', 'tran', 'rot'].includes(elm.type)) {
                 if(elm.ori.type === 'free')
                     elm.ori.type = 'drive';
@@ -828,35 +697,10 @@ const App = {
             viewModal.hide()
         },
 
-        // addTrace() {
-        //     let trace = {
-        //         id:`trace${this.tempElm.old.id}`,
-        //         type:'trace',
-        //         p:this.tempElm.old.id,
-        //         Dt:2, 
-        //         stroke:'red' 
-        //     };
-        //     this.model.addView(mec.view.extend(trace));
-        //     trace.init(this.model);
-        //     this.updateg(); // update graphics
-        // },
-
-        // removeTrace() {
-        //     let traces = [];
-        //     this.model.dependentsOf(this.model.nodeById(this.tempElm.old.id)).views.forEach(el=>{
-        //         if (el.type === 'trace' && el.p.id === this.tempElm.old.id) {
-        //             traces.push(el.id);
-        //         }
-        //     })
-        //     this.model.removeView(this.model.viewById(traces[0]));
-        //     this.updateg(); // update graphics
-        // },
-
-        initCtxm(elm) { // todo: remember to add option for drive func
+        initCtxm(elm) {
             console.log(elm.type)
 
             this.tempElm = {};  // save elm for eventlistener & state-check
-            // this.tempElm.type = (!!elm.type && ['free', 'rot', 'tran', 'ctrl'].includes(elm.type)) ? 'constraint' : 'node'; // checked elm type when node had no type
             this.tempElm.type = ['free', 'rot', 'tran', 'ctrl'].includes(elm.type) ? 'constraint' : elm.type; // check elm type
             this.tempElm.old = JSON.parse(elm.asJSON());
             this.tempElm.new = JSON.parse(elm.asJSON());
@@ -874,7 +718,6 @@ const App = {
             // render labels
             this.notify('render');
 
-            // this.tempElm.old = JSON.parse(JSON.stringify(elm));
             this.updateCtxm(this.tempElm.old, this.tempElm.type);
             this.showCtxm();
         },
@@ -890,9 +733,7 @@ const App = {
 
             if (!!this.tempElm.new && this.tempElm.type === 'constraint' && !skip)
                 this.replaceConstraint(this.tempElm.old, this.tempElm.new);
-                // this.tempElm.type === 'constraint' ? this.replaceConstraint(this.tempElm.old, this.tempElm.new) : this.replaceNode(this.tempElm.old, this.tempElm.new);
 
-            // this.tempElm.labelState = {nodes: this.model.graphics.labels.nodes, constraints: this.model.graphics.labels.constraints, loads: this.model.graphics.labels.loads};
             // show labels that are hidden
             if (this.tempElm.labelState.nodes !== this.model.graphics.labels.nodes) this.model.graphics.labels.nodes = this.tempElm.labelState.nodes;
             if (this.tempElm.labelState.constraints !== this.model.graphics.labels.constraints) this.model.graphics.labels.constraints = this.tempElm.labelState.constraints;
@@ -956,7 +797,6 @@ const App = {
                 };
 
                 if (!!elm.ori && elm.ori.type === 'ref') {
-                    // const oriRefId = !!elm.ori.ref ? elm.ori.ref : this.model.constraints[0].id;
                     this.ctxmenubody.innerHTML += ctxm.ref(elm, 'ori', elm.ori.ref);
                 };
 
@@ -975,7 +815,6 @@ const App = {
                 };
 
                 if (!!elm.len && elm.len.type === 'ref') {
-                    // const lenRefId = !!elm.len.ref ? elm.len.ref : this.model.constraints[0].id
                     this.ctxmenubody.innerHTML += ctxm.ref(elm, 'len', elm.len.ref);
                 };
 
@@ -985,13 +824,6 @@ const App = {
             };
             if (type === 'node') { // nodes
                 this.ctxmenubody.innerHTML += ctxm.nodeCoordinates(elm);
-                // let traced = false;
-                // this.model.dependentsOf(this.model.nodeById(elm.id)).views.forEach(el=>{
-                //     if (!traced && el.type === 'trace') {
-                //         traced = true;
-                //     }
-                // })
-                // this.ctxmenubody.innerHTML += ctxm.nodeBase(elm,traced);
                 this.ctxmenubody.innerHTML += ctxm.nodeBase(elm);
             };
             if (type === 'force') { // forces
@@ -1000,12 +832,9 @@ const App = {
                 this.ctxmenubody.innerHTML += ctxm.forceNode(elm);
             };
             if (type === 'spring') { // springs
-                // this.ctxmenubody.innerHTML += ctxm.springProps(elm);
                 this.ctxmenubody.innerHTML += ctxm.springNodes(elm);
                 this.ctxmenubody.innerHTML += ctxm.springLen(elm);
                 this.ctxmenubody.innerHTML += ctxm.springK(elm);
-                // this.ctxmenubody.innerHTML += ctxm.removeSpringButton();
-                // this.ctxmenubody.innerHTML += ctxm.springL0(elm);
             };
         },
 
@@ -1026,7 +855,6 @@ const App = {
 
         saveToJSON() {
             let a = document.createElement('a');
-            // let file = new Blob([JSON.stringify(this.model)], { type: 'application/json' }); // model now has toJSON (constraints not fully implemented) which gets automazically invoked by stringify
             let file = new Blob([this.model.asJSON()], { type: 'application/json' });
             a.href = URL.createObjectURL(file);
             a.download = (!!this.model.id && this.model.id.length > 0) ? `${this.model.id}.json` : 'linkage.json';
@@ -1098,10 +926,6 @@ let jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'
     lineWrapping: true
   });
 
-//   jsonEditor.on('change', function (editor) {
-//     app.tempElm = jsonEditor.getValue();
-//   });
-
 window.onload = () => {
     let c = document.getElementById('canvas'),
         main = document.getElementById('main'); 
@@ -1118,7 +942,6 @@ window.onload = () => {
 
     // fit inputs
     let rangewidth = (c.width - 350)/2;
-    console.log(...app.model.inputs);
     for (const drive in app.model.inputs) {
         document.getElementById(app.model.inputs[drive]).slider.style.width = `${rangewidth}px`;
     };
@@ -1131,7 +954,6 @@ window.onload = () => {
     events.navbarChange('import');
     events.sidebarClick('sb-l');
     events.keyboardDown(); // binds to document
-    // events.preventDefaultCTXM(); // binds to document
     events.ctxmClick('contextMenu');
     events.ctxmInput('contextMenu');
     events.ctxmChange('contextMenu');
@@ -1165,7 +987,6 @@ window.onload = () => {
     new Modal(document.getElementById('keysModal'), {
         keyboard: true, // dismiss with ESC key
     });
-
 
     // dispatch 'resize' event to fix the initial sizing bug on laptops
     window.dispatchEvent(new Event('resize'));

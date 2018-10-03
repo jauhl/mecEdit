@@ -2,17 +2,6 @@
 ctxm = {
     header: (elm,type) => `<h6 class="mb-0">${type} <span style="font-family:roboto;font-weight:500;font-style:italic;">${elm.id}</span></h6>`, // stringified constraints have no type: ${elm.type}
     sectionTitle: (title) => `<div class="section-divider"></div><label class="input-group-text ctxm-section-title">${title} </label>`,
-    // constraintType: (elm) => { // probably not needed
-    //     return `<div class="input-group">
-    //         <label class="input-group-text">constraint-type: </label>
-    //         <select class="custom-select" id="select-type">
-    //             <option value="tran" ${(elm.type === 'tran' ? 'selected' : '')}>tran</option>
-    //             <option value="rot"  ${(elm.type === 'rot' ? 'selected' : '')}>rot</option>
-    //             <option value="free" ${(elm.type === 'free' ? 'selected' : '')}>free</option>
-    //             <option value="ctrl" ${(elm.type === 'ctrl' ? 'selected' : '')}>ctrl</option>
-    //         </select>
-    //     </div>`
-    // },
 
     // constraint templates
     nodes: (elm) => {
@@ -105,22 +94,6 @@ ctxm = {
                                     <input type="number" class="custom-number-input" id="node-y" step="1" value="${Math.round(elm.y)}">
                                </li>`
     ,
-        // with trace option
-    // nodeBase: (elm,traced = false) => `<div class="section-divider"></div>
-    //                     <li class="input-group">
-    //                         <div class="d-flex">
-    //                             <label class="ctxm-input-label">base: </label>
-    //                             <input type="checkbox" id="node-base" class="cbx d-none" ${(elm.base ? 'checked' : '')}>
-    //                             <label class="lbl" for="node-base"></label>
-    //                         </div>
-    //                         <div class="d-flex">
-    //                             <label class="ctxm-input-label">trace: </label>
-    //                             <input type="checkbox" id="node-trace" class="cbx d-none" ${(traced ? 'checked' : '')}>
-    //                             <label class="lbl" for="node-trace"></label>
-    //                         </div>
-    //                         <div id="node-trash" class="ctxm-right"><i class="fas fa-trash-alt fa-lg"></i></div> 
-    //                     </li>`
-    // ,
     nodeBase: (elm) => `<div class="section-divider"></div>
                         <li class="input-group">
                             <div class="d-flex">
@@ -133,7 +106,7 @@ ctxm = {
     ,
     // force templates
     forceNode: (elm) => {
-            let select = `<div class="section-divider" style="margin:.1rem!important"></div><div class="input-group">`,       // add head
+            let select = `<div class="section-divider" style="margin:.1rem!important"></div><div class="input-group" style="padding:.1rem">`,       // add head
                 selectP = `<label class="ctxm-input-label">p: </label>
                             <select class="custom-select" id="select-force-node" style="max-width:4rem!important;">`;
             
@@ -177,13 +150,6 @@ ctxm = {
 
         return select;
     },
-    // springProps: (elm) => `<li class="input-group" style="padding-top:.3rem;">
-    //                        <label class="ctxm-input-label">k: </label>
-    //                        <input type="number" class="custom-number-input" id="spring-k" step="1" value="${app.model.loadById(`${elm.id}`).k}">
-    //                        <label class="ctxm-input-label">len0: </label>
-    //                        <input type="number" class="custom-number-input" id="spring-len0" step="1" value="${app.model.loadById(`${elm.id}`).len0.toFixed(2)}" style="width:4.5rem !important;">
-    //                    </li>`
-    // ,
     springK: (elm) => `<div class="section-divider"></div>
                        <li class="input-group" style="padding-top:.3rem;">
                            <label class="ctxm-input-label">k [N/m]: </label>

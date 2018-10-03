@@ -76,13 +76,11 @@ const mixin = {
         mousemove(e) {
             e.dx = e.x - this.evt.xi;
             e.dy = e.y - this.evt.yi;
-            // e.type = e.btn !== 0 ? (this.dragging ? 'drag' : 'pan') : 'pointer';
 
             switch (e.btn) {
                 case 1:     e.type = e.ctrlKey ? 'pan' : this.dragging ?  'drag' : 'pointer'; break;  // left mousebutton
-                // case 2 && this.dragging:    e.type = 'drag';    break;  // right mousebutton
-                case 4:                     e.type = 'pan';     break;  // middle mousebutton
-                default:                    e.type = 'pointer'; 
+                case 4:     e.type = 'pan';     break;  // middle mousebutton
+                default:    e.type = 'pointer'; 
             }
         },
         mousedown(e) { e.type='buttondown' },

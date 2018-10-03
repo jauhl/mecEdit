@@ -10,9 +10,9 @@ mecESlider.prototype = {
         this.step = +this.getAttribute('step') || 1
         this.value = +this.getAttribute('value') || 0
         this.frac = Math.max(0,Math.ceil(-Math.log10(this.step)))
-        this.anistep = this.step; // (max - min)/step > 240 ? ((max - min)/240) : step
+        this.anistep = this.step;
         this.innerHTML = this.html
-        this.setAttribute('style',(this.getAttribute('style') || '')) //+this.css style.width kills flex nowrap 
+        this.setAttribute('style',(this.getAttribute('style') || ''))
         this.slider = this.querySelector('input')
         this.output = this.querySelector('output')
         this.forward = this.querySelector('.forward')
@@ -28,13 +28,11 @@ mecESlider.prototype = {
     },
     valstr: function(q) { return this.getAttribute('valstr').replace('{value}', (q || this.value).toFixed(this.frac)); },
     setSlider: function(q) {
-//        console.log('set slider:'+q)
         this.output.innerHTML = this.valstr(this.slider.value = q);
         return q;
     },
     // event handling ...
     initEventHandling: function(observer,key,inputCallBack) {
-        // Object.defineProperty(this, 'value', { get:getter, set:setter, enumerable:true, configurable:true })
         this.iCbk = inputCallBack;
         this.observer = observer;
         // install instance specific function pointers from prototype methods ...
@@ -49,20 +47,15 @@ mecESlider.prototype = {
         this.slider.addEventListener('input', (e) => {this.iCbk({target:{value:this.value = +e.target.value}}); this.observer.notify(this.id,+e.target.value) }, false); //this.setSliderPtr(+e.target.value)
         this.forward.addEventListener('click', this.startForwardPtr, false);
         this.reverse.addEventListener('click', this.startReversePtr, false);
-        // this.setSlider(this.value);   // set initial value .. !
         observer.on(key,this.setSliderPtr);
     },
     startForward: function() {
-        // console.log('startForward');
-        // console.log(`value: ${this.value}, max: ${this.max}`);
         if (this.value < this.max) {
             this.forward.removeEventListener('click', this.startForwardPtr, false);
             this.forward.innerHTML = this.stopsym;
             this.forward.addEventListener('click', this.endForwardPtr, false);
-            // this.reverse.style.color = 'gray'; // non bootrap
             this.reverse.classList.add('text-muted'); // bootstrap 4.1
             this.reverse.removeEventListener('click', this.startReversePtr, false);
-            // this.observer.notify('tick')
             this.observer.on('tick',this.fwdStepPtr)
             this.value += 0;  // starting mainLoop (initially setting potential dirty flag) ...
         }
@@ -71,7 +64,6 @@ mecESlider.prototype = {
         this.forward.removeEventListener('click', this.endForwardPtr, false);
         this.forward.innerHTML = this.fwdsym;
         this.forward.addEventListener('click', this.startForwardPtr, false);
-        // this.reverse.style.color = 'black'; // non bootrap
         this.reverse.classList.remove('text-muted'); // bootstrap 4.1
         this.reverse.addEventListener('click', this.startReversePtr, false);
         this.observer.remove('tick',this.fwdStepPtr);
@@ -79,13 +71,10 @@ mecESlider.prototype = {
     },
     fwdStep: function() {
         let delta = this.value + this.anistep < this.max ? this.anistep : Math.max(this.max - this.value,0);
-        // console.log(`delta: ${delta}, anistep: ${this.anistep}`);
         if (delta) {  // proceed ...
             this.value += delta;
             this.iCbk({target:{value:this.value}});     // move drive
-            // let id = this.id.substring(0, this.id.indexOf('-'));
             this.observer.notify(this.id,this.value);   // move slider // this.id eg.: a-len
-            // this.observer.notify(this.id,this.value);   // move slider
         } else {
             this.endForward();
         }
@@ -95,7 +84,6 @@ mecESlider.prototype = {
             this.reverse.removeEventListener('click', this.startReversePtr, false);
             this.reverse.innerHTML = this.stopsym;
             this.reverse.addEventListener('click',  this.endReversePtr, false);
-            // this.forward.style.color = 'gray'; // non bootrap
             this.forward.classList.add('text-muted'); // bootstrap 4.1
             this.forward.removeEventListener('click', this.startForwardPtr, false);
             this.observer.on('tick',this.revStepPtr)
@@ -106,7 +94,6 @@ mecESlider.prototype = {
         this.reverse.removeEventListener('click', this.endReversePtr, false);
         this.reverse.innerHTML = this.revsym;
         this.reverse.addEventListener('click', this.startReversePtr, false);
-        // this.forward.style.color = 'black'; // non bootrap
         this.forward.classList.remove('text-muted'); // bootstrap 4.1
         this.forward.addEventListener('click', this.startForwardPtr, false);
         this.observer.remove('tick',this.revStepPtr);
@@ -114,7 +101,6 @@ mecESlider.prototype = {
     },
     revStep: function() {
         let delta = this.value - this.anistep >= this.min ? -this.anistep : -Math.max(this.min - this.value,0);  // >= for last step
-        // console.log(delta);
         if (delta) {  // proceed ...
             this.value += delta;
             this.iCbk({target:{value:this.value}});     // move drive

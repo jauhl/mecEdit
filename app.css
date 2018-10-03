@@ -8,19 +8,8 @@ i, svg {
 */
 
 @media (min-width: 400px) {
-    .sb-l {
-        /* display: block !important; */
-        /* width: 70px !important; */
-        /* -ms-flex: 0 1 70px;
-        flex: 0 1 70px; */
-        /* flex-flow: column wrap; */
-        /* max-width: 70px !important; */
-        
-    }
-
     .main-container {
         min-width: none;
-        /* height: inherit !important; */
     }
     
 }
@@ -46,12 +35,6 @@ i, svg {
     }
 }
 
-/* @media (max-width:420px) and (min-width:400px) {
-    .main-container {
-        min-width: 300px !important;
-    }
-}​ */
-
 #wrapper {
     padding-top: 56px;
     background-color: #ffffff;
@@ -63,9 +46,6 @@ i, svg {
     left: 0px;
     padding: 0px;
     background-color: white ;
-    /* background-color: #344c6b; */
-    /* background-color: rgb(250, 246, 209) ; */
-
 }
 
 #instructions {
@@ -81,15 +61,6 @@ i, svg {
     left: 4rem;
     bottom: 35px;
     width: 100%;
-    /* height: auto; */
-    /* flex-wrap: wrap; */
-}
-
-/* styled via bootstrap spacing classes in main.js */
-.mecedit-slider { 
-    /* margin-left: 10px;
-    margin-right: 5px; */
-    /* margin-top: 1px; */
 }
 
 .custom-range {
@@ -105,12 +76,6 @@ output.badge {
 .badge {
     padding-top: .25rem !important;
 }
-
-/* open dropdown on hover in addition to clicking */
-/* .dropdown:hover .dropdown-menu {
-    display: block;
-    margin-top: 2;
- } */
 
 .btn-nohalo:focus {
     box-shadow: none;
@@ -128,16 +93,12 @@ output.badge {
 
 .fitlineheight {
     line-height: .65em !important;
-    /* lg=1em, 2x=.65em */
 }
 
 /* class for additional containers due to bugged img scaling in chrome */
 .fl-w{
-    /* flex: 0 1 25%;
-    max-width: 25%; */
     flex: 0 1 25%;
     max-width: 60px;
-    /* height: 60px; */
     background-color: white;
     border: 1px solid #343a40;
 }
@@ -455,25 +416,17 @@ input[type='color'] {
 
 /* better alternative? */
 .sb-l, .sb-r {
-    /* max-height: calc(100vh - 22px) !important; */
-    /* max-height: calc(100vh - 56px) !important; */
-    /* display: block; */
     flex-basis: 70px;
     width: 100%;
     max-width: 70px;
     overflow-y: auto;
-    /* height: inherit !important; */
     background-color: #343a40;
-    /* overflow-x: hidden !important;    */   /* works only on .sb-r ... */
 }
 
 .main-container {
     overflow-y: auto;
     overflow-x: hidden;
-    /* height: inherit !important; */
     min-width: 330px;
-    /* max-height: calc(100vh - 56px) !important; */
-    /* width: 150px !important; */
 }
 
 .content {
@@ -490,31 +443,7 @@ h1 {
     border-bottom: 1px solid #eee;
 }
 
-/* make canvas responsive */
-
-/* canvas {
-    width: 100%;
-    height: auto; 
-} */
-
-/*
-   * Sidebar
-   */
-
-/* .sidebar {
-    position: fixed;
-    top: 51px;
-    bottom: 0;
-    left: 0;
-    z-index: 1000;
-    padding: 20px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    border-right: 1px solid #eee;
-  } */
-
 /* Sidebar navigation */
-
 .sidebar {
     padding-left: 0;
     padding-right: 0;
@@ -537,8 +466,8 @@ h1 {
 }
 
 /*
-   * Dashboard
-   */
+* Dashboard
+*/
 
 /* Placeholders */
 

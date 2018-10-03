@@ -27,6 +27,13 @@ planar linkages.
 
 # Changelog
 
+## v0.5.0.2 - minor changes
+
+### general:
++ Cleaned up the code and fixed some minor bugs.
+
+---
+
 ## v0.5.0.0 - Length-Inputs
 
 ### general:

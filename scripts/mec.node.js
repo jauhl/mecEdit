@@ -75,10 +75,10 @@ mec.node = {
             return e;
         },
         reset() {
-//            if (!this.base) {
-//                this.x = this.x0;
-//                this.y = this.y0;
-//            }
+           if (!this.base) {
+               this.x = this.x0;
+               this.y = this.y0;
+           }
             this.xt = this.yt = 0;
             this.xtt = this.ytt = 0;
             this.dxt = this.dyt = 0;
