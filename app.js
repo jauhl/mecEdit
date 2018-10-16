@@ -90,7 +90,7 @@ const App = {
                 id: 'linkage'
             };
 
-            this.VERSION = '0.5.0.2';
+            this.VERSION = '0.5.0.3';
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };

@@ -266,7 +266,7 @@ ctxm = {
         if (['vector','info'].includes(app.tempElm.new.type)) {
             // value
             if (!app.tempElm.new.hasOwnProperty('value'))
-                app.tempElm.new.value = 'velAbs';
+                app.tempElm.new.value = 'acc'; // first in array for vec & node infos
 
             template += `<div class="input-group mb-3">
                             <div class="input-group-prepend">
@@ -278,13 +278,16 @@ ctxm = {
             console.log(app.model.elementById(app.tempElm.new.elem).type);
             if (app.tempElm.new.type === 'info' && app.model.elementById(app.tempElm.new.elem).type === 'node') {
                 app.nodeInfoValues.forEach(value => {
+                    app.tempElm.new.value = 'acc'; // force select first option
                     template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
                 });
             } else if (app.tempElm.new.type === 'vector' && app.model.elementById(app.tempElm.new.p).type === 'node') {
+                app.tempElm.new.value = 'acc'; // force select first option
                 app.nodeVectorValues.forEach(value => {
                     template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
                 });
             } else if (app.tempElm.new.type === 'info' && ['free','tran','rot','ctrl'].includes(app.model.elementById(app.tempElm.new.elem).type)) {
+                app.tempElm.new.value = 'w'; // force select first option
                 app.constraintInfoValues.forEach(value => {
                     template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
                 });

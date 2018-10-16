@@ -27,6 +27,13 @@ planar linkages.
 
 # Changelog
 
+## v0.5.0.3 - bugfix
+
+### ctxm-templates.js:
++ Fixed a bug where the value of the select menu in the viewcomponent-modal would not be the set value of the view.
+
+---
+
 ## v0.5.0.2 - minor changes
 
 ### general:
