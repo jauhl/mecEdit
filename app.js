@@ -87,10 +87,10 @@ const App = {
     prototype: Object.assign({
         constructor() {
             this.model = {
-                id: 'linkage'
+                id:"linkage"
             };
 
-            this.VERSION = '0.5.0.3';
+            this.VERSION = '0.5.1.0';
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -110,9 +110,9 @@ const App = {
             this.devmode = false;
             this.importConfirmed = false; // skip conformdialogue helper
             this.dragMove = true;
-            this.nodeInfoValues = ['acc','accAbs','dof','energy','force','forceAbs','vel','velAbs'];
-            this.constraintInfoValues = ['w','r','wt','dof','forceAbs','moment'];
-            this.nodeVectorValues = ['acc','energy','force','vel']; // or objects only?
+            this.nodeInfoValues = ['acc','accAbs','vel','velAbs','force','forceAbs'];
+            this.constraintInfoValues = ['w','wt','wtt','r','rt','rtt','forceAbs','moment'];
+            this.nodeVectorValues = ['acc','vel','force']; // objects only
 
             this.g = g2();
 
@@ -259,6 +259,7 @@ const App = {
         },
         reset() { 
             this.model.reset();
+            this.model.pose(); // necessary because model.reset() does not respect constraint r0 values
 
             // reset drive-inputs
             for (const drive in this.model.inputs) {
@@ -449,6 +450,7 @@ const App = {
             this.model.addConstraint(mec.constraint.extend(newC)); // add new constraint
             newC.init(this.model); // init new constraint
             this.updateg(); // update graphics
+            this.model.pose();
             // console.log(newC);
 
             if ( (lendrv && !this.model.inputs.includes(newC.id+'-len')) || (oridrv && !this.model.inputs.includes(newC.id+'-ori')) ) { // drive has no input yet
@@ -701,6 +703,7 @@ const App = {
             console.log(elm.type)
 
             this.tempElm = {};  // save elm for eventlistener & state-check
+            this.tempElm.replace = false; // nothing has changed yet, so no need for replacing
             this.tempElm.type = ['free', 'rot', 'tran', 'ctrl'].includes(elm.type) ? 'constraint' : elm.type; // check elm type
             this.tempElm.old = JSON.parse(elm.asJSON());
             this.tempElm.new = JSON.parse(elm.asJSON());
@@ -728,10 +731,10 @@ const App = {
             this.ctxmenu.style.top = `${this.evt.clientY}px`;
         },
 
-        hideCtxm(skip = false) {
+        hideCtxm() {
             this.ctxmenu.style.display = 'none';
 
-            if (!!this.tempElm.new && this.tempElm.type === 'constraint' && !skip)
+            if (!!this.tempElm.new && this.tempElm.type === 'constraint')// && this.tempElm.replace)
                 this.replaceConstraint(this.tempElm.old, this.tempElm.new);
 
             // show labels that are hidden

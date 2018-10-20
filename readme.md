@@ -27,6 +27,17 @@ planar linkages.
 
 # Changelog
 
+## v0.5.1.0 - improvements
+
+### general:
++ Optimized handling of constraints when contextmenu was invoked.
++ Fixed a bug where calling `model.reset()` would explode the model when constraints have `len.r0` set.
++ Fixed a bug where changing node coordinates via contextmenu would throw an error.
++ Fixed a bug where choosing info values was not possible when adding a view-component.
++ Handled errors for users trying to pass invalid JSON code from the JSON-editor.
+
+---
+
 ## v0.5.0.3 - bugfix
 
 ### ctxm-templates.js:

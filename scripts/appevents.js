@@ -150,7 +150,7 @@ const events = {
                 // app.tempElm.new = false; 
                 if (app.model.removeNode(app.model.nodeById(app.tempElm.old.id))) {
                     app.updateg();
-                    app.hideCtxm('skipreplace');
+                    app.hideCtxm();
                 } else {
                     app.instruct.innerHTML = `<span class="blink" style="color:orange;">Node has dependencies.</span>`;
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
@@ -160,7 +160,7 @@ const events = {
                 if (app.model.removeConstraint(app.model.constraintById(app.tempElm.old.id))) {
                     app.removeInput(app.tempElm.old.id); // try removing inputs
                     app.updateg();
-                    app.hideCtxm('skipreplace');
+                    app.hideCtxm();
                 } else {
                     app.instruct.innerHTML = `<span class="blink" style="color:orange;">Constraint has dependencies.</span>`;
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
@@ -169,7 +169,7 @@ const events = {
             if (e.target && e.target.id === 'force-trash') {
                 if (app.model.removeLoad(app.model.loadById(app.tempElm.old.id))) {
                     app.updateg();
-                    app.hideCtxm('skipreplace');
+                    app.hideCtxm();
                 } else {
                     app.instruct.innerHTML = `<span class="blink" style="color:orange;">Node has dependencies.</span>`;
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
@@ -178,7 +178,7 @@ const events = {
             if (e.target && e.target.id === 'spring-trash') {
                 if (app.model.removeLoad(app.model.loadById(app.tempElm.old.id))) {
                     app.updateg();
-                    app.hideCtxm('skipreplace');
+                    app.hideCtxm();
                 } else {
                     app.instruct.innerHTML = `<span class="blink" style="color:orange;">Node has dependencies.</span>`;
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
@@ -189,14 +189,16 @@ const events = {
                     app.tempElm.new.ori.input = true;
                 } else if (!e.target.checked && app.tempElm.new.ori.input) {
                     delete app.tempElm.new.ori.input;
-                }
+                };
+                app.tempElm.replace = false;
             };
             if (e.target && e.target.id === 'len-input') {
                 if (e.target.checked && !app.tempElm.new.len.input) {
                     app.tempElm.new.len.input = true;
                 } else if (!e.target.checked && app.tempElm.new.len.input) {
                     delete app.tempElm.new.len.input;
-                }
+                };
+                app.tempElm.replace = false;
             };
 
             if (ctxmdirty)
@@ -210,26 +212,30 @@ const events = {
             // constraints
             if (e.target && e.target.id === 'ori-drive-Dt') { 
                 app.tempElm.new.ori.Dt = e.target.valueAsNumber;
+                app.tempElm.replace = true;
             };
             if (e.target && e.target.id === 'len-drive-Dt') { 
                 app.tempElm.new.len.Dt = e.target.valueAsNumber;
+                app.tempElm.replace = true;
             };
             if (e.target && e.target.id === 'ori-drive-Dw') { 
                 app.tempElm.new.ori.Dw = e.target.valueAsNumber;
+                app.tempElm.replace = true;
             };
             if (e.target && e.target.id === 'len-drive-Dr') { 
                 app.tempElm.new.len.Dr = e.target.valueAsNumber;
+                app.tempElm.replace = true;
             };
 
             // nodes
             if (e.target && e.target.id === 'node-x') { 
                 app.model.nodeById(app.tempElm.old.id).x = e.target.valueAsNumber;
-                app.model.nodeById(app.tempElm.old.id).updAdjConstraints();
+                app.updDependants(app.model.nodeById(app.tempElm.old.id));
                 app.notify('render');
             };
             if (e.target && e.target.id === 'node-y') {
                 app.model.nodeById(app.tempElm.old.id).y = e.target.valueAsNumber;
-                app.model.nodeById(app.tempElm.old.id).updAdjConstraints();
+                app.updDependants(app.model.nodeById(app.tempElm.old.id));
                 app.notify('render');
             };
             if (e.target && e.target.id === 'node-base') { 
@@ -266,22 +272,26 @@ const events = {
                 let doftypechanged = false;
                 
                 // constraints
-                if (e.target && e.target.id === 'select-p1') { app.tempElm.new.p1 = e.target.value; ctxmdirty = true; }; // todo: prevent applying same p1 & p2 when updating model
-                if (e.target && e.target.id === 'select-p2') { app.tempElm.new.p2 = e.target.value; ctxmdirty = true; };
+                if (e.target && e.target.id === 'select-p1') { app.tempElm.new.p1 = e.target.value; ctxmdirty = true; app.tempElm.replace = true; }; // todo: prevent applying same p1 & p2 when updating model
+                if (e.target && e.target.id === 'select-p2') { app.tempElm.new.p2 = e.target.value; ctxmdirty = true; app.tempElm.replace = true; };
                 if (e.target && e.target.id === 'select-ori-type') { 
                     app.tempElm.new.ori.type = e.target.value; 
                     ctxmdirty = true;
+                    app.tempElm.replace = true;
                     if (!doftypechanged)
                         doftypechanged = [];
-                    doftypechanged.push('ori'); };
+                    doftypechanged.push('ori');
+                };
                 if (e.target && e.target.id === 'select-len-type') { 
                     app.tempElm.new.len.type = e.target.value; 
                     ctxmdirty = true;
+                    app.tempElm.replace = true;
                     if (!doftypechanged)
                         doftypechanged = [];
-                    doftypechanged.push('len'); };
-                if (e.target && e.target.id === 'select-ori-ref') { app.tempElm.new.ori.ref = e.target.value; ctxmdirty = true; };
-                if (e.target && e.target.id === 'select-len-ref') { app.tempElm.new.len.ref = e.target.value; ctxmdirty = true; };
+                    doftypechanged.push('len'); 
+                };
+                if (e.target && e.target.id === 'select-ori-ref') { app.tempElm.new.ori.ref = e.target.value; ctxmdirty = true; app.tempElm.replace = true; };
+                if (e.target && e.target.id === 'select-len-ref') { app.tempElm.new.len.ref = e.target.value; ctxmdirty = true; app.tempElm.replace = true; };
 
                 //forces
                 if (e.target && e.target.id === 'select-force-node') {
@@ -308,9 +318,18 @@ const events = {
     },
     modalAccept: (id) => {
         document.getElementById(id).addEventListener('click', (e) => {
-            app.model = JSON.parse(jsonEditor.getValue());  // todo: strip unnecessary properties before parsing || model.toJSON
-            app.init();
-            app.updateg();
+            let newmodel;
+            try {
+                newmodel = JSON.parse(jsonEditor.getValue());
+            } catch (error) {
+                alert(`Your JSON code is not valid! \n\n${error}`)
+            }
+
+            if (!!newmodel) {
+                app.model = newmodel;  // todo: strip unnecessary properties before parsing || model.toJSON
+                app.init();
+                app.updateg();
+            };
         })
     },
     resize: () => {
@@ -333,20 +352,21 @@ const events = {
     viewModalChange: (id) => {
         /*********************************  viewmodal change handler  ****************************************/ 
         document.getElementById(id).addEventListener('change', (e) => {
-            let skipUpdate = false;
+            let skipUpdate = true;
 
             if (e.target && e.target.id === 'input-view-id') {
                 app.updateTempElmNew('id',e.target.value);
-                skipUpdate = true;
             }
             if (e.target && e.target.id === 'select-view-type') {
                 app.updateTempElmNew('type',e.target.value);
+                skipUpdate = false;
             };
             if (e.target && e.target.id === 'select-view-p') {
                 app.updateTempElmNew('p',e.target.value);
             };
             if (e.target && e.target.id === 'select-view-elem') {
                 app.updateTempElmNew('elem',e.target.value);
+                skipUpdate = false; // valid values can change between elems
             };
             if (e.target && e.target.id === 'select-view-value') {
                 app.updateTempElmNew('value',e.target.value);
