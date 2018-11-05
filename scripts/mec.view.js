@@ -81,7 +81,8 @@ mec.view.vector = {
  * @param {object} - trace view.
  * @property {string} p - referenced node id.
  * @property {number} [Dt] - trace duration [s].
- * @property {string} [fill] - web color.
+ * @property {string} [stroke='navy'] - web color.
+ * @property {string} [fill='transparent'] - web color.
  */
 mec.view.trace = {
     constructor() {}, // always parameterless .. !
@@ -107,8 +108,8 @@ mec.view.trace = {
     asJSON() {
         return '{ "type":"'+this.type+'","id":"'+this.id+'","p":"'+this.p.id+'"'
                 + (this.Dt ? ',"Dt":'+this.Dt : '')
-                + (this.stroke ? ',"stroke":"'+this.stroke+'"' : '')
-                + (this.fill ? ',"fill":"'+this.fill+'"' : '')
+                + (this.stroke && !(this.stroke === 'navy') ? ',"stroke":"'+this.stroke+'"' : '')
+                + (this.fill && !(this.stroke === 'transparent') ? ',"fill":"'+this.fill+'"' : '')
                 + ' }';
     },
     // interaction

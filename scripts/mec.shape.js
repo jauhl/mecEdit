@@ -245,7 +245,14 @@ mec.shape.poly = {
     dependsOn(elem) {
         return this.p === elem || this.wref === elem;
     },
-    asJSON() { return '{}'; },  // todo ..
+    asJSON() {
+        return '{ "type":"'+this.type+'","pts":'+JSON.stringify(this.pts)+',"p":"'+this.p.id+'"'
+                + (this.wref ? ',"wref":"'+this.wref.id+'"' : '')
+                + ((this.w0 && this.w0 > 0.0001 && !(this.wref.w0 === this.w0 )) ? ',"w0":'+this.w0 : '')
+                + (this.stroke && !(this.stroke === 'transparent') ? ',"stroke":"'+this.stroke+'"' : '')
+                + (this.fill && !(this.fill === '#aaaaaa88') ? ',"fill":"'+this.fill+'"' : '')
+                + ' }';
+    },
     draw(g) {
         g.ply({pts:this.pts,closed:true,x:()=>this.x,y:()=>this.y,w:()=>this.w,fs:this.fill,ls:this.stroke})
     }
