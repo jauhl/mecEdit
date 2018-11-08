@@ -27,6 +27,14 @@ planar linkages.
 
 # Changelog
 
+## v0.5.1.1 - bugfixes
+
+### general:
++ Fixed a bug where deleting constraints would fail.
++ Changing coordinates from node contextmenu changes now x0,y0 as well as x,y.
+
+---
+
 ## v0.5.1.0 - improvements
 
 ### general:

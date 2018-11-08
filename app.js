@@ -90,7 +90,7 @@ const App = {
                 id:"linkage"
             };
 
-            this.VERSION = '0.5.1.0';
+            this.VERSION = '0.5.1.1';
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -221,6 +221,10 @@ const App = {
 
             this.model.drivecount = 0;  // add drive counter to model
             this.model.inputs = [];     // track drives by id and dof for responsive range-input sizing
+            // empty actcontainer if not empty already
+            while (actcontainer.hasChildNodes()) {
+                actcontainer.removeChild(actcontainer.lastChild);
+            };
 
             let drv, prv=false;
             while (drv = this.driveByInput(prv)) {
@@ -734,7 +738,7 @@ const App = {
         hideCtxm() {
             this.ctxmenu.style.display = 'none';
 
-            if (!!this.tempElm.new && this.tempElm.type === 'constraint')// && this.tempElm.replace)
+            if (!!this.tempElm.new && this.tempElm.replace && this.tempElm.type === 'constraint')// && this.tempElm.replace)
                 this.replaceConstraint(this.tempElm.old, this.tempElm.new);
 
             // show labels that are hidden

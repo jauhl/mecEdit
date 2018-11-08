@@ -117,7 +117,7 @@ const events = {
                     // todo: make editor & element state resetable
                 };
                 // some shortcuts
-                console.log(e);
+                // console.log(e);
                 if (e.key === 'e')    
                     modelModal.show(); // open model editor
                 if (e.key === 'r')    
@@ -164,7 +164,7 @@ const events = {
                 } else {
                     app.instruct.innerHTML = `<span class="blink" style="color:orange;">Constraint has dependencies.</span>`;
                     setTimeout ( ()=>{app.instruct.innerHTML = ''}, 2400 );
-                }
+                };
             };
             if (e.target && e.target.id === 'force-trash') {
                 if (app.model.removeLoad(app.model.loadById(app.tempElm.old.id))) {
@@ -190,7 +190,7 @@ const events = {
                 } else if (!e.target.checked && app.tempElm.new.ori.input) {
                     delete app.tempElm.new.ori.input;
                 };
-                app.tempElm.replace = false;
+                app.tempElm.replace = true;
             };
             if (e.target && e.target.id === 'len-input') {
                 if (e.target.checked && !app.tempElm.new.len.input) {
@@ -198,7 +198,7 @@ const events = {
                 } else if (!e.target.checked && app.tempElm.new.len.input) {
                     delete app.tempElm.new.len.input;
                 };
-                app.tempElm.replace = false;
+                app.tempElm.replace = true;
             };
 
             if (ctxmdirty)
@@ -229,13 +229,15 @@ const events = {
 
             // nodes
             if (e.target && e.target.id === 'node-x') { 
-                app.model.nodeById(app.tempElm.old.id).x = e.target.valueAsNumber;
-                app.updDependants(app.model.nodeById(app.tempElm.old.id));
+                let node = app.model.nodeById(app.tempElm.old.id);
+                node.x0 = node.x = e.target.valueAsNumber;
+                app.updDependants(node);
                 app.notify('render');
             };
             if (e.target && e.target.id === 'node-y') {
-                app.model.nodeById(app.tempElm.old.id).y = e.target.valueAsNumber;
-                app.updDependants(app.model.nodeById(app.tempElm.old.id));
+                let node = app.model.nodeById(app.tempElm.old.id);
+                node.y0 = node.y = e.target.valueAsNumber;
+                app.updDependants(node);
                 app.notify('render');
             };
             if (e.target && e.target.id === 'node-base') { 
@@ -245,20 +247,20 @@ const events = {
 
             // forces
             if (e.target && e.target.id === 'force-value') { 
-                app.model.loadById(app.tempElm.old.id).value = mec.from_N(+e.target.value);
+                app.model.loadById(app.tempElm.old.id).value = mec.from_N(e.target.valueAsNumber);
                 app.notify('render');
             };
 
             // springs
             if (e.target && e.target.id === 'spring-len0') {
-                console.log(app.model.loadById(app.tempElm.old.id).len0);
-                console.log(e.target.value);
-                app.model.loadById(app.tempElm.old.id).len0 = +e.target.value;
+                // console.log(app.model.loadById(app.tempElm.old.id).len0);
+                // console.log(e.target.value);
+                app.model.loadById(app.tempElm.old.id).len0 = e.target.valueAsNumber;
                 app.notify('render');
             };
 
             if (e.target && e.target.id === 'spring-k') { 
-                app.model.loadById(app.tempElm.old.id).k = mec.from_N_m(+e.target.value);
+                app.model.loadById(app.tempElm.old.id).k = mec.from_N_m(e.target.valueAsNumber);
                 app.notify('render');
             };
         });
