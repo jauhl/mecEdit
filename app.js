@@ -807,7 +807,7 @@ const App = {
                     this.ctxmenubody.innerHTML += ctxm.ref(elm, 'ori', elm.ori.ref);
                 };
 
-                this.ctxmenubody.innerHTML += ctxm.sectionTitle('lenght');
+                this.ctxmenubody.innerHTML += ctxm.sectionTitle('length');
                 this.ctxmenubody.innerHTML += ctxm.lenType(elm);
 
                 if (!!elm.len && elm.len.type === 'drive') {
