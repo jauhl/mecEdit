@@ -45,7 +45,7 @@ g2.editor.prototype = {
     },
     on({type,x,y,t,dx,dy,dt,btn}) {
         this.evt = {type,x,y,t,dx,dy,dt,btn,eps:3.8};
-        if (type === 'buttondown') console.log(`btn: ${btn}`);
+        // if (type === 'buttondown') console.log(`btn: ${btn}`);
         return this;
     },
     hit(elm) {

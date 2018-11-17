@@ -27,6 +27,16 @@ planar linkages.
 
 # Changelog
 
+## v0.5.2 - various changes
+
+### general:
++ Moved modal- & editor-objects to namespace app.
++ Improved performance.
++ Changed version number to 3 digits to comply with npm standards.
++ Added package.json
+
+---
+
 ## v0.5.1.1 - bugfixes
 
 ### general:

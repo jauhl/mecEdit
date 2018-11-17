@@ -1,0 +1,34 @@
+{
+    "name": "mecedit",
+    "version": "0.5.2",
+    "description": "Editor for Planar Mechanisms",
+    "keywords": [
+      "vector",
+      "particle",
+      "mechanism",
+      "linkage",
+      "node",
+      "constraint",
+      "load",
+      "model",
+      "2d",
+      "javascript"
+    ],
+    "main": "app.js",
+    "scripts": {
+      "build": "npm run minify && npm run gzip",
+      "minify": "uglifyjs ./scripts/mixin.js ./scripts/slider.js ./scripts/ctxm-templates.js ./scripts/appevents.js ./scripts/examples.js ./app.js -o ./app.min.js --comments -c",
+      "gzip": "ngzip ./app.min.js > ./app.min.js.gz"
+    },
+    "author": "Jan Uhlig",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/jauhl/mecEdit"
+    },
+    "license": "MIT",
+    "devDependencies": {
+      "uglify-es": "^3.3.9",
+      "ngzip": "^1.1.3"
+    }
+  }
+  

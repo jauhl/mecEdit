@@ -2,9 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-
     <!-- bootstrap requierement: responsive viewport meta tag -->
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>mecEdit</title>
@@ -12,10 +11,12 @@
     <!-- styles -->
     <link rel="stylesheet" href="./vendor/bootstrap.min.css">
     <link rel="stylesheet" href="./vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="./vendor/codemirror/codemirror5.39.2.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/lucario.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/mdn-like.css">
     <link rel="stylesheet" href="./app.css">
+    <link rel="stylesheet" href="./vendor/codemirror/codemirror5.39.2.css" />
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/lucario.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/mdn-like.css"> -->
+    <link rel="stylesheet" href="./vendor/codemirror/lucario.css">
+    <link rel="stylesheet" href="./vendor/codemirror/mdn-like.css">
 
 </head>
 
@@ -195,11 +196,11 @@
                 </li>
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-inline-flex navafter" id="FileDropdown" role="button"
+                    <a class="nav-link dropdown-toggle d-inline-flex navafter" id="HelpDropdown" role="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Help
                     </a>
-                    <div class="dropdown-menu" aria-labelledby="FileDropdown">
+                    <div class="dropdown-menu" aria-labelledby="HelpDropdown">
                         <a class="dropdown-item" id="keysModal-trigger" role="button" data-toggle="modal" data-target="#keysModal"
                             aria-haspopup="true">
                             Keyboard Shortcuts
@@ -354,17 +355,17 @@
                 <div id="actuators-container" class="d-inline-flex flex-wrap"></div>
 
                 <div id="statbar" class="statbar d-flex flex-row flex-nowrap">
-                    <div id="sbCoords" class="text-muted pl-1"></div>
-                    <div id="sbDragmode" class="text-muted pl-1"></div>
-                    <div id="sbDOF" class="text-muted pl-1"></div>
-                    <div id="sbFPS" class="text-muted pl-1"></div>
-                    <div id="sbGravity" class="text-muted pl-1"></div>
-                    <div id="sbMode" class="text-muted pl-1"></div>
-                    <div id="sbCartesian" class="text-muted pl-1"></div>
-                    <div id="sbBtn" class="text-muted pl-1"></div>
-                    <div id="sbDbtn" class="text-muted pl-1"></div>
-                    <div id="sbState" class="text-muted pl-1"></div>
-                    <div id="sbDragging" class="text-muted pl-1"></div>
+                    <div id="sbCoords" class="text-dark pl-1"></div>
+                    <div id="sbDragmode" class="text-dark pl-1"></div>
+                    <div id="sbDOF" class="text-dark pl-1"></div>
+                    <div id="sbFPS" class="text-dark pl-1"></div>
+                    <div id="sbGravity" class="text-dark pl-1"></div>
+                    <div id="sbMode" class="text-dark pl-1"></div>
+                    <div id="sbCartesian" class="text-dark pl-1"></div>
+                    <div id="sbBtn" class="text-dark pl-1"></div>
+                    <div id="sbDbtn" class="text-dark pl-1"></div>
+                    <div id="sbState" class="text-dark pl-1"></div>
+                    <div id="sbDragging" class="text-dark pl-1"></div>
                 </div>
             </main>
 
@@ -372,7 +373,7 @@
     </div>
 
     <!-- ========================== Custom ContextMenu ========================== -->
-    <div id="contextMenu" class="card border-0 draggable clearfix">
+    <div id="contextMenu" class="card border-0 clearfix">
         <div id="contextMenuHeader" class="card-header bg-dark text-white"></div>
         <ul id="contextMenuBody" class="list-group bg-light list-group-flush"></ul>
     </div>
@@ -470,36 +471,39 @@
     </div>
 
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
+    <!-- vendor scripts -->
     <script src="./vendor/bootstrap-native-v4.min.js"></script>
     <script src="./vendor/draggabilly.pkgd.min.js"></script>
     <script src="./vendor/codemirror/codemirror5.39.2.min.js"></script>
     <script src="./vendor/codemirror/codemirror.jsmode5.39.2.js"></script>
+    <script src="./vendor/codemirror/matchbrackets.js"></script> <!-- addon -->
 
      <!-- Don't use original @goessner versions! g2 has issues since it's running async & editor is modified. -->
+    <!-- <script src="./scripts/g2 for 0520/g2.js"></script>
+    <script src="./scripts/g2 for 0520/g2.ext.js"></script>
+    <script src="./scripts/g2 for 0520/g2.lib.js"></script> -->
+    <!-- original @goessner commit 5b53fea works now -->
     <script src="./scripts/g2.js"></script>
-    <script src="./scripts/g2.ext.js"></script>
-    <script src="./scripts/g2.lib.js"></script>
     <script src="./scripts/g2.editor.js"></script>
 
-    <script src="./scripts/mec.core.js"></script>
+    <!-- <script src="./scripts/mec.core.js"></script>
     <script src="./scripts/mec.model.js"></script>
     <script src="./scripts/mec.constraint.js"></script>
     <script src="./scripts/mec.node.js"></script>
     <script src="./scripts/mec.drive.js"></script>
     <script src="./scripts/mec.load.js"></script>
     <script src="./scripts/mec.shape.js"></script>
-    <script src="./scripts/mec.view.js"></script>
-    <!-- <script src="./scripts/mec2.min.js"></script> -->
+    <script src="./scripts/mec.view.js"></script> -->
+    <script src="./scripts/mec2.min.js"></script>
 
-    <script src="./scripts/slider.js"></script>
+    <!-- <script src="./scripts/slider.js"></script>
     <script src="./scripts/mixin.js"></script>
     <script src="./scripts/ctxm-templates.js"></script>
     <script src="./scripts/appevents.js"></script>
     <script src="./scripts/examples.js"></script>
+    <script src="./app.js"></script> -->
 
-    <script src="./app.js"></script>
+    <script src="./app.min.js"></script>
 
 </body>
 

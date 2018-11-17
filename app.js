@@ -90,7 +90,7 @@ const App = {
                 id:"linkage"
             };
 
-            this.VERSION = '0.5.1.1';
+            this.VERSION = '0.5.2';
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -117,7 +117,7 @@ const App = {
             this.g = g2();
 
             this.registerEventsFor(this.ctx.canvas)
-                .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], (e) => { this.g.exe(editor.on(this.pntToUsr(Object.assign({}, e)))).exe(this.ctx); })  // apply events to g2 ...
+                .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], (e) => { this.g.exe( editor.on(this.pntToUsr(Object.assign({}, e))) ).exe(this.ctx);})  // apply events to g2 ...
                 .on(['pointer', 'drag', 'pan', 'fps', 'buttondown', 'buttonup', 'click', 'pointerenter', 'pointerleave'], () => this.showStatus())
                 .on('drag', (e) => {
                     if (!this.dragMove) { // dragEdit mode
@@ -157,15 +157,17 @@ const App = {
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
             sbCoords.innerHTML = `x=${x}, y=${y}`;
             sbDragmode.innerHTML = `dragmode=${this.dragMove?'move':'edit'}`;
+            sbDOF.innerHTML = `dof=${this.model.dof}`;
             sbFPS.innerHTML = `fps=${this.fps}`;
-            if (!!this.model.nodes && this.model.nodes.length > 0 ) { // only useful when model has nodes
-                sbDOF.innerHTML = `dof=${this.model.dof}`;
-                if (this.devmode)
-                    sbGravity.innerHTML = `gravity=${this.model.hasGravity ? 'on' : 'off'}`;
-            } else {
-                sbDOF.innerHTML = sbGravity.innerHTML = ``;
-            };
+            // if (!!this.model.nodes && this.model.nodes.length > 0 ) { // only useful when model has nodes
+            //     sbDOF.innerHTML = `dof=${this.model.dof}`;
+            //     if (this.devmode)
+            //         sbGravity.innerHTML = `gravity=${this.model.hasGravity ? 'on' : 'off'}`;
+            // } else {
+            //     sbDOF.innerHTML = sbGravity.innerHTML = `dof`;
+            // };
             if (this.devmode) {
+                sbGravity.innerHTML = `gravity=${this.model.hasGravity ? 'on' : 'off'}`;
                 sbMode.innerHTML = `mode=${this.evt.type}`;
                 sbCartesian.innerHTML = `cartesian=${this.cartesian}`;
                 sbBtn.innerHTML = `btn=${this.evt.btn}`;
@@ -217,12 +219,13 @@ const App = {
         init() { // evaluate how many drives and add init add controlled properties to model instead of typing them there
             mec.model.extend(this.model);
             this.model.init().asmPos();
-            this.model.draw(this.g);
+            // this.model.draw(this.g); // in this.updateg();
+            this.updateg();
 
             this.model.drivecount = 0;  // add drive counter to model
             this.model.inputs = [];     // track drives by id and dof for responsive range-input sizing
-            // empty actcontainer if not empty already
-            while (actcontainer.hasChildNodes()) {
+            
+            while (actcontainer.hasChildNodes()) {  // empty actcontainer if not empty already
                 actcontainer.removeChild(actcontainer.lastChild);
             };
 
@@ -240,9 +243,9 @@ const App = {
                 prv = drv;
             };
 
-            if (typeof t === 'undefined' || t === null) {  // dont start second timer if init() is called again
-                this.startTimer() // startTimer ...             // start synchronized ticks 
-                    .notify('render');                          // send 'render' event
+            if (typeof t === 'undefined' || t === null) {   // dont start second timer if init() is called again
+                this.startTimer()                           // start synchronized ticks 
+                    .notify('render');                      // send 'render' event
             };
 
             this.state = (this.model.inputs.length > 0) ? 'input' : 'initialized';
@@ -295,10 +298,17 @@ const App = {
             });
         },
 
+        toggleDevmode() {
+            this.devmode = !this.devmode;
+            if (!this.devmode)
+                sbGravity.innerHTML = sbMode.innerHTML = sbCartesian.innerHTML = sbBtn.innerHTML = sbDbtn.innerHTML = sbState.innerHTML = sbDragging.innerHTML = ``;
+            this.showStatus();
+        },
+
         toggleDarkmode() {
             mec.darkmode = !mec.darkmode;
-            jsonEditor.setOption("theme",`${mec.darkmode ? 'lucario' : 'mdn-like'}`);
-            this.cnv.style.backgroundColor = mec.darkmode ? '#344c6b' : 'rgb(250, 246, 209)';
+            this.jsonEditor.setOption("theme",`${mec.darkmode ? 'lucario' : 'mdn-like'}`);
+            this.cnv.style.backgroundColor = mec.darkmode ? '#344c6b' : 'rgb(250, 253, 242)';
             this.notify('render');
         },
 
@@ -317,7 +327,7 @@ const App = {
         },
 
         updateg() {
-            let apphasmodel = typeof this.model === 'object' && Object.keys(this.model).length ? true : false;
+            let apphasmodel = !!(typeof this.model === 'object' && Object.keys(this.model).length);
 
             this.g = g2().clr()
                 .view(this.view)
@@ -683,9 +693,9 @@ const App = {
         initViewModal() {
             if (!this.tempElm)
                 this.tempElm = {new:{id:'',type:'trace'}}; // default
-            viewModal.setContent(ctxm.viewModal());
+            this.viewModal.setContent(ctxm.viewModal());
             document.getElementById('view-fill-color-btn').style.backgroundColor = 'transparent';
-            viewModal.show();
+            this.viewModal.show();
         },
 
         closeViewModal() {
@@ -700,7 +710,7 @@ const App = {
             if (['trace','vector'].includes(this.tempElm.new.type))
                 this.updateg();
             this.resetApp();
-            viewModal.hide()
+            this.viewModal.hide()
         },
 
         initCtxm(elm) {
@@ -914,24 +924,23 @@ const App = {
 let app;
 
 // initialize bootstrap modals
-let modelModal = new Modal(document.getElementById('modelModal'), {
-    backdrop: 'static',
-    keyboard: true // dismiss with ESC key
-});
+// let modelModal = new Modal(document.getElementById('modelModal'), {
+//     backdrop: 'static',
+//     keyboard: true // dismiss with ESC key
+// });
 
-let viewModal = new Modal(document.getElementById('viewModal'), {
-    backdrop: 'static'
-});
+// let viewModal = new Modal(document.getElementById('viewModal'), {
+//     backdrop: 'static'
+// });
 
-let jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'), {
-    mode: 'javascript',
-    theme: 'lucario',   // dark: dracula, lucario   light: default, mdn-like
-    lineNumbers: true,
-    styleActiveLine: true,
-    matchBrackets: true,
-    viewportMargin: Infinity,
-    lineWrapping: true
-  });
+// let jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'), {
+//     mode: 'javascript',
+//     theme: 'lucario',   // dark: dracula, lucario   light: default, mdn-like
+//     lineNumbers: true,
+//     matchBrackets: true,
+//     viewportMargin: Infinity,
+//     lineWrapping: false
+// });
 
 window.onload = () => {
     let c = document.getElementById('canvas'),
@@ -939,9 +948,9 @@ window.onload = () => {
 
     // create App instance
     (app = App.create()).init();
-    app.toggleDarkmode(); // switch on, off by default
+    
     // fill graphics queue
-    app.updateg();
+    // app.updateg(); // moved to app.init()
 
     // fit canvas
     c.width = main.clientWidth;
@@ -954,7 +963,52 @@ window.onload = () => {
     };
 
     // render graphics
-    app.notify('render');
+    app.notify('render'); // toggling darkmode later renders again though
+
+    // initialize bootstrap modals
+    app.modelModal = new Modal(document.getElementById('modelModal'), {
+        backdrop: 'static',
+        keyboard: true // dismiss with ESC key
+    });
+
+    app.viewModal = new Modal(document.getElementById('viewModal'), {
+        backdrop: 'static'
+    });
+    
+    // initialize CodeMirror editor
+    app.jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'), {
+        mode: 'javascript',
+        theme: 'lucario',   // dark: dracula, lucario   light: default, mdn-like
+        lineNumbers: true,
+        matchBrackets: true,
+        viewportMargin: Infinity,
+        lineWrapping: false
+    });
+
+    // make cxtm dragable (decalre private, no need to access later)
+    new Draggabilly(document.getElementById('contextMenu'), {
+        containment: '.main-container',
+        handle: '.card-header'
+    });
+
+    // no need to access later, can be private
+    new Modal(document.getElementById('aboutModal'), {
+        keyboard: true, // dismiss with ESC key
+        content: `<div class="modal-header bg-dark text-white">
+        <h5 class="modal-title">About <i>mecEdit</i></h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+        </div>
+        <div class="modal-body text-center">
+        Version ${app.VERSION}<br>
+        <a href="https://github.com/jauhl/mecEdit">mecEdit on Github<a/><br><br>
+        &#169; 2018 Jan Uhlig
+        </div>`
+    });
+
+    // keyboard shortcuts documentation, also private
+    new Modal(document.getElementById('keysModal'), {
+        keyboard: true, // dismiss with ESC key
+    });
 
     // define non-editor events
     events.navbarClick('navcollapse');
@@ -971,30 +1025,9 @@ window.onload = () => {
     events.viewModalClick('viewModal');
     events.viewModalHide('viewModal');
 
-    // make cxtm dragable (decalre private, no need to access later)
-    new Draggabilly(document.getElementById('contextMenu'), {
-        containment: '.main-container',
-        handle: '.card-header'
-    });
-
-    // no need to access later, can be static
-    new Modal(document.getElementById('aboutModal'), {
-        keyboard: true, // dismiss with ESC key
-        content: `<div class="modal-header bg-dark text-white">
-        <h5 class="modal-title">About <i>mecEdit</i></h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-        </div>
-        <div class="modal-body text-center">
-        Version ${app.VERSION}<br>
-        <a href="https://github.com/jauhl/mecEdit">mecEdit on Github<a/><br><br>
-        &#169; 2018 Jan Uhlig
-        </div>`
-    });
-
-    new Modal(document.getElementById('keysModal'), {
-        keyboard: true, // dismiss with ESC key
-    });
-
+    // protect users retina
+    app.toggleDarkmode();
+    
     // dispatch 'resize' event to fix the initial sizing bug on laptops
     window.dispatchEvent(new Event('resize'));
     // window.resizeBy(0,0);

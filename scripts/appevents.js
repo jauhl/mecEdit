@@ -30,7 +30,7 @@ const events = {
                 if (!app.dragMove)
                     app.reset();
             };
-            if (e.target && e.target.id === 'model-edit') { modelModal.show(); };
+            if (e.target && e.target.id === 'model-edit') { app.modelModal.show(); };
             if (e.target && e.target.id === 'nav-purgeelement') {
                 app.build = { mode: e.target.id.replace('nav-','') };
                 app.instruct.innerHTML = 'Left-click on an element to delete it and all its dependants; [ESC] to cancel';
@@ -119,7 +119,7 @@ const events = {
                 // some shortcuts
                 // console.log(e);
                 if (e.key === 'e')    
-                    modelModal.show(); // open model editor
+                    app.modelModal.show(); // open model editor
                 if (e.key === 'r')    
                     app.resetView();
                 if (e.key === 'g') { 
@@ -315,14 +315,14 @@ const events = {
     },
     modalShown: (id) => {
         document.getElementById(id).addEventListener('shown.bs.modal', (e) => { // show.bs.modal fires earlier but the Editor value is not updated without scrolling; shown.bs.modal works though
-            jsonEditor.setValue(app.model.asJSON());
+            app.jsonEditor.setValue(app.model.asJSON());
         });
     },
     modalAccept: (id) => {
         document.getElementById(id).addEventListener('click', (e) => {
             let newmodel;
             try {
-                newmodel = JSON.parse(jsonEditor.getValue());
+                newmodel = JSON.parse(app.jsonEditor.getValue());
             } catch (error) {
                 alert(`Your JSON code is not valid! \n\n${error}`)
             }
@@ -330,7 +330,7 @@ const events = {
             if (!!newmodel) {
                 app.model = newmodel;  // todo: strip unnecessary properties before parsing || model.toJSON
                 app.init();
-                app.updateg();
+                // app.updateg(); // moved to app.init()
             };
         })
     },
@@ -381,10 +381,10 @@ const events = {
             };
 
             if (!skipUpdate) { 
-                viewModal.setContent(ctxm.viewModal());
+                app.viewModal.setContent(ctxm.viewModal());
                 if (!!document.getElementById('view-fill-color-btn'))
                     document.getElementById('view-fill-color-btn').style.backgroundColor = document.getElementById('view-fill-color').disabled ? 'transparent' : '#e9ecef';
-                viewModal.update();
+                app.viewModal.update();
             }
         });
     },
