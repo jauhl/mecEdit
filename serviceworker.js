@@ -24,7 +24,7 @@ const URLS = [                            // Add URL you want to cache in this l
   // `/mecEdit/scripts/appevents.js`,
   // `/mecEdit/scripts/examples.js`,
   // `/mecEdit/app.js`,
-  `/mecEdit/app.min.js`
+  `/mecEdit/app.min.js`,
   `/mecEdit/img/favicon/favicon-16x16.png`,
   `/mecEdit/img/favicon/favicon-32x32.png`,
   `/mecEdit/img/favicon/apple-touch-icon.png`,
