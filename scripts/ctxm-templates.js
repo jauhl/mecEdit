@@ -84,7 +84,7 @@ ctxm = {
                       <label class="lbl" for="len-input" style="margin-left:.8rem"></label>
                   </li>`
     ,
-    removeConstraintButton: () => `<div class="section-divider"></div><li class="input-group" style="height:28px;"><div id="constraint-trash" class="ctxm-right"><i class="fas fa-trash-alt fa-lg"></i></div></li>`,
+    removeConstraintButton: () => `<div class="section-divider"></div><li class="input-group" style="height:28px;"><div id="constraint-trash" class="ctxm-right"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">                             <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"                             fill="currentColor"/>                         </svg></div></li>`,
 
     //node templates
     nodeCoordinates: (elm) => `<li class="input-group" style="padding:.1rem;">
@@ -101,7 +101,10 @@ ctxm = {
                                 <input type="checkbox" id="node-base" class="cbx d-none" ${(elm.base ? 'checked' : '')}>
                                 <label class="lbl" for="node-base"></label>
                             </div>
-                            <div id="node-trash" class="ctxm-right"><i class="fas fa-trash-alt fa-lg"></i></div> 
+                            <div id="node-trash" class="ctxm-right"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">
+                            <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"
+                            fill="currentColor"/>
+                        </svg></div> 
                         </li>`
     ,
     // force templates
@@ -114,7 +117,7 @@ ctxm = {
                 selectP += `<option value="${node.id}" ${(((elm.p.id === node.id) || (elm.p === node.id)) ? 'selected' : '')}>${node.id}</option>`;
             });
     
-            select += selectP + `</select><div id="force-trash" class="ctxm-right"><i class="fas fa-trash-alt fa-lg"></i></div></div>`; // append and add tail
+            select += selectP + `</select><div id="force-trash" class="ctxm-right"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">                             <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"                             fill="currentColor"/>                         </svg></div></div>`; // append and add tail
     
             return select;
     },
@@ -154,7 +157,7 @@ ctxm = {
                        <li class="input-group" style="padding-top:.3rem;">
                            <label class="ctxm-input-label">k [N/m]: </label>
                            <input type="number" class="custom-number-input" id="spring-k" step="any" value="${mec.to_N_m(app.model.loadById(`${elm.id}`).k)}" style="margin-left:.1rem!important;">
-                           <div id="spring-trash" class="ctxm-right" style="padding-top:.25rem!important;"><i class="fas fa-trash-alt fa-lg"></i></div> 
+                           <div id="spring-trash" class="ctxm-right" style="padding-top:.25rem!important;"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">                             <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"                             fill="currentColor"/>                         </svg></div> 
                        </li>`
     ,
     springLen: (elm) => `<div class="section-divider"></div>
@@ -163,7 +166,7 @@ ctxm = {
                            <input type="number" class="custom-number-input" id="spring-len0" step="any" value="${app.model.loadById(`${elm.id}`).len0.toFixed(4)}" style="min-width:6rem!important;margin-left:.15rem!important;">
                          </li>`
     ,
-    removeSpringButton: () => `<div class="section-divider"></div><li class="input-group" style="height:28px;"><div id="spring-trash" class="ctxm-right"><i class="fas fa-trash-alt fa-lg"></i></div></li>`,
+    removeSpringButton: () => `<div class="section-divider"></div><li class="input-group" style="height:28px;"><div id="spring-trash" class="ctxm-right"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">                             <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"                             fill="currentColor"/>                         </svg></div></li>`,
     viewModal: () => `<div class="modal-header bg-dark text-white">
                           <h5 class="modal-title">add view component</h5>
                           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>

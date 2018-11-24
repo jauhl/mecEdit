@@ -32,7 +32,7 @@ const examples = {
             { id: 'B0', x: 500, y: 80, base: true }
         ],
         constraints: [
-            { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
+            { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori: { type: 'drive', Dw: 2*Math.PI, input: true } },
             { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
             { id: 'c', p1: 'B0', p2: 'B', ori: { type: 'const' } }
         ]

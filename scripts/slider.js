@@ -49,17 +49,17 @@ mecESlider.prototype = {
         this.reverse.addEventListener('click', this.startReversePtr, false);
         observer.on(key,this.setSliderPtr);
     },
-    startForward: function() {
-        if (this.value < this.max) {
-            this.forward.removeEventListener('click', this.startForwardPtr, false);
-            this.forward.innerHTML = this.stopsym;
-            this.forward.addEventListener('click', this.endForwardPtr, false);
-            this.reverse.classList.add('text-muted'); // bootstrap 4.1
-            this.reverse.removeEventListener('click', this.startReversePtr, false);
-            this.observer.on('tick',this.fwdStepPtr)
-            this.value += 0;  // starting mainLoop (initially setting potential dirty flag) ...
-        }
-    },
+startForward: function() {
+    if (this.value < this.max) {
+        this.forward.removeEventListener('click', this.startForwardPtr, false);
+        this.forward.innerHTML = this.stopsym;
+        this.forward.addEventListener('click', this.endForwardPtr, false);
+        this.reverse.classList.add('text-muted'); // bootstrap 4.1
+        this.reverse.removeEventListener('click', this.startReversePtr, false);
+        this.observer.on('tick',this.fwdStepPtr)
+        this.value += 0;  // starting mainLoop (initially setting potential dirty flag) ...
+    }
+},
     endForward: function() {
         this.forward.removeEventListener('click', this.endForwardPtr, false);
         this.forward.innerHTML = this.fwdsym;
@@ -112,15 +112,15 @@ mecESlider.prototype = {
 }
 
 mecESlider.RegisterElm = function(elm) {
-    Object.setPrototypeOf(mecESlider.prototype, HTMLElement.prototype);
+    // Object.setPrototypeOf(mecESlider.prototype, HTMLElement.prototype);
     mecESlider(Object.setPrototypeOf(elm,mecESlider.prototype));
 }
 
 mecESlider.initialize = function() {
     let register = () => {
         Object.setPrototypeOf(mecESlider.prototype, HTMLElement.prototype);
-        for (let elms = document.getElementsByTagName('mec-slider'), i=0; i < elms.length; i++)
-            mecESlider(Object.setPrototypeOf(elms[i],mecESlider.prototype));
+        // for (let elms = document.getElementsByTagName('mec-slider'), i=0; i < elms.length; i++)
+        //     mecESlider(Object.setPrototypeOf(elms[i],mecESlider.prototype));
     }
     if (document.readyState === 'loading')
         document.addEventListener('DOMContentLoaded', register);

@@ -27,13 +27,32 @@ planar linkages.
 
 # Changelog
 
+## v0.6.0 - PWA & various improvements
+
+### general:
++ _mecEdit_ is now a progressive web app! In Google Chrome set `chrome://flags/#enable-desktop-pwas` to `enabled` and install from menu.
++ Drastically improved panning in MS Edge.
++ Replaced dependency fontawesome with svg elements.
++ Updated example 'slidercrank' to showcase drives and inputs.
+
+---
+
+# Changelog
+
+## v0.5.3 - bugfixes
+
+### general:
++ The range of inputs is now correctly updated when changing the adjustment range of a drive from the contextmenu.
++ Various bugfixes.
+
+---
+
 ## v0.5.2 - various changes
 
 ### general:
 + Moved modal- & editor-objects to namespace app.
 + Improved performance.
-+ Changed version number to 3 digits to comply with npm standards.
-+ Added package.json
++ Changed version to 3 digits to comply with npm standards.
 
 ---
 

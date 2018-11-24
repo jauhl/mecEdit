@@ -11,7 +11,6 @@ i, svg {
     .main-container {
         min-width: none;
     }
-    
 }
 
 @media (max-width: 400px) {
@@ -26,12 +25,31 @@ i, svg {
     .main-container {
         height: inherit !important;
     }
-    
 }
 
 @media (max-width: 440px) {
     .mobile-neg-margin {
-        margin-left: calc(50vw - 280px) !important;
+        margin-left: calc(50vw - 215px) !important;
+    }
+}
+
+/* Bootstrap md breakpoint */
+@media (max-width: 768px) {
+    #appname {
+        display: none;
+    }
+}
+
+/* JSON-editor sizing */
+@media (min-width: 1416px) {
+    .modal-dialog {
+        max-width: 1200px;
+    }
+}
+
+@media (max-width: 1415px) {
+    .modal-dialog {
+        max-width: 85vw;
     }
 }
 
@@ -87,7 +105,7 @@ output.badge {
 }
 
 /* trashcan red when hover parentbutton */
-#deletenode:hover i{
+#deletenode:hover svg{
     color:crimson;
 }
 
@@ -115,6 +133,12 @@ output.badge {
     padding:0rem;
     width:50px;
     height:50px;
+}
+
+/* align svg icons */
+.svg-icon {
+    position: relative;
+    top: .125em;
 }
 
 .navbar-nav-svg {
@@ -306,22 +330,18 @@ output.badge {
 
 .ctxm-right {
     position: absolute;
-    top: 0.3rem;
-    right: 0.2rem;
+    top: 0.1rem;
+    right: 0.25rem;
 }
 
-.ctxm-right:hover i{
-    color:crimson;
+.ctxm-right:hover svg{
+    color: crimson;
     cursor: pointer;
 }
 
 .modal-content, .card-header {
     border-top-left-radius: .5rem;
     border-top-right-radius: .5rem;
-}
-
-.modal-dialog {
-    max-width: 800px;
 }
 
 #modalTextarea {

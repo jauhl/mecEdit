@@ -18,8 +18,7 @@
 
 const tooltip = document.getElementById('info'),
       actcontainer = document.getElementById('actuators-container'),
-      runbutton = document.getElementById('run'),
-      // statusbar
+      runSymbol = document.getElementById('run-symbol'),
       statusbar = document.getElementById('statbar'),
       sbMode =  document.getElementById('sbMode'),
       sbCoords =  document.getElementById('sbCoords'),
@@ -34,7 +33,10 @@ const tooltip = document.getElementById('info'),
       sbGravity =  document.getElementById('sbGravity'),
   
       editor = g2.editor(),
-      pi = Math.PI;
+      pi = Math.PI,
+
+      svgplay = 'M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z',
+      svgpause = 'M144 479H48c-26.5 0-48-21.5-48-48V79c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v352c0 26.5-21.5 48-48 48zm304-48V79c0-26.5-21.5-48-48-48h-96c-26.5 0-48 21.5-48 48v352c0 26.5 21.5 48 48 48h96c26.5 0 48-21.5 48-48z';
 
 const origin = g2().beg({ lc: 'round', lj: 'round', ls:()=>mec.darkmode?'silver':'slategray', fs: 'darkgray' })
                         .p()
@@ -90,7 +92,7 @@ const App = {
                 id:"linkage"
             };
 
-            this.VERSION = '0.5.2';
+            this.VERSION = '0.6.0';
 
             // mixin requiries ...
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
@@ -201,18 +203,16 @@ const App = {
             if (!!this.model) { // check if model is defined first
                 if (this.dragging) {
                     this.dragMove ? this.model.pose() : this.updDependants(editor.curElm); // null, if updating on dragend via editor
-                    this.g.exe(this.ctx);
                 }
                 else if (this.state === 'active') {     // perform time step
                     this.model.tick(e.dt);
                     if (!this.model.isActive)
                         this.stop();        // this causes state intentionally being set to 'idle' for model without gravity even when run was clicked
-                    this.g.exe(this.ctx);
                 }
                 else if (this.state === 'input') {     // perform time step
                     this.model.tick(0);
-                    this.g.exe(this.ctx);
                 }
+                this.g.exe(this.ctx);
             }
         },
 
@@ -222,10 +222,10 @@ const App = {
             // this.model.draw(this.g); // in this.updateg();
             this.updateg();
 
-            this.model.drivecount = 0;  // add drive counter to model
+            // this.model.drivecount = 0;  // add drive counter to model
             this.model.inputs = [];     // track drives by id and dof for responsive range-input sizing
             
-            while (actcontainer.hasChildNodes()) {  // empty actcontainer if not empty already
+            while (actcontainer.lastChild) {  // empty actcontainer if not empty already
                 actcontainer.removeChild(actcontainer.lastChild);
             };
 
@@ -237,15 +237,16 @@ const App = {
 
                 let elm = document.getElementById(id);
                 mecESlider.RegisterElm(elm);
+                console.log(prv);
                 elm.initEventHandling(this, id, this.model.constraintById(drv.constraint.id)[drv.value].inputCallbk);
-                this.model.drivecount++;
+                // this.model.drivecount++;
                 this.model.inputs.push(id);
                 prv = drv;
             };
 
             if (typeof t === 'undefined' || t === null) {   // dont start second timer if init() is called again
                 this.startTimer()                           // start synchronized ticks 
-                    .notify('render');                      // send 'render' event
+                    // .notify('render');                      // send 'render' event
             };
 
             this.state = (this.model.inputs.length > 0) ? 'input' : 'initialized';
@@ -253,20 +254,19 @@ const App = {
 
         run() { 
             this.state = 'active'; 
-            runbutton.innerHTML = '<i class="fas fa-pause"></i>'; 
+            runSymbol.setAttribute('d',svgpause);
         },
         idle() { 
             this.state = (this.model.inputs.length > 0) ? 'input' : 'idle';
-            runbutton.innerHTML = '<i class="fas fa-play"></i>';
+            runSymbol.setAttribute('d',svgplay);
         },
         stop() {
             this.model.stop();
-            this.state = (this.model.inputs.length > 0) ? 'input' : 'idle';
-            runbutton.innerHTML = '<i class="fas fa-play"></i>';
+            this.idle();
         },
         reset() { 
             this.model.reset();
-            this.model.pose(); // necessary because model.reset() does not respect constraint r0 values
+            this.model.asmPos(); // necessary because model.reset() does not respect constraint r0 values
 
             // reset drive-inputs
             for (const drive in this.model.inputs) {
@@ -277,8 +277,7 @@ const App = {
             };
 
             this.notify('render');
-            this.state = (this.model.drivecount > 0) ? 'input' : 'reset';
-            runbutton.innerHTML = '<i class="fas fa-play"></i>';
+            this.idle();
         },
 
         updDependants(elm) {
@@ -361,11 +360,11 @@ const App = {
             this.notify('render');
         },
 
-        replaceNode(oldN, newN) {
-            if (!(oldN.x === newN.x)) this.model.nodeById(oldN.id).x = newN.x;
-            if (!(oldN.y === newN.y)) this.model.nodeById(oldN.id).y = newN.y;
-            if (!(oldN.m === newN.m)) this.model.nodeById(oldN.id).m = newN.m;
-        },
+        // replaceNode(oldN, newN) { // deprecated
+        //     if (!(oldN.x === newN.x)) this.model.nodeById(oldN.id).x = newN.x;
+        //     if (!(oldN.y === newN.y)) this.model.nodeById(oldN.id).y = newN.y;
+        //     if (!(oldN.m === newN.m)) this.model.nodeById(oldN.id).m = newN.m;
+        // },
 
         addNode() {
             if (editor.curElm === undefined || !editor.curElm.hasOwnProperty('m')) { // no node at coords; objects with a mass are considered nodes
@@ -373,9 +372,10 @@ const App = {
                 let node = {
                     id: this.getNewChar(),
                     x: x,
-                    y: y,
-                    m: this.build.mode == 'addbasenode' ? Number.POSITIVE_INFINITY : 1
+                    y: y
                 };
+                if (this.build.mode === 'addbasenode')
+                    node.base = true;
                 this.model.addNode(mec.node.extend(node)); // inherit prototype methods (extend) and add to model via model.addnode
                 node.init(this.model);
                 this.updateg(); // update graphics
@@ -394,7 +394,7 @@ const App = {
                 if (this.model.inputs.includes(id+dof)) { // remove redundant ori inputs
                     actcontainer.removeChild(document.getElementById(id+dof));
                     this.model.inputs.splice(this.model.inputs.findIndex((el)=>el.id === id),1);
-                    this.model.drivecount--;
+                    // this.model.drivecount--;
                 }
             }
         },
@@ -477,7 +477,7 @@ const App = {
                     let elm = document.getElementById(id);
                     mecESlider.RegisterElm(elm);
                     elm.initEventHandling(this, id, this.model.constraintById(drv.constraint.id)[drv.value].inputCallbk);
-                    this.model.drivecount++;
+                    // this.model.drivecount++;
                     this.model.inputs.push(id);
                     prv = drv;
                 };
@@ -485,11 +485,22 @@ const App = {
             } else if (!newC.ori.input && this.model.inputs.includes(newC.id+'-ori')) { // remove redundant ori inputs
                 actcontainer.removeChild(document.getElementById(newC.id+'-ori'));
                 this.model.inputs.splice(this.model.inputs.findIndex((el)=>el.id === newC.id),1);
-                this.model.drivecount--;
+                // this.model.drivecount--;
             } else if (!newC.len.input && this.model.inputs.includes(newC.id+'-len')) { // remove redundant len inputs
                 actcontainer.removeChild(document.getElementById(newC.id+'-len'));
                 this.model.inputs.splice(this.model.inputs.findIndex((el)=>el.id === newC.id),1);
-                this.model.drivecount--;
+                // this.model.drivecount--;
+            };
+
+            // update range internals
+            if (!!oldC.ori && !!oldC.ori.Dw && !!newC.ori && !!newC.ori.Dw && !(oldC.ori.Dw === newC.ori.Dw)) {
+                let mecslider = document.getElementById(newC.id+'-ori');
+                mecslider.max = `${Math.round(newC.ori.Dw*180/Math.PI)}`;
+                mecslider.childNodes[2].max = `${Math.round(newC.ori.Dw*180/Math.PI)}`;
+            };
+            if (!!oldC.len && !!oldC.len.Dr && !!newC.len && !!newC.len.Dr && !(oldC.len.Dr === newC.len.Dr)) {
+                let mecslider = document.getElementById(newC.id+'-len');
+                mecslider.max = mecslider.children[1] = `${Math.round(newC.len.Dr)}`
             };
             
             if (rebindorilistener) 
@@ -500,7 +511,7 @@ const App = {
             this.state = (this.model.inputs.length > 0) ? 'input' : 'initialized';
         },
 
-        driveByInput(prev = false) {  // from microthis.js
+        driveByInput(prev = false) {  // from microapp.js
             let found = false, start = !prev;
             for (const constraint of this.model.constraints) {
                 if (constraint.ori && constraint.ori.type === 'drive' && constraint.ori.input) {
@@ -788,7 +799,7 @@ const App = {
             };
 
             // delete old bodyelements of the ctxm to append updated ones
-            while (this.ctxmenubody.hasChildNodes()) {
+            while (this.ctxmenubody.lastChild) {
                 this.ctxmenubody.removeChild(this.ctxmenubody.lastChild);
             };
 
@@ -887,7 +898,7 @@ const App = {
             };
 
             // delete old range-inputs
-            while (actcontainer.hasChildNodes()) {
+            while (actcontainer.lastChild) {
                 actcontainer.removeChild(actcontainer.lastChild);
             };
 
@@ -923,47 +934,9 @@ const App = {
 
 let app;
 
-// initialize bootstrap modals
-// let modelModal = new Modal(document.getElementById('modelModal'), {
-//     backdrop: 'static',
-//     keyboard: true // dismiss with ESC key
-// });
-
-// let viewModal = new Modal(document.getElementById('viewModal'), {
-//     backdrop: 'static'
-// });
-
-// let jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'), {
-//     mode: 'javascript',
-//     theme: 'lucario',   // dark: dracula, lucario   light: default, mdn-like
-//     lineNumbers: true,
-//     matchBrackets: true,
-//     viewportMargin: Infinity,
-//     lineWrapping: false
-// });
-
 window.onload = () => {
-    let c = document.getElementById('canvas'),
-        main = document.getElementById('main'); 
-
     // create App instance
     (app = App.create()).init();
-    
-    // fill graphics queue
-    // app.updateg(); // moved to app.init()
-
-    // fit canvas
-    c.width = main.clientWidth;
-    c.height = main.clientHeight - 30;
-
-    // fit inputs
-    let rangewidth = (c.width - 350)/2;
-    for (const drive in app.model.inputs) {
-        document.getElementById(app.model.inputs[drive]).slider.style.width = `${rangewidth}px`;
-    };
-
-    // render graphics
-    app.notify('render'); // toggling darkmode later renders again though
 
     // initialize bootstrap modals
     app.modelModal = new Modal(document.getElementById('modelModal'), {
@@ -974,7 +947,7 @@ window.onload = () => {
     app.viewModal = new Modal(document.getElementById('viewModal'), {
         backdrop: 'static'
     });
-    
+
     // initialize CodeMirror editor
     app.jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'), {
         mode: 'javascript',
@@ -985,7 +958,7 @@ window.onload = () => {
         lineWrapping: false
     });
 
-    // make cxtm dragable (decalre private, no need to access later)
+    // make cxtm dragable (declare private, no need to access later)
     new Draggabilly(document.getElementById('contextMenu'), {
         containment: '.main-container',
         handle: '.card-header'
@@ -1027,8 +1000,7 @@ window.onload = () => {
 
     // protect users retina
     app.toggleDarkmode();
-    
-    // dispatch 'resize' event to fix the initial sizing bug on laptops
+
+    // dispatch 'resize' event to fit app to viewport
     window.dispatchEvent(new Event('resize'));
-    // window.resizeBy(0,0);
 };

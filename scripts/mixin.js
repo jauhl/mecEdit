@@ -79,7 +79,7 @@ const mixin = {
 
             switch (e.btn) {
                 case 1:     e.type = e.ctrlKey ? 'pan' : this.dragging ?  'drag' : 'pointer'; break;  // left mousebutton
-                case 4:     e.type = 'pan';     break;  // middle mousebutton
+                case 4:     e.type = 'pan'; break;  // middle mousebutton
                 default:    e.type = 'pointer'; 
             }
         },
@@ -109,7 +109,7 @@ const mixin = {
             this.evt.delta = e.delta || 0;
         },
         cumulate(e) {
-            if (this.evt.unused && ['pointer','drag','wheel'].includes(e.type)) { // controlled by timer ...
+            if (this.evt.unused && ['pointer','drag','wheel','pan'].includes(e.type)) { // controlled by timer ...
                 this.evt.dx += e.dx; this.evt.dy += e.dy;  // ... only cumulate some deltas during a single tick interval
                 this.evt.xi = e.x; this.evt.yi = e.y;      // ... interim pointer coordinates
                 this.evt.delta += e.delta || 0;
@@ -163,7 +163,8 @@ const mixin = {
     },
     zoomPan: {
         // viewport handling ... requires 'this.view'
-        pan: function({dx,dy}) { this.view.x+=dx; this.view.y+=dy; this.notify('view', Object.assign({type:'view'},this._view)); },
+        // pan: function({dx,dy}) { this.view.x+=dx; this.view.y+=dy;  }, //this.notify('view', Object.assign({type:'view'},this._view));
+        pan: function({dx,dy}) { this.view.x+=dx; this.view.y+=dy; },
         zoom: function({x,y,scl}) {
             this.view.x = x + scl*(this.view.x - x);
             this.view.y = y + scl*(this.view.y - y);

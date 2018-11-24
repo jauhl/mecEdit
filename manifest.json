@@ -1,0 +1,196 @@
+{
+    "name": "mecEdit",
+    "short_name": "mecEdit",
+    "description": "A lightweight editor for modeling and simulation of planar linkages.",
+    "start_url": "./mecEdit.html",
+    "scope": "/mecEdit/",
+    "display": "standalone",
+    "background_color": "#344c6b",
+    "theme_color": "#343a40",  
+    "icons": [
+      {
+        "src": "img/windows10/Square71x71Logo.scale-400.png",
+        "sizes": "284x284"
+      },
+      {
+        "src": "img/windows10/Square71x71Logo.scale-200.png",
+        "sizes": "142x142"
+      },
+      {
+        "src": "img/windows10/Square71x71Logo.scale-100.png",
+        "sizes": "71x71"
+      },
+      {
+        "src": "img/windows10/Square71x71Logo.scale-150.png",
+        "sizes": "107x107"
+      },
+      {
+        "src": "img/windows10/Square71x71Logo.scale-125.png",
+        "sizes": "89x89"
+      },
+      {
+        "src": "img/windows10/Square150x150Logo.scale-400.png",
+        "sizes": "600x600"
+      },
+      {
+        "src": "img/windows10/Square150x150Logo.scale-200.png",
+        "sizes": "300x300"
+      },
+      {
+        "src": "img/windows10/Square150x150Logo.scale-100.png",
+        "sizes": "150x150"
+      },
+      {
+        "src": "img/windows10/Square150x150Logo.scale-150.png",
+        "sizes": "225x225"
+      },
+      {
+        "src": "img/windows10/Square150x150Logo.scale-125.png",
+        "sizes": "188x188"
+      },
+      {
+        "src": "img/windows10/Wide310x150Logo.scale-400.png",
+        "sizes": "1240x600"
+      },
+      {
+        "src": "img/windows10/Wide310x150Logo.scale-200.png",
+        "sizes": "620x300"
+      },
+      {
+        "src": "img/windows10/Wide310x150Logo.scale-100.png",
+        "sizes": "310x150"
+      },
+      {
+        "src": "img/windows10/Wide310x150Logo.scale-150.png",
+        "sizes": "465x225"
+      },
+      {
+        "src": "img/windows10/Wide310x150Logo.scale-125.png",
+        "sizes": "388x188"
+      },
+      {
+        "src": "img/windows10/Square310x310Logo.scale-400.png",
+        "sizes": "1240x1240"
+      },
+      {
+        "src": "img/windows10/Square310x310Logo.scale-200.png",
+        "sizes": "620x620"
+      },
+      {
+        "src": "img/windows10/Square310x310Logo.scale-100.png",
+        "sizes": "310x310"
+      },
+      {
+        "src": "img/windows10/Square310x310Logo.scale-150.png",
+        "sizes": "465x465"
+      },
+      {
+        "src": "img/windows10/Square310x310Logo.scale-125.png",
+        "sizes": "388x388"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.scale-400.png",
+        "sizes": "176x176"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.scale-200.png",
+        "sizes": "88x88"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.scale-100.png",
+        "sizes": "44x44"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.scale-150.png",
+        "sizes": "66x66"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.scale-125.png",
+        "sizes": "55x55"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.targetsize-256.png",
+        "sizes": "256x256"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.targetsize-48.png",
+        "sizes": "48x48"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.targetsize-24.png",
+        "sizes": "24x24"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.targetsize-16.png",
+        "sizes": "16x16"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.targetsize-256_altform-unplated.png",
+        "sizes": "256x256"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.targetsize-48_altform-unplated.png",
+        "sizes": "48x48"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.targetsize-24_altform-unplated.png",
+        "sizes": "24x24"
+      },
+      {
+        "src": "img/windows10/Square44x44Logo.targetsize-16_altform-unplated.png",
+        "sizes": "16x16"
+      },
+      {
+        "src": "img/windows10/StoreLogo.scale-400.png",
+        "sizes": "200x200"
+      },
+      {
+        "src": "img/windows10/StoreLogo.scale-200.png",
+        "sizes": "100x100"
+      },
+      {
+        "src": "img/windows10/StoreLogo.scale-150.png",
+        "sizes": "75x75"
+      },
+      {
+        "src": "img/windows10/StoreLogo.scale-125.png",
+        "sizes": "63x63"
+      },
+      {
+        "src": "img/windows10/StoreLogo.scale-100.png",
+        "sizes": "50x50"
+      },
+      {
+        "src": "img/windows10/StoreLogo.png",
+        "sizes": "50x50"
+      },
+      {
+        "src": "img/windows10/SplashScreen.scale-400.png",
+        "sizes": "2480x1200"
+      },
+      {
+        "src": "img/windows10/SplashScreen.scale-200.png",
+        "sizes": "1240x600"
+      },
+      {
+        "src": "img/windows10/SplashScreen.scale-150.png",
+        "sizes": "930x450"
+      },
+      {
+        "src": "img/windows10/SplashScreen.scale-125.png",
+        "sizes": "775x375"
+      },
+      {
+        "src": "img/windows10/SplashScreen.scale-100.png",
+        "sizes": "620x300"
+      },
+      {
+        "src": "img/android/android-launchericon-512-512.png",
+        "sizes": "512x512"
+      },
+      {
+        "src": "img/android/android-launchericon-192-192.png",
+        "sizes": "192x192"
+      }
+    ]
+  }
