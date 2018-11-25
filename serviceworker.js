@@ -1,9 +1,9 @@
-const APP_PREFIX = 'mecEdit'     // Identifier for this app (this needs to be consistent across every cache update)
-const VERSION = 'v0.6.0'              // Version of the off-line cache (change this value everytime you want to update cache)
+const APP_PREFIX = 'mecEdit'
+const VERSION = 'v0.6.0'
 const CACHE_NAME = APP_PREFIX + '_' + VERSION
-const URLS = [                            // Add URL you want to cache in this list.
-  `/mecEdit/`,                     // If you have separate JS/CSS files,
-  `/mecEdit/mecEdit.html`,            // add path to those files here
+const URLS = [
+  `/mecEdit/`,
+  `/mecEdit/mecEdit.html`,
   `/mecEdit/vendor/bootstrap.min.css`,
   `/mecEdit/app.css`,
   `/mecEdit/vendor/codemirror/codemirror5.39.2.css`,
@@ -47,9 +47,9 @@ self.addEventListener('fetch', function (e) {
       // }
       return request || fetch(e.request)
     })
-    // .catch(function(error) {
-    //   console.log('fetch error:', error);
-    // })
+    .catch(function(error) {
+      console.log('sw fetch error:', error);
+    })
   )
 })
 
@@ -61,9 +61,9 @@ self.addEventListener('install', function (e) {
       return cache.addAll(URLS)
                   .then(() => self.skipWaiting());
     })
-    // .catch(function(error) {
-    //   console.log('install error:', error);
-    // })
+    .catch(function(error) {
+      console.log('sw install error:', error);
+    })
   )
 })
 
@@ -71,7 +71,7 @@ self.addEventListener('install', function (e) {
 self.addEventListener('activate', function (e) {
   e.waitUntil(
     caches.keys().then(function (keyList) {
-      // `keyList` contains all cache names under your username.github.io
+      // `keyList` contains all cache names under jauhl.github.io
       // filter out ones that has this app prefix to create white list
       const cacheWhitelist = keyList.filter(function (key) {
         return key.indexOf(APP_PREFIX)
@@ -86,8 +86,8 @@ self.addEventListener('activate', function (e) {
         }
       }))
     })
-    // .catch(function(error) {
-    //   console.log('activate error:', error);
-    // })
+    .catch(function(error) {
+      console.log('sw activate error:', error);
+    })
   )
 })
