@@ -32,12 +32,9 @@ planar linkages.
 ### general:
 + _mecEdit_ is now a progressive web app! In Google Chrome set `chrome://flags/#enable-desktop-pwas` to `enabled` and install from menu.
 + Drastically improved panning in MS Edge.
-+ Replaced dependency fontawesome with svg elements.
 + Updated example 'slidercrank' to showcase drives and inputs.
 
 ---
-
-# Changelog
 
 ## v0.5.3 - bugfixes
 
