@@ -5,7 +5,7 @@
  * @copyright Jan Uhlig 2018
  * @license MIT
  * @requires examples.js
- * @requires ctxm-templates.js
+ * @requires templates.js
  * @requires appevents.js
  * @requires g2.editor.js
  * @requires mixin.js
@@ -16,28 +16,126 @@
 
 'use strict';
 
+      /**
+      * Container for inputs.
+      * @const
+      * @type {HTMLElement}
+      */
 const tooltip = document.getElementById('info'),
+      /**
+      * Container for inputs.
+      * @const
+      * @type {HTMLElement}
+      */
       actcontainer = document.getElementById('actuators-container'),
+      /**
+      * SVG path container for run button.
+      * @const
+      * @type {HTMLElement}
+      */
       runSymbol = document.getElementById('run-symbol'),
+      /**
+      * Statusbar container for statusbar.
+      * @const
+      * @type {HTMLElement}
+      */
       statusbar = document.getElementById('statbar'),
+      /**
+      * Statusbar Statusbar container for dragmode.
+      * @const
+      * @type {HTMLElement}
+      */
       sbMode =  document.getElementById('sbMode'),
+      /**
+      * Statusbar container for coordinates.
+      * @const
+      * @type {HTMLElement}
+      */
       sbCoords =  document.getElementById('sbCoords'),
+      /**
+      * Statusbar container for coordinate mode.
+      * @const
+      * @type {HTMLElement}
+      */
       sbCartesian =  document.getElementById('sbCartesian'),
+      /**
+      * Statusbar container for mouseevent property btn.
+      * @const
+      * @type {HTMLElement}
+      */
       sbBtn =  document.getElementById('sbBtn'),
+      /**
+      * Statusbar container for mouseevent property dbtn.
+      * @const
+      * @type {HTMLElement}
+      */
       sbDbtn =  document.getElementById('sbDbtn'),
+      /**
+      * Statusbar container for frames per second.
+      * @const
+      * @type {HTMLElement}
+      */
       sbFPS =  document.getElementById('sbFPS'),
+      /**
+      * Statusbar container for g2.editor state.
+      * @const
+      * @type {HTMLElement}
+      */
       sbState =  document.getElementById('sbState'),
+      /**
+      * Statusbar container for g2.editor state `dragging`.
+      * @const
+      * @type {HTMLElement}
+      */
       sbDragging =  document.getElementById('sbDragging'),
+      /**
+      * Statusbar container for `App.prototype.dragMove`.
+      * @const
+      * @type {HTMLElement}
+      */
       sbDragmode =  document.getElementById('sbDragmode'),
+      /**
+      * Statusbar container for `model.dof`.
+      * @const
+      * @type {HTMLElement}
+      */
       sbDOF =  document.getElementById('sbDOF'),
+      /**
+      * Statusbar container for `App.prototype.gravity`.
+      * @const
+      * @type {HTMLElement}
+      */
       sbGravity =  document.getElementById('sbGravity'),
-  
+      /**
+      * g2.editor instance.
+      * @const
+      * @type {object}
+      */
       editor = g2.editor(),
+      /**
+      * Pi.
+      * @const
+      * @type {number}
+      */
       pi = Math.PI,
-
+      /**
+      * SVG play symbol.
+      * @const
+      * @type {string}
+      */
       svgplay = 'M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z',
+      /**
+      * SVG pause symbol.
+      * @const
+      * @type {string}
+      */
       svgpause = 'M144 479H48c-26.5 0-48-21.5-48-48V79c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v352c0 26.5-21.5 48-48 48zm304-48V79c0-26.5-21.5-48-48-48h-96c-26.5 0-48 21.5-48 48v352c0 26.5 21.5 48 48 48h96c26.5 0 48-21.5 48-48z';
 
+/**
+* Returns a origin symbol as a g2-object.
+* @method
+* @returns {object}
+*/
 const origin = g2().beg({ lc: 'round', lj: 'round', ls:()=>mec.darkmode?'silver':'slategray', fs: 'darkgray' })
                         .p()
                             .m({ x: 21, y: 0 })
@@ -60,7 +158,12 @@ const origin = g2().beg({ lc: 'round', lj: 'round', ls:()=>mec.darkmode?'silver'
                         .txt({str:'x', x: 38, y: 4})
                         .txt({str:'y', x: 6, y: 30})
                     .end();
-                    
+                  
+/**
+* Returns a gravity vector as a g2-object.
+* @method
+* @returns {object}
+*/
 const gravvec = (cartesian = true) => {
     const ytxt = cartesian ? - 20 : -15;
     return g2().beg({ w: -pi/2, lw: 2, ls:()=>mec.darkmode?'silver':'slategray', fs: 'darkgray'})
@@ -80,21 +183,53 @@ const gravvec = (cartesian = true) => {
             .end();
 };
 
+/**
+* Container for `create()` & `prototype()`.
+* @typedef {object}
+*/
 const App = {
+    /**
+    * Instantiate the app from `App.prototype`.
+    * @method
+    * @returns {object} - Extended app object with mixins.
+    */
     create() {
         const o = Object.create(this.prototype);
         o.constructor.apply(o, arguments);
         return o;
     },
+    
+    /**
+    * Prototype object to instantiate the app from.
+    * @const {object}
+    */
     prototype: Object.assign({
+        /**
+        * Sets properties to parent object. Call with `apply()` and pass the parent.
+        * @method
+        */
         constructor() {
+            /**
+            * The model.
+            * @const
+            * @type {object}
+            */
             this.model = {
                 id:"linkage"
             };
 
-            this.VERSION = '0.6.0';
+            /**
+            * mecEdit version.
+            * @const
+            * @type {string}
+            */
+            this.VERSION = '0.6.1';
 
-            // mixin requiries ...
+            /**
+            * mixin requirement.
+            * @const
+            * @type {boolean}
+            */
             this.evt = { dx: 0, dy: 0, dbtn: 0 };
             this.view = { x: 150, y: 150, scl: 1, cartesian: true };
 
@@ -107,10 +242,10 @@ const App = {
 
             // states
             this.build = false;  // build state
-            this.tempElm = false;  // ctxm state
+            this.tempElm = false;  // contextmenu/view state
 
             this.devmode = false;
-            this.importConfirmed = false; // skip conformdialogue helper
+            this.importConfirmed = false; // skip confirmdialogue helper
             this.dragMove = true;
             this.nodeInfoValues = ['acc','accAbs','vel','velAbs','force','forceAbs'];
             this.constraintInfoValues = ['w','wt','wtt','r','rt','rtt','forceAbs','moment'];
@@ -151,10 +286,31 @@ const App = {
             this.state = 'created';
         }, // constructor
 
+        /**
+        * Evaluates used coordinate system.
+        * @const
+        * @type {boolean}
+        */
         get cartesian() { return this.view.cartesian; },
+
+        /**
+        * Height of the canvas.
+        * @const
+        * @type {number}
+        */
         get height() { return this.ctx.canvas.height; },
+
+        /**
+        * State of g2.editor. `true` if element is being dragged.
+        * @const
+        * @type {booelan}
+        */
         get dragging() { return !!(editor.curState & g2.DRAG) },
 
+        /**
+        * Updates the contents of the statusbar.
+        * @method
+        */
         showStatus() {
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
             sbCoords.innerHTML = `x=${x}, y=${y}`;
@@ -179,6 +335,10 @@ const App = {
             };            
         },
 
+        /**
+        * Shows the tooltip.
+        * @method
+        */
         showTooltip(e) {
             const info = this.model.info;
             tooltip.style.left = ((e.clientX) + 15) + 'px';
@@ -195,10 +355,20 @@ const App = {
                 this.hideTooltip();
         },
 
+        /**
+        * Hides the tooltip.
+        * @method
+        */
         hideTooltip() {
             tooltip.style.display = 'none';
         },
 
+        /**
+        * Reset the model, drive inputs and the app state.
+        * @method
+        * @param {object} e - Event or Object containing the timestep.
+        * @param {object} e.dt - Timestep.
+        */
         tick(e) {
             if (!!this.model) { // check if model is defined first
                 if (this.dragging) {
@@ -216,6 +386,10 @@ const App = {
             }
         },
 
+        /**
+        * Initializes the app.
+        * @method
+        */
         init() { // evaluate how many drives and add init add controlled properties to model instead of typing them there
             mec.model.extend(this.model);
             this.model.init().asmPos();
@@ -252,18 +426,37 @@ const App = {
             this.state = (this.model.inputs.length > 0) ? 'input' : 'initialized';
         },
 
+        /**
+        * Sets the model to `active`.
+        * @method
+        */
         run() { 
             this.state = 'active'; 
             runSymbol.setAttribute('d',svgpause);
         },
+
+        /**
+        * Pauses the model and resets the app state.
+        * @method
+        */
         idle() { 
             this.state = (this.model.inputs.length > 0) ? 'input' : 'idle';
             runSymbol.setAttribute('d',svgplay);
         },
+
+        /**
+        * Stops the model and resets the app state.
+        * @method
+        */
         stop() {
             this.model.stop();
             this.idle();
         },
+
+        /**
+        * Reset the model, drive inputs and the app state.
+        * @method
+        */
         reset() { 
             this.model.reset();
             this.model.asmPos(); // necessary because model.reset() does not respect constraint r0 values
@@ -280,6 +473,11 @@ const App = {
             this.idle();
         },
 
+        /**
+        * Reinitializes all dependants of the passed element.
+        * @method
+        * @param {object} elm - Element whose dependants should be reinitialized.
+        */
         updDependants(elm) {
             let dependants = [];
             for (const constraint of this.model.constraints) {
@@ -297,6 +495,10 @@ const App = {
             });
         },
 
+        /**
+        * Toggle developer mode to show additional information in the statusbar.
+        * @method
+        */
         toggleDevmode() {
             this.devmode = !this.devmode;
             if (!this.devmode)
@@ -304,6 +506,10 @@ const App = {
             this.showStatus();
         },
 
+        /**
+        * Switch between dark- and lightmode.
+        * @method
+        */
         toggleDarkmode() {
             mec.darkmode = !mec.darkmode;
             this.jsonEditor.setOption("theme",`${mec.darkmode ? 'lucario' : 'mdn-like'}`);
@@ -311,6 +517,10 @@ const App = {
             this.notify('render');
         },
 
+        /**
+        * Reset `this.view` to its initial state.
+        * @method
+        */
         resetView() {
             this.view.x = 150; 
             this.view.y = 150;
@@ -319,12 +529,24 @@ const App = {
             this.notify('render');
         },
 
+        /**
+        * Create a new HTML-container for drive inputs.
+        * @method
+        * @param {string} actuated - Id of the new HTML-container (e.g. `a-ori`).
+        * @param {number} width - maximal width of the new HTML-container.
+        * @param {number} max - max value of the new HTML-range-input.
+        * @returns {HTMLElement} newC - Constraint replacing.
+        */
         createInputSlider(actuated, width, max) {
             let template = document.createElement('template');
             template.innerHTML = `<mecedit-slider id="${actuated}" class="mecedit-slider d-inline-flex nowrap ml-2 mr-1 mt-1" width="${width}" min="0" max="${max}" step="1" value="" valstr="${actuated}={value}${actuated.includes('ori')?'°':'u'}"></mecedit-slider>`
             return template.content.firstChild;
         },
 
+        /**
+        * Builds and updates the g2-command-queue according to the model.
+        * @method
+        */
         updateg() {
             let apphasmodel = !!(typeof this.model === 'object' && Object.keys(this.model).length);
 
@@ -353,6 +575,10 @@ const App = {
             this.notify('render')
         },
 
+        /**
+        * Resets the app and its stateful variables.
+        * @method
+        */
         resetApp() {
             this.build = false; // reset build state
             this.tempElm = false; // reset build state
@@ -366,6 +592,10 @@ const App = {
         //     if (!(oldN.m === newN.m)) this.model.nodeById(oldN.id).m = newN.m;
         // },
 
+        /**
+        * Adds a new node to the model.
+        * @method
+        */
         addNode() {
             if (editor.curElm === undefined || !editor.curElm.hasOwnProperty('m')) { // no node at coords; objects with a mass are considered nodes
                 let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
@@ -389,16 +619,25 @@ const App = {
             };
         },
 
+        /**
+        * Removes all inputs of a constraint.
+        * @method
+        * @param {string} id - Id of the constraint the input belongs to.
+        */
         removeInput(id) {
             for (let dof of ['-len','-ori']) {
                 if (this.model.inputs.includes(id+dof)) { // remove redundant ori inputs
                     actcontainer.removeChild(document.getElementById(id+dof));
                     this.model.inputs.splice(this.model.inputs.findIndex((el)=>el.id === id),1);
-                    // this.model.drivecount--;
-                }
-            }
+                };
+            };
         },
 
+        /**
+        * Removes the passed component and all its dependants.
+        * @method
+        * @param {object} elem - Element to be purged from the model.
+        */
         purgeElement(elem) {  // identify and remove passed element and all its dependants
             if (!!elem) { // check if an actual element was passed and not 'undefined'
                 if(['node','ctrl'].includes(elem.type)) {
@@ -407,9 +646,9 @@ const App = {
                         for (let dep of dependants) {
                             if (this.model.inputs.includes(dep.id+'-ori') || this.model.inputs.includes(dep.id+'-len'))
                                 this.removeInput(dep.id);
-                        }
-                    }
-                }
+                        };
+                    };
+                };
 
                 if (elem.type === 'node') {
                     this.model.purgeNode(elem);
@@ -432,9 +671,14 @@ const App = {
             };         
         },
 
+        /**
+        * Replaces an old Constraint with a new one.
+        * @method
+        * @param {object} oldC - Constraint to be replaced.
+        * @param {object} newC - Constraint replacing.
+        */
         replaceConstraint(oldC, newC) {
             this.reset();
-            // console.log(this.state);
 
             let rebindorilistener = false;
             let rebindlenlistener = false;
@@ -465,7 +709,6 @@ const App = {
             newC.init(this.model); // init new constraint
             this.updateg(); // update graphics
             this.model.pose();
-            // console.log(newC);
 
             if ( (lendrv && !this.model.inputs.includes(newC.id+'-len')) || (oridrv && !this.model.inputs.includes(newC.id+'-ori')) ) { // drive has no input yet
                 let drv, prv=false;
@@ -477,7 +720,6 @@ const App = {
                     let elm = document.getElementById(id);
                     mecESlider.RegisterElm(elm);
                     elm.initEventHandling(this, id, this.model.constraintById(drv.constraint.id)[drv.value].inputCallbk);
-                    // this.model.drivecount++;
                     this.model.inputs.push(id);
                     prv = drv;
                 };
@@ -485,22 +727,19 @@ const App = {
             } else if (!newC.ori.input && this.model.inputs.includes(newC.id+'-ori')) { // remove redundant ori inputs
                 actcontainer.removeChild(document.getElementById(newC.id+'-ori'));
                 this.model.inputs.splice(this.model.inputs.findIndex((el)=>el.id === newC.id),1);
-                // this.model.drivecount--;
             } else if (!newC.len.input && this.model.inputs.includes(newC.id+'-len')) { // remove redundant len inputs
                 actcontainer.removeChild(document.getElementById(newC.id+'-len'));
                 this.model.inputs.splice(this.model.inputs.findIndex((el)=>el.id === newC.id),1);
-                // this.model.drivecount--;
             };
 
             // update range internals
             if (!!oldC.ori && !!oldC.ori.Dw && !!newC.ori && !!newC.ori.Dw && !(oldC.ori.Dw === newC.ori.Dw)) {
                 let mecslider = document.getElementById(newC.id+'-ori');
-                mecslider.max = `${Math.round(newC.ori.Dw*180/Math.PI)}`;
-                mecslider.childNodes[2].max = `${Math.round(newC.ori.Dw*180/Math.PI)}`;
+                mecslider.max = mecslider.children[1].max = `${Math.round(newC.ori.Dw*180/Math.PI)}`;
             };
             if (!!oldC.len && !!oldC.len.Dr && !!newC.len && !!newC.len.Dr && !(oldC.len.Dr === newC.len.Dr)) {
                 let mecslider = document.getElementById(newC.id+'-len');
-                mecslider.max = mecslider.children[1] = `${Math.round(newC.len.Dr)}`
+                mecslider.max = mecslider.children[1].max = `${Math.round(newC.len.Dr)}`;
             };
             
             if (rebindorilistener) 
@@ -511,6 +750,12 @@ const App = {
             this.state = (this.model.inputs.length > 0) ? 'input' : 'initialized';
         },
 
+        /**
+        * Searches for drives with inputs.
+        * @method
+        * @param {(object | boolean)} [prev = false] - Drive to start search from.
+        * @returns {(object | boolean)} Drive that was found or false if none was found.
+        */
         driveByInput(prev = false) {  // from microapp.js
             let found = false, start = !prev;
             for (const constraint of this.model.constraints) {
@@ -527,6 +772,10 @@ const App = {
             return false;
         },
 
+        /**
+        * Adds a new Constraint to `this.model`.
+        * @method
+        */
         addConstraint() {
             if (!this.build.firstnode) { // first invocation
                 if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
@@ -581,6 +830,12 @@ const App = {
             };
         },
 
+        /**
+        * Generates a unique id for nodes or constraints.
+        * @method
+        * @param {string} [x = node] - Type of component to generate id for `['node','constraint']`.
+        * @returns {string} Generated id.
+        */
         getNewChar(x = 'node') { // returns @type {string} todo: bug: adding a constraint with no constraints in model returns id "constraint" and not "a", which it should
             let charArr = [];
             let name, obj, maxChar, char;
@@ -593,7 +848,7 @@ const App = {
                 charArr.sort(function (a, b) { // sort array containing charcodes
                     return a - b;
                 });
-                let potChar = charArr[charArr.length - 1] + 1
+                let potChar = charArr[charArr.length - 1] + 1;
                 char = (potChar <= maxChar) ? String.fromCharCode(potChar) : `${name}${obj.length + 1}`;   // choose one higher than highest charCode or assign numbers when running out of characters
             } else {
                 char = x === 'node' ? 'A' : 'a'; // 65 = A, 97 = a,
@@ -602,6 +857,11 @@ const App = {
             return char;
         },
 
+        /**
+        * Adds changes dofs of the passed constraint from type `free` to `drive`.
+        * @method
+        * @param {object} - Constraint to add drive to.
+        */
         addDrive(elm) {
             if (!!elm && ['free', 'tran', 'rot'].includes(elm.type)) {
                 if(elm.ori.type === 'free')
@@ -621,6 +881,10 @@ const App = {
             }
         },
 
+        /**
+        * Adds a new shape of type `['fix'|'flt']`.
+        * @method
+        */
         addSupportShape() {
             if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
 
@@ -640,6 +904,10 @@ const App = {
             this.resetApp();
         },
 
+        /**
+        * Adds a new load component of type `force`.
+        * @method
+        */
         addForce() {
             if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
                 let i = 0;
@@ -666,6 +934,10 @@ const App = {
             this.resetApp();
         },
 
+        /**
+        * Adds a new load component of type `spring`.
+        * @method
+        */
         addSpring() {
             if (!this.build.firstnode) { // first invocation
                 if (!!editor.curElm && editor.curElm.hasOwnProperty('m')) { // node clicked
@@ -701,18 +973,26 @@ const App = {
             };
         },
 
+        /**
+        * Initializes and shows a modal to add view components.
+        * @method
+        */
         initViewModal() {
             if (!this.tempElm)
                 this.tempElm = {new:{id:'',type:'trace'}}; // default
-            this.viewModal.setContent(ctxm.viewModal());
+            this.viewModal.setContent(tmpl.viewModal());
             document.getElementById('view-fill-color-btn').style.backgroundColor = 'transparent';
             this.viewModal.show();
         },
 
-        closeViewModal() {
-            this.tempElm = false;
-        },
+        // closeViewModal() { // deprecated
+        //     this.tempElm = false;
+        // },
 
+        /**
+        * Adds a view component from the template this.tempElm.new and hides the view modal.
+        * @method
+        */
         addViewFromModal() {
             if (this.tempElm.new.id.length === 0) // no id defined
                 this.tempElm.new.id = `view${this.model.views.length + 1}`;
@@ -724,9 +1004,13 @@ const App = {
             this.viewModal.hide()
         },
 
+        /**
+        * Handles opening of contextmenu.
+        * @param {object} elm - Element to show the contextmenu for.
+        * @method
+        */
         initCtxm(elm) {
-            console.log(elm.type)
-
+            // console.log(elm.type)
             this.tempElm = {};  // save elm for eventlistener & state-check
             this.tempElm.replace = false; // nothing has changed yet, so no need for replacing
             this.tempElm.type = ['free', 'rot', 'tran', 'ctrl'].includes(elm.type) ? 'constraint' : elm.type; // check elm type
@@ -737,7 +1021,7 @@ const App = {
             if (!this.tempElm.new.len) 
                 this.tempElm.new.len = {type:'free'};
             
-            // save label-state for resetting to it when closing ctxm
+            // save label-state for resetting to it when closing contextmenu
             this.tempElm.labelState = {nodes: this.model.graphics.labels.nodes, constraints: this.model.graphics.labels.constraints, loads: this.model.graphics.labels.loads};
             // show labels that are hidden
             if (!this.model.graphics.labels.nodes) this.model.graphics.labels.nodes = true;
@@ -750,12 +1034,20 @@ const App = {
             this.showCtxm();
         },
 
+        /**
+        * Shows the contextmenu at mouseposition.
+        * @method
+        */
         showCtxm() {
             this.ctxmenu.style.display = 'block'
             this.ctxmenu.style.left = `${this.evt.clientX}px`;
             this.ctxmenu.style.top = `${this.evt.clientY}px`;
         },
 
+        /**
+        * Handles closing of contextmenu.
+        * @method
+        */
         hideCtxm() {
             this.ctxmenu.style.display = 'none';
 
@@ -767,13 +1059,25 @@ const App = {
             if (this.tempElm.labelState.constraints !== this.model.graphics.labels.constraints) this.model.graphics.labels.constraints = this.tempElm.labelState.constraints;
             if (this.tempElm.labelState.loads !== this.model.graphics.labels.loads) this.model.graphics.labels.loads = this.tempElm.labelState.loads;
 
+            // empty body
+            while (this.ctxmenubody.lastChild) {
+                this.ctxmenubody.removeChild(this.ctxmenubody.lastChild);
+            };
+
             // reset app edit-state
             this.tempElm = false;
         },
 
+        /**
+        * Handles opening of contextmenu.
+        * @param {object} elm - Element to show the contextmenu for.
+        * @param {string} type - Type of the element.
+        * @param {boolean} [doftypechanged = false] - Flag in case the type of a dof changed from the last invocation.
+        * @method
+        */
         updateCtxm(elm, type, doftypechanged = false) {
-            console.log(elm);
-            console.log(`doftypechanged: ${doftypechanged}`);
+            // console.log(elm);
+            // console.log(`doftypechanged: ${doftypechanged}`);
 
             // clean elm up from unnessesary properties / rudiments if type of len/ori has changed
             if (doftypechanged) {
@@ -798,7 +1102,7 @@ const App = {
                 };
             };
 
-            // delete old bodyelements of the ctxm to append updated ones
+            // delete old bodyelements of the contextmenu to append updated ones
             while (this.ctxmenubody.lastChild) {
                 this.ctxmenubody.removeChild(this.ctxmenubody.lastChild);
             };
@@ -806,66 +1110,71 @@ const App = {
             // template ctxmenu
 
             //replace header
-            this.ctxmenuheader.innerHTML = ctxm.header(elm, type);
+            this.ctxmenuheader.innerHTML = tmpl.header(elm, type);
 
             //append new body
             if (type === 'constraint') { // constraints
-                this.ctxmenubody.innerHTML += ctxm.sectionTitle('orientation');
-                this.ctxmenubody.innerHTML += ctxm.oriType(elm);
+                this.ctxmenubody.innerHTML += tmpl.sectionTitle('orientation');
+                this.ctxmenubody.innerHTML += tmpl.oriType(elm);
 
                 if (!!elm.ori && elm.ori.type === 'drive') {
 
                     if (!this.tempElm.new.ori.hasOwnProperty('Dt')) // make sure the JSON represantation has the optional properties
                         this.tempElm.new.ori.Dt = 1;
-                    this.ctxmenubody.innerHTML += ctxm.Dt(elm, 'ori');
+                    this.ctxmenubody.innerHTML += tmpl.Dt(elm, 'ori');
 
                     if (!this.tempElm.new.ori.hasOwnProperty('Dw'))
                         this.tempElm.new.ori.Dw = 2*pi;
-                    this.ctxmenubody.innerHTML += ctxm.Dw(elm, 'ori');
+                    this.ctxmenubody.innerHTML += tmpl.Dw(elm, 'ori');
                 };
 
                 if (!!elm.ori && elm.ori.type === 'ref') {
-                    this.ctxmenubody.innerHTML += ctxm.ref(elm, 'ori', elm.ori.ref);
+                    this.ctxmenubody.innerHTML += tmpl.ref(elm, 'ori', elm.ori.ref);
                 };
 
-                this.ctxmenubody.innerHTML += ctxm.sectionTitle('length');
-                this.ctxmenubody.innerHTML += ctxm.lenType(elm);
+                this.ctxmenubody.innerHTML += tmpl.sectionTitle('length');
+                this.ctxmenubody.innerHTML += tmpl.lenType(elm);
 
                 if (!!elm.len && elm.len.type === 'drive') {
 
                     if (!this.tempElm.new.len.hasOwnProperty('Dt'))
                         this.tempElm.new.len.Dt = 1;
-                    this.ctxmenubody.innerHTML += ctxm.Dt(elm, 'len');
+                    this.ctxmenubody.innerHTML += tmpl.Dt(elm, 'len');
 
                     if (!this.tempElm.new.len.hasOwnProperty('Dr'))
                         this.tempElm.new.len.Dr = 100;
-                    this.ctxmenubody.innerHTML += ctxm.Dr(elm, 'len');
+                    this.ctxmenubody.innerHTML += tmpl.Dr(elm, 'len');
                 };
 
                 if (!!elm.len && elm.len.type === 'ref') {
-                    this.ctxmenubody.innerHTML += ctxm.ref(elm, 'len', elm.len.ref);
+                    this.ctxmenubody.innerHTML += tmpl.ref(elm, 'len', elm.len.ref);
                 };
 
-                this.ctxmenubody.innerHTML += ctxm.sectionTitle('nodes');
-                this.ctxmenubody.innerHTML += ctxm.nodes(elm);
-                this.ctxmenubody.innerHTML += ctxm.removeConstraintButton();
+                this.ctxmenubody.innerHTML += tmpl.sectionTitle('nodes');
+                this.ctxmenubody.innerHTML += tmpl.nodes(elm);
+                this.ctxmenubody.innerHTML += tmpl.removeConstraintButton();
             };
             if (type === 'node') { // nodes
-                this.ctxmenubody.innerHTML += ctxm.nodeCoordinates(elm);
-                this.ctxmenubody.innerHTML += ctxm.nodeBase(elm);
+                this.ctxmenubody.innerHTML += tmpl.nodeCoordinates(elm);
+                this.ctxmenubody.innerHTML += tmpl.nodeBase(elm);
             };
             if (type === 'force') { // forces
-                this.ctxmenubody.innerHTML += ctxm.forceValue(elm);
-                this.ctxmenubody.innerHTML += ctxm.forceMode(elm);
-                this.ctxmenubody.innerHTML += ctxm.forceNode(elm);
+                this.ctxmenubody.innerHTML += tmpl.forceValue(elm);
+                this.ctxmenubody.innerHTML += tmpl.forceMode(elm);
+                this.ctxmenubody.innerHTML += tmpl.forceNode(elm);
             };
             if (type === 'spring') { // springs
-                this.ctxmenubody.innerHTML += ctxm.springNodes(elm);
-                this.ctxmenubody.innerHTML += ctxm.springLen(elm);
-                this.ctxmenubody.innerHTML += ctxm.springK(elm);
+                this.ctxmenubody.innerHTML += tmpl.springNodes(elm);
+                this.ctxmenubody.innerHTML += tmpl.springLen(elm);
+                this.ctxmenubody.innerHTML += tmpl.springK(elm);
             };
         },
 
+        /**
+        * Imports a model from a `FileList`.
+        * @param {FileList} files - `FileList` with the model as the first element.
+        * @method
+        */
         loadFromJSON(files) {
             let file = files[0]
             let fr = new FileReader();
@@ -873,14 +1182,19 @@ const App = {
 
             fr.onload = (() => { // async
                 return (e) => {
+                    console.log(e.target);
                     model = JSON.parse(e.target.result);
                     this.newModel(model);
                     this.importConfirmed = false; // reset
                 }
             })(file);
-            fr.readAsText(file);
+            fr.readAsText(file); // fires load event
         },
 
+        /**
+        * Opens a dialogue to download teh cuurent model as a JSON file.
+        * @method
+        */
         saveToJSON() {
             let a = document.createElement('a');
             let file = new Blob([this.model.asJSON()], { type: 'application/json' });
@@ -891,6 +1205,11 @@ const App = {
             document.body.removeChild(a);
         },
 
+        /**
+        * Defines a new model.
+        * @param {object} [model = {}] - Passed model or empty model.
+        * @method
+        */
         newModel(model = {}) {
             if (typeof this.model === 'object' && !this.importConfirmed) {
                 if (!confirm('All unsaved changes will be lost! Continue?'))
@@ -906,14 +1225,24 @@ const App = {
             this.model = model;
 
             this.init();
-            this.updateg();
         },
 
+        /**
+        * Helper method to change properties in `tempELm`.
+        * @param {string} key - Key of value to be changed.
+        * @param {string} value - Value to be changed.
+        * @method
+        */
         updateTempElmNew(key, value) { // this seems to be a problem from appevents.js since tempElm is sometimes falsely undefined ...
             this.tempElm.new[key] = value;
         },
 
-        toggleViewfill() { // state of button [fill] in viewModal when setting type 'trace'
+        /**
+        * Toggles the background of the fill label in the
+        * view-modal and de-/activates to input.
+        * @method
+        */
+        toggleViewFill() { // state of button [fill] in viewModal when setting type 'trace'
             let fill = document.getElementById('view-fill-color');
             let fillBtn = document.getElementById('view-fill-color-btn');
 
@@ -951,11 +1280,16 @@ window.onload = () => {
     // initialize CodeMirror editor
     app.jsonEditor = CodeMirror.fromTextArea(document.getElementById('modalTextarea'), {
         mode: 'javascript',
-        theme: 'lucario',   // dark: dracula, lucario   light: default, mdn-like
+        theme: 'mdn-like',   // dark: dracula, lucario   light: default, mdn-like
         lineNumbers: true,
         matchBrackets: true,
         viewportMargin: Infinity,
         lineWrapping: false
+    });
+
+    // make sure dropping editor is empty before drag-dropping files
+    app.jsonEditor.on('drop', (e)=>{
+        e.setValue('');
     });
 
     // make cxtm dragable (declare private, no need to access later)
@@ -972,6 +1306,7 @@ window.onload = () => {
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
         </div>
         <div class="modal-body text-center">
+        <img src="./img/android/android-launchericon-96-96.png" class="mx-auto d-block" style="border-radius:.5rem!important;"></img>
         Version ${app.VERSION}<br>
         <a href="https://github.com/jauhl/mecEdit">mecEdit on Github<a/><br><br>
         &#169; 2018 Jan Uhlig

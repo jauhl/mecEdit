@@ -27,6 +27,15 @@ planar linkages.
 
 # Changelog
 
+## v0.6.1
+
+### general:
++ The JSON-editor is now emptied before dragging & dropping files into it.
++ Placing components can now be canceled by clicking on the navbar or sidebar in addition to pressing `[Esc]` so mobile users won't get stuck.
++ Some other small changes.
+
+---
+
 ## v0.6.0 - PWA & various improvements
 
 ### general:

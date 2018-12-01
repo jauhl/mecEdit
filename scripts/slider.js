@@ -57,7 +57,8 @@ startForward: function() {
         this.reverse.classList.add('text-muted'); // bootstrap 4.1
         this.reverse.removeEventListener('click', this.startReversePtr, false);
         this.observer.on('tick',this.fwdStepPtr)
-        this.value += 0;  // starting mainLoop (initially setting potential dirty flag) ...
+        this.value += 0,  // starting mainLoop (initially setting potential dirty flag) ...
+        this.timelog = performance.now();
     }
 },
     endForward: function() {
@@ -67,7 +68,8 @@ startForward: function() {
         this.reverse.classList.remove('text-muted'); // bootstrap 4.1
         this.reverse.addEventListener('click', this.startReversePtr, false);
         this.observer.remove('tick',this.fwdStepPtr);
-        this.value += 0;  // continuing mainLoop (setting potential dirty flag one more time) ...
+        this.value += 0,  // continuing mainLoop (setting potential dirty flag one more time) ...
+        console.log(`${performance.now() - this.timelog} ms`);
     },
     fwdStep: function() {
         let delta = this.value + this.anistep < this.max ? this.anistep : Math.max(this.max - this.value,0);

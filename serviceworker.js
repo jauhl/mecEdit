@@ -1,51 +1,51 @@
 const APP_PREFIX = 'mecEdit'
-const VERSION = 'v0.6.0'
+const VERSION = 'v0.6.1'
 const CACHE_NAME = APP_PREFIX + '_' + VERSION
 const URLS = [
-  `/mecEdit/`,
-  `/mecEdit/mecEdit.html`,
-  `/mecEdit/vendor/bootstrap.min.css`,
-  `/mecEdit/app.css`,
-  `/mecEdit/vendor/codemirror/codemirror5.39.2.css`,
-  `/mecEdit/vendor/codemirror/lucario.css`,
-  `/mecEdit/vendor/codemirror/mdn-like.css`,
-  `/mecEdit/vendor/bootstrap-native-v4.min.js`,
-  `/mecEdit/vendor/draggabilly.pkgd.min.js`,
-  `/mecEdit/vendor/codemirror/codemirror5.39.2.min.js`,
-  `/mecEdit/vendor/codemirror/codemirror.jsmode5.39.2.js`,
-  `/mecEdit/vendor/codemirror/matchbrackets.js`,
-  `/mecEdit/scripts/g2.js`,
+  `./`,
+  `./mecEdit.html`,
+  `./vendor/bootstrap.min.css`,
+  `./app.css`,
+  `./vendor/codemirror/codemirror5.39.2.css`,
+  `./vendor/codemirror/lucario.css`,
+  `./vendor/codemirror/mdn-like.css`,
+  `./vendor/bootstrap-native-v4.min.js`,
+  `./vendor/draggabilly.pkgd.min.js`,
+  `./vendor/codemirror/codemirror5.39.2.min.js`,
+  `./vendor/codemirror/codemirror.jsmode5.39.2.js`,
+  `./vendor/codemirror/matchbrackets.js`,
+  `./scripts/g2.js`,
   // `https://gitcdn.xyz/repo/goessner/g2/master/src/g2.js`,
-  `/mecEdit/scripts/g2.editor.js`,
-  `/mecEdit/scripts/mec2.min.js`,
-  // `/mecEdit/scripts/slider.js`,
-  // `/mecEdit/scripts/mixin.js`,
-  // `/mecEdit/scripts/ctxm-templates.js`,
-  // `/mecEdit/scripts/appevents.js`,
-  // `/mecEdit/scripts/examples.js`,
-  // `/mecEdit/app.js`,
-  `/mecEdit/app.min.js`,
-  `/mecEdit/img/favicon/favicon-16x16.png`,
-  `/mecEdit/img/favicon/favicon-32x32.png`,
-  `/mecEdit/img/favicon/apple-touch-icon.png`,
-  `/mecEdit/img/favicon/safari-pinned-tab.svg`,
-  `/mecEdit/img/favicon/browserconfig.xml`,
-  `/mecEdit/manifest.json`
+  `./scripts/g2.editor.js`,
+  `./scripts/mec2.min.js`,
+  // `./scripts/slider.js`,
+  // `./scripts/mixin.js`,
+  // `./scripts/ctxm-templates.js`,
+  // `./scripts/appevents.js`,
+  // `./scripts/examples.js`,
+  // `./app.js`,
+  `./app.min.js`,
+  `./img/favicon/favicon-16x16.png`,
+  `./img/favicon/favicon-32x32.png`,
+  `./img/favicon/apple-touch-icon.png`,
+  `./img/favicon/safari-pinned-tab.svg`,
+  `./img/favicon/browserconfig.xml`,
+  `./manifest.json`
 ]
 
 // Respond with cached resources
 self.addEventListener('fetch', function (e) {
   // console.log('fetch request : ' + e.request.url)
   e.respondWith(
-    caches.match(e.request).then(function (request) {
-      // if (request) { // if cache is available, respond with cache
-      //   console.log('Responding with cache: ' + e.request.url)
-      //   return request
+    caches.match(e.request).then(function (response) {
+      // if (response) { // if cache is available, respond with cache
+      //   console.log('Responding with cache: ' + response.url)
+      //   return response
       // } else {       // if there are no cache, try fetching request
       //   console.log('File is not cached, fetching: ' + e.request.url)
       //   return fetch(e.request)
       // }
-      return request || fetch(e.request)
+      return response || fetch(e.request)
     })
     .catch(function(error) {
       console.log('sw fetch error:', error);
@@ -87,7 +87,7 @@ self.addEventListener('activate', function (e) {
       }))
     })
     .catch(function(error) {
-      console.log('sw activate error:', error);
+      console.log('sw activation error:', error);
     })
   )
 })

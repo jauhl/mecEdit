@@ -1,6 +1,6 @@
 {
     "name": "mecedit",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "description": "Editor for Planar Mechanisms",
     "keywords": [
       "vector",
@@ -14,10 +14,11 @@
       "2d",
       "javascript"
     ],
-    "main": "app.js",
+    "main": "mecEdit.html",
     "scripts": {
-      "build": "npm run minify && npm run gzip",
-      "minify": "uglifyjs ./scripts/mixin.js ./scripts/slider.js ./scripts/ctxm-templates.js ./scripts/appevents.js ./scripts/examples.js ./app.js -o ./app.min.js --comments -c",
+      "build": "npm run minify && npm run jsdoc && npm run gzip",
+      "minify": "uglifyjs ./scripts/mixin.js ./scripts/slider.js ./scripts/templates.js ./scripts/appevents.js ./scripts/examples.js ./app.js -o ./app.min.js --comments -c",
+      "jsdoc": "jsdoc2md ./app.js > ./docs/app.md",
       "gzip": "ngzip ./app.min.js > ./app.min.js.gz"
     },
     "author": "Jan Uhlig",
@@ -28,7 +29,8 @@
     "license": "MIT",
     "devDependencies": {
       "uglify-es": "^3.3.9",
-      "ngzip": "^1.1.3"
+      "ngzip": "^1.1.3",
+      "jsdoc-to-markdown":"^4.0.1"
     }
   }
   

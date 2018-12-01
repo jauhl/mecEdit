@@ -5,7 +5,9 @@ const events = {
     sidebarClick: (id) => {
         /*********************************  sidebar click handler  ****************************************/ 
         document.getElementById(id).addEventListener('click', (e) => { // bind to parent
-            console.log(e);
+            // Cancel chain-building, never move to the end of this handler!
+            if (app.build) { app.resetApp(); document.body.style.cursor = 'default'; };
+
             if (e.target && ['free', 'tran', 'rot'].includes(e.target.id)) { app.build = { mode: e.target.id, continue: e.shiftKey }; app.instruct.innerHTML = 'Select first node; [ESC] to cancel'; }; // check for children // ,'spring'
             if (e.target && e.target.id === 'drive') { app.build = { mode: e.target.id }; app.reset(); app.instruct.innerHTML = 'Select a constraint to add a drive to; [ESC] to cancel'; };
             if (e.target && (e.target.id === 'addnode' || e.target.id === 'addbasenode')) {
@@ -18,6 +20,9 @@ const events = {
     navbarClick: (id) => {
         /*********************************  navbar click handler  ****************************************/ 
         document.getElementById(id).addEventListener('click', (e) => {
+            // Cancel chain-building, never move to the end of this handler!
+            if (app.build) { app.resetApp(); document.body.style.cursor = 'default'; }
+
             // File
             if (e.target && e.target.id === 'newModel') { app.newModel(); };
             if (e.target && e.target.id.includes('nav-example-')) { app.newModel(JSON.parse(JSON.stringify(examples[e.target.id.replace('nav-example-','')]))); }; // use copy so source wont be changed
@@ -101,7 +106,7 @@ const events = {
     },
     navbarChange: (id) => {
         /*********************************  navbar change handler  ****************************************/ 
-        document.getElementById(id).addEventListener('change', e => app.loadFromJSON(e.target.files, true) );
+        document.getElementById(id).addEventListener('change', e => app.loadFromJSON(e.target.files) );
     },
     keyboardDown: () => {
         /*********************************  global keyboard handler  ****************************************/ 
@@ -381,7 +386,7 @@ const events = {
             };
 
             if (!skipUpdate) { 
-                app.viewModal.setContent(ctxm.viewModal());
+                app.viewModal.setContent(tmpl.viewModal());
                 if (!!document.getElementById('view-fill-color-btn'))
                     document.getElementById('view-fill-color-btn').style.backgroundColor = document.getElementById('view-fill-color').disabled ? 'transparent' : '#e9ecef';
                 app.viewModal.update();
@@ -394,7 +399,7 @@ const events = {
             if (e.target && e.target.id === 'view-accept')
                 app.addViewFromModal();
             if (e.target && e.target.id === 'view-fill-color-btn')
-                app.toggleViewfill();
+                app.toggleViewFill();
         });
     },
     viewModalHide: (id) => {
