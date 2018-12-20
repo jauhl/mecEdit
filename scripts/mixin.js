@@ -6,18 +6,18 @@
 const mixin = {
     observable: {
         notify(key,val) {
-            if (this.signals && this.signals[key]) 
-                for (let hdl of this.signals[key]) 
+            if (this.signals && this.signals[key])
+                for (let hdl of this.signals[key])
                     hdl(val);
             return this;
         },
         on(key,handler) {   // support array of keys as first argument.
             if (Array.isArray(key))
-                for (let k of key) 
+                for (let k of key)
                    this.on(k,handler);
             else
                 ((this.signals || (this.signals = {})) && this.signals[key] || (this.signals[key]=[])).push(handler);
-            
+
             return this;
         },
         remove(key,handler) {
@@ -80,7 +80,7 @@ const mixin = {
             switch (e.btn) {
                 case 1:     e.type = e.ctrlKey ? 'pan' : this.dragging ?  'drag' : 'pointer'; break;  // left mousebutton
                 case 4:     e.type = 'pan'; break;  // middle mousebutton
-                default:    e.type = 'pointer'; 
+                default:    e.type = 'pointer';
             }
         },
         mousedown(e) { e.type='buttondown' },
@@ -98,11 +98,11 @@ const mixin = {
         save(e) {
             this.evt.type = e.type;
             this.evt.basetype = e.basetype;
-            this.evt.dx = e.dx; 
+            this.evt.dx = e.dx;
             this.evt.dy = e.dy;
-            this.evt.clientX = e.clientX; 
+            this.evt.clientX = e.clientX;
             this.evt.clientY = e.clientY;
-            this.evt.x = this.evt.xi = e.x; 
+            this.evt.x = this.evt.xi = e.x;
             this.evt.y = this.evt.yi = e.y;
             this.evt.dbtn = e.btn - this.evt.btn;  // watch for inconsistencies .. !
             this.evt.btn = e.btn;
@@ -169,9 +169,8 @@ const mixin = {
             this.view.x = x + scl*(this.view.x - x);
             this.view.y = y + scl*(this.view.y - y);
             this.view.scl *= scl;
-            this.notify('view', this.view); 
+            this.notify('view', this.view);
         },
         pntToUsr: function(p) { let vw = this.view; p.x = (p.x - vw.x)/vw.scl; p.y = (p.y - vw.y)/vw.scl; return p; },
-
     }
 }

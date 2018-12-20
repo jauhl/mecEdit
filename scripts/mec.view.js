@@ -21,7 +21,7 @@ mec.view = {
             Object.setPrototypeOf(view, mec.view[view.type]);
             view.constructor();
         }
-        return view; 
+        return view;
     }
 }
 
@@ -35,6 +35,7 @@ mec.view.vector = {
     init(model) {
         if (typeof this.p === 'string')
             this.p = model.nodeById(this.p);
+        this.model = model; // needed for colors
 //        if (this.value && this.p[this.value]) ; // node analysis value exists ? error handling required .. !
     },
     dependsOn(elem) {
@@ -48,15 +49,15 @@ mec.view.vector = {
     },
     // interaction
     get isSolid() { return false },
-    get sh() { return this.state & g2.OVER ? [0, 0, 10, mec.hoveredElmColor] : false; },
+    get sh() { return this.state & g2.OVER ? [0, 0, 10, this.model.env.show.hoveredElmColor] : false; },
     get endPoints() {
         const scale = mec.aly[this.value].drwscl;
         const v = this.p[this.value];
         const vabs = Math.hypot(v.y,v.x);
-        const vview = !mec.isEps(vabs) 
+        const vview = !mec.isEps(vabs)
                     ? mec.asympClamp(scale*vabs,25,100)
                     : 0;
-        return { p1:this.p, 
+        return { p1:this.p,
                  p2:{ x:this.p.x + v.x/vabs*vview, y:this.p.y + v.y/vabs*vview }
         };
     },
@@ -66,11 +67,11 @@ mec.view.vector = {
     },
     g2() {
         const pts = this.endPoints;
-        return g2().vec({x1:pts.p1.x, 
-                         y1:pts.p1.y, 
+        return g2().vec({x1:pts.p1.x,
+                         y1:pts.p1.y,
                          x2:pts.p2.x,
                          y2:pts.p2.y,
-                         ls:mec.color[this.value],
+                         ls:this.model.env.show[this.value+'VecColor'],
                          lw:1.5,
                          sh:this.sh
         });
@@ -114,7 +115,7 @@ mec.view.trace = {
     },
     // interaction
     get isSolid() { return false },
-    get sh() { return this.state & g2.OVER ? [0, 0, 10, mec.hoveredElmColor] : false; },
+    get sh() { return this.state & g2.OVER ? [0, 0, 10, this.model.env.show.hoveredElmColor] : false; },
     hitContour({x,y,eps}) {
         return false;
     },

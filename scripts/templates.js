@@ -1,16 +1,24 @@
 'use-strict';
 tmpl = {
     header: (elm,type) => `<h6 class="mb-0">${type} <span style="font-family:roboto;font-weight:500;font-style:italic;">${elm.id}</span></h6>`, // stringified constraints have no type: ${elm.type}
-    sectionTitle: (title) => `<div class="section-divider"></div><label class="input-group-text ctxm-section-title">${title} </label>`,
+    sectionTitle: (title,elm) => {
+        let value = title === 'ori' ? 'w' : title === 'len' ? 'r' : false,
+            template = `<div class="section-divider"></div>
+                        <li class="input-group">
+                            <label class="input-group-text ctxm-section-title"style="font-family:roboto;font-weight:500;">${title}</label>
+                            ${value?`<div class="ctxm-right">${`${value}: ${(app.model.constraintById(elm.id)[`${value}`]*mec.aly[`${value}`].scl).toPrecision(3)} ${mec.aly[`${value}`].unit}`}</div>`:''}
+                        </li>`;
+        return template;
+    },
 
     // constraint templates
     nodes: (elm) => {
         let select = `<div class="input-group">`,       // add head
             selectP1 = `<label class="ctxm-input-label">p1: </label>
-                        <select class="custom-select" id="select-p1">`, 
+                        <select class="custom-select" id="select-p1">`,
             selectP2 = `<label class="ctxm-input-label">p2: </label>
                         <select class="custom-select" id="select-p2">`;
-        
+
         app.model.nodes.forEach(node => { //  add options
             selectP1 += `<option value="${node.id}" ${(((elm.p1.id === node.id) || (elm.p1 === node.id)) ? 'selected' : '')}>${node.id}</option>`;
             selectP2 += `<option value="${node.id}" ${(((elm.p2.id === node.id) || (elm.p2 === node.id)) ? 'selected' : '')}>${node.id}</option>`;
@@ -24,7 +32,6 @@ tmpl = {
         return select;
     },
     oriType: (elm) => {
-        console.log(app.model.constraints.length);
         let str = `<li class="input-group">
                             <label class="ctxm-input-label">type: </label>
                             <select class="custom-select" id="select-ori-type">
@@ -46,11 +53,12 @@ tmpl = {
         str += `<option value="drive" ${((!!elm.len && elm.len.type === 'drive') ? 'selected' : '')}>drive</option></select></li>`;
         return str;
     },
-    ref: (elm, type = 'ori', refId) => {
+    ref: (elm, type = 'ori', refId = 'none') => {
         let select = `<div class="input-group">
         <label class="ctxm-input-label">referenced: </label>
-        <select class="custom-select" id="select-${type}-ref">`; // add head
-        
+        <select class="custom-select" id="select-${type}-ref">
+        <option value="" ${(refId === 'none' ? 'selected' : '')}>none</option>`; // add head
+
         app.model.constraints.forEach(el => { //  add options
             if (!(el.id === elm.id))
                 select += `<option value="${el.id}" ${(refId === el.id ? 'selected' : '')}>${el.id}</option>`
@@ -63,7 +71,7 @@ tmpl = {
     Dt: (elm, type = 'ori') => {
         let template = `<li class="input-group" style="padding:.1rem;">
                       <label class="ctxm-input-label" style="width:2.5rem;">Dt: </label>`;
-        template += (type === 'ori') ?              
+        template += (type === 'ori') ?
               `<input type="number" class="custom-number-input ctxm-number" id="ori-drive-Dt" step="any" value="${elm.ori.Dt.toFixed(3)}">`
             : `<input type="number" class="custom-number-input ctxm-number" id="len-drive-Dt" step="any" value="${elm.len.Dt.toFixed(3)}">`;
         template +=`<a style="margin-left:.6rem;margin-top:auto;">input?</a></li>`;
@@ -71,14 +79,14 @@ tmpl = {
         return template;
     },
     Dw: (elm) => `<li class="input-group" style="padding:.1rem;">
-                      <label class="ctxm-input-label" style="width:2.5rem;">Dw: </label>            
+                      <label class="ctxm-input-label" style="width:2.5rem;">Dw: </label>
                       <input type="number" class="custom-number-input ctxm-number" id="ori-drive-Dw" step="any" value="${elm.ori.Dw.toFixed(3)}">
                       <input type="checkbox" id="ori-input" class="cbx d-none" ${(elm.ori.hasOwnProperty('input') && elm.ori.input ? 'checked' : '')}>
                       <label class="lbl" for="ori-input" style="margin-left:.8rem"></label>
                   </li>`
     ,
     Dr: (elm) => `<li class="input-group" style="padding:.1rem;">
-                      <label class="ctxm-input-label" style="width:2.5rem;">Dr: </label>            
+                      <label class="ctxm-input-label" style="width:2.5rem;">Dr: </label>
                       <input type="number" class="custom-number-input ctxm-number" id="len-drive-Dr" step="any" value="${elm.len.Dr.toFixed(3)}">
                       <input type="checkbox" id="len-input" class="cbx d-none" ${(elm.len.hasOwnProperty('input') && elm.len.input ? 'checked' : '')}>
                       <label class="lbl" for="len-input" style="margin-left:.8rem"></label>
@@ -104,7 +112,7 @@ tmpl = {
                             <div id="node-trash" class="ctxm-right"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">
                             <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"
                             fill="currentColor"/>
-                        </svg></div> 
+                        </svg></div>
                         </li>`
     ,
     // force templates
@@ -112,13 +120,13 @@ tmpl = {
             let select = `<div class="section-divider" style="margin:.1rem!important"></div><div class="input-group" style="padding:.1rem">`,       // add head
                 selectP = `<label class="ctxm-input-label">p: </label>
                             <select class="custom-select" id="select-force-node" style="max-width:4rem!important;">`;
-            
+
             app.model.nodes.forEach(node => { //  add options
                 selectP += `<option value="${node.id}" ${(((elm.p.id === node.id) || (elm.p === node.id)) ? 'selected' : '')}>${node.id}</option>`;
             });
-    
+
             select += selectP + `</select><div id="force-trash" class="ctxm-right"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">                             <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"                             fill="currentColor"/>                         </svg></div></div>`; // append and add tail
-    
+
             return select;
     },
     forceMode: (elm) => `<div class="section-divider" style="margin:.1rem!important"></div><div class="input-group" style="padding:.1rem">
@@ -137,10 +145,10 @@ tmpl = {
     springNodes: (elm) => {
         let select = `<div class="section-divider"></div><div class="input-group" style="padding-top:.3rem;">`,       // add head
             selectP1 = `<label class="ctxm-input-label">p1: </label>
-                        <select class="custom-select" id="select-spring-p1" style="max-width:4rem!important;">`, 
+                        <select class="custom-select" id="select-spring-p1" style="max-width:4rem!important;">`,
             selectP2 = `<label class="ctxm-input-label">p2: </label>
                         <select class="custom-select" id="select-spring-p2" style="max-width:4rem!important;">`;
-        
+
         app.model.nodes.forEach(node => { //  add options
             selectP1 += `<option value="${node.id}" ${(((elm.p1.id === node.id) || (elm.p1 === node.id)) ? 'selected' : '')}>${node.id}</option>`;
             selectP2 += `<option value="${node.id}" ${(((elm.p2.id === node.id) || (elm.p2 === node.id)) ? 'selected' : '')}>${node.id}</option>`;
@@ -157,7 +165,7 @@ tmpl = {
                        <li class="input-group" style="padding-top:.3rem;">
                            <label class="ctxm-input-label">k [N/m]: </label>
                            <input type="number" class="custom-number-input" id="spring-k" step="any" value="${mec.to_N_m(app.model.loadById(`${elm.id}`).k)}" style="margin-left:.1rem!important;">
-                           <div id="spring-trash" class="ctxm-right" style="padding-top:.25rem!important;"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">                             <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"                             fill="currentColor"/>                         </svg></div> 
+                           <div id="spring-trash" class="ctxm-right" style="padding-top:.25rem!important;"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">                             <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"                             fill="currentColor"/>                         </svg></div>
                        </li>`
     ,
     springLen: (elm) => `<div class="section-divider"></div>
@@ -186,7 +194,7 @@ tmpl = {
                         </div>
                         <input type="text" class="form-control" id="input-view-id" placeholder="enter id" value="${app.tempElm.new.id}" aria-label="view-id" onchange="app.tempElm.new.id = this.value">
                     </div>`
-        
+
         template += `<div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <label class="input-group-text view-inputtext" for="select-view-type">type: </label>
@@ -197,7 +205,7 @@ tmpl = {
                             <option value="info" ${app.tempElm.new.type === 'info' ? 'selected' : ''}>info</option>
                         </select>
                     </div>`
-        
+
         if (['vector','trace'].includes(app.tempElm.new.type)) {
             // p
             if (app.tempElm.new.hasOwnProperty('elem'))
@@ -210,7 +218,7 @@ tmpl = {
                                 <label class="input-group-text view-inputtext" for="select-view-p">p: </label>
                             </div>
                             <select class="custom-select" id="select-view-p">`; // add head
-            
+
             app.model.nodes.forEach(node => { //  add options
                 template += `<option value="${node.id}" ${((app.tempElm.new.p === node.id) ? 'selected' : '')}>${node.id}</option>`;
             });
@@ -222,9 +230,9 @@ tmpl = {
             let fillcolorDisabled =  false;
             let fillcolorBtn = document.getElementById('view-fill-color-btn');
 
-            if (!app.tempElm.new.hasOwnProperty('stroke'))    
+            if (!app.tempElm.new.hasOwnProperty('stroke'))
                 app.tempElm.new.stroke = '#ff0000';
-            if (!fillcolorBtn || !app.tempElm.new.hasOwnProperty('fill')) 
+            if (!fillcolorBtn || !app.tempElm.new.hasOwnProperty('fill'))
                 fillcolorDisabled = true;
 
             template += `<div class="input-group mb-3 justify-content-between">
@@ -247,7 +255,7 @@ tmpl = {
             // p
             if (app.tempElm.new.hasOwnProperty('p'))
                 delete app.tempElm.new.p;
-            if (!app.tempElm.new.hasOwnProperty('elem'))    
+            if (!app.tempElm.new.hasOwnProperty('elem'))
                 app.tempElm.new.elem = app.model.nodes[0].id;
 
             template += `<div class="input-group mb-3">
@@ -255,7 +263,7 @@ tmpl = {
                                 <label class="input-group-text view-inputtext" for="select-view-elem">elem: </label>
                             </div>
                             <select class="custom-select" id="select-view-elem">`; // add head
-            
+
             app.model.nodes.forEach(node => { //  add options
                 template += `<option value="${node.id}" ${((app.tempElm.new.elem === node.id) ? 'selected' : '')}>${node.id}</option>`;
             });

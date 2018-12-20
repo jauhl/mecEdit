@@ -10,7 +10,7 @@
     <title>mecEdit</title>
 
     <link rel="canonical" href="https://jauhl.github.io/mecEdit/" />
-    <link rel='manifest' href='./manifest.json'>  
+    <link rel='manifest' href='./manifest.json'>
 
     <link rel="apple-touch-icon" sizes="180x180" href="./img/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="./img/favicon/favicon-32x32.png">
@@ -22,12 +22,9 @@
     <meta name="theme-color" content="#343a40">
 
     <!-- styles -->
-    <link rel="stylesheet" href="./vendor/bootstrap.min.css">
-    <!-- <link rel="stylesheet" href="./vendor/fontawesome/css/all.min.css"> -->
+    <link rel="stylesheet" href="./vendor/bootstrap4.1.3.min.css">
     <link rel="stylesheet" href="./app.css">
     <link rel="stylesheet" href="./vendor/codemirror/codemirror5.39.2.css" />
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/lucario.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/mdn-like.css"> -->
     <link rel="stylesheet" href="./vendor/codemirror/lucario.css">
     <link rel="stylesheet" href="./vendor/codemirror/mdn-like.css">
 
@@ -270,26 +267,23 @@
                 <li class="d-inline-flex">
                     <div class="btn-group ml-5 mobile-neg-margin" role="group" aria-label="controls-group">
                         <button type="button" id="run" class="btn btn-dark" aria-label="Run Button" data-toggle="popover" data-placement="bottom" data-content="Run / Idle">
-                            <!-- <i class="fas fa-play"></i> -->
                             <svg class="svg-icon" width="16px" height="16px" viewBox="0 0 448 512">
                                 <path id="run-symbol" d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z" fill="white"/>
                             </svg>
                         </button>
                         <button type="button" id="stop" class="btn btn-dark" aria-label="Stop Button" data-toggle="popover" data-placement="bottom" data-content="Stop">
-                            <!-- <i class="fas fa-stop"></i> -->
                             <svg class="svg-icon" width="16px" height="16px" viewBox="0 0 448 512">
                                 <path d="M400 32H48C21.5 32 0 53.5 0 80v352c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V80c0-26.5-21.5-48-48-48z" fill="white"/>
                             </svg>
                         </button>
                         <button type="button" id="reset" class="btn btn-dark" aria-label="Reset Button" data-toggle="popover" data-placement="bottom" data-content="Reset">
-                            <!-- <i class="fas fa-undo"></i> -->
                             <svg class="svg-icon" width="16px" height="16px" viewBox="0 0 512 512">
                                 <path d="M212.333 224.333H12c-6.627 0-12-5.373-12-12V12C0 5.373 5.373 0 12 0h48c6.627 0 12 5.373 12 12v78.112C117.773 39.279 184.26 7.47 258.175 8.007c136.906.994 246.448 111.623 246.157 248.532C504.041 393.258 393.12 504 256.333 504c-64.089 0-122.496-24.313-166.51-64.215-5.099-4.622-5.334-12.554-.467-17.42l33.967-33.967c4.474-4.474 11.662-4.717 16.401-.525C170.76 415.336 211.58 432 256.333 432c97.268 0 176-78.716 176-176 0-97.267-78.716-176-176-176-58.496 0-110.28 28.476-142.274 72.333h98.274c6.627 0 12 5.373 12 12v48c0 6.627-5.373 12-12 12z" fill="white"/>
                             </svg>
                         </button>
                     </div>
                     <div class="btn-group ml-2" role="group" aria-label="gravity-group">
-                        <button type="button" id="toggle-g" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="Toggle gravity"> g<!-- <i class="fas fa-long-arrow-alt-down"></i> -->
+                        <button type="button" id="toggle-g" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="Toggle gravity"> g
                             <svg class="svg-icon" width="16px" height="16px" viewBox="0 0 256 512">
                                 <path d="M168 345.941V44c0-6.627-5.373-12-12-12h-56c-6.627 0-12 5.373-12 12v301.941H41.941c-21.382 0-32.09 25.851-16.971 40.971l86.059 86.059c9.373 9.373 24.569 9.373 33.941 0l86.059-86.059c15.119-15.119 4.411-40.971-16.971-40.971H168z" fill="white"/>
                             </svg>
@@ -325,7 +319,7 @@
                             data-placement="right" data-content="Basenode">
                             <svg viewBox="0 0 60 60" transform="scale(.7)">
                                 <circle cx="30" cy="30" r="20" stroke="white" stroke-width="3" fill="none" />
-                                <path d='M 10,30 
+                                <path d='M 10,30
                                          A 20 20 0 1 0 30,10
                                          L 30,50
                                          A 20 20 0 1 1 50,30
@@ -344,10 +338,10 @@
                         <button type="button" id="free" aria-label="Add Free" class="btn btn-dark svg-btn mb-1" data-toggle="popover"
                             data-placement="right" data-content="FREE">
                             <svg viewBox="-10 -20 60 60">
-                                <path d='M8,6 
+                                <path d='M8,6
                                                  C 12 2, 12 -2, 8 -6'
                                     stroke="white" stroke-width="2" fill="transparent" stroke-linecap="round" transform="translate(0,30) rotate(-45) scale(1.2)" />
-                                <path d='M 0,0 
+                                <path d='M 0,0
                                          L 8,0
                                          M 15,0
                                          L 18,0
@@ -366,18 +360,18 @@
                         <button type="button" id="tran" aria-label="Add Tran" class="btn btn-dark svg-btn mb-1" data-toggle="popover"
                             data-placement="right" data-content="TRAN">
                             <svg viewBox="-10 -20 60 60">
-                                <path d='M 0,0 
+                                <path d='M 0,0
                                          L 12,0
-                                         
+
                                          M 16,0
                                          L 18,0
-                                         
+
                                          M 22,0
                                          L 24,0
-                                         
+
                                          M 28,0
                                          L 35,0
-                                         
+
                                          M 45,0
                                          L 36,-3
                                          C 37 -1, 37 1, 36 3
@@ -389,14 +383,14 @@
                         <button type="button" id="rot" aria-label="Add Rot" class="btn btn-dark svg-btn mb-1" data-toggle="popover"
                             data-placement="right" data-content="ROT">
                             <svg viewBox="-10 -20 60 60">
-                                <path d='M8,6 
+                                <path d='M8,6
                                          C 12 2, 12 -2, 8 -6'
                                     stroke="white" stroke-width="2" fill="transparent" stroke-linecap="round" transform="translate(0,30) rotate(-45) scale(1.2)" />
-                                <path d='M 0,0 
+                                <path d='M 0,0
                                          L 8,0
                                          M 15,0
                                          L 35,0
-                                         
+
                                          M 45,0
                                          L 36,-3
                                          C 37 -1, 37 1, 36 3
@@ -408,7 +402,6 @@
 
                         <button type="button" id="drive" aria-label="Add Drive" class="btn btn-dark svg-btn mb-1" data-toggle="popover"
                             data-placement="right" data-content="Drive">
-                            <!-- <i class="fas fa-cogs"></i> -->
                             <svg class="svg-icon" width="33px" height="33px" viewBox="0 0 640 512">
                                 <path d="M512.1 191l-8.2 14.3c-3 5.3-9.4 7.5-15.1 5.4-11.8-4.4-22.6-10.7-32.1-18.6-4.6-3.8-5.8-10.5-2.8-15.7l8.2-14.3c-6.9-8-12.3-17.3-15.9-27.4h-16.5c-6 0-11.2-4.3-12.2-10.3-2-12-2.1-24.6 0-37.1 1-6 6.2-10.4 12.2-10.4h16.5c3.6-10.1 9-19.4 15.9-27.4l-8.2-14.3c-3-5.2-1.9-11.9 2.8-15.7 9.5-7.9 20.4-14.2 32.1-18.6 5.7-2.1 12.1.1 15.1 5.4l8.2 14.3c10.5-1.9 21.2-1.9 31.7 0L552 6.3c3-5.3 9.4-7.5 15.1-5.4 11.8 4.4 22.6 10.7 32.1 18.6 4.6 3.8 5.8 10.5 2.8 15.7l-8.2 14.3c6.9 8 12.3 17.3 15.9 27.4h16.5c6 0 11.2 4.3 12.2 10.3 2 12 2.1 24.6 0 37.1-1 6-6.2 10.4-12.2 10.4h-16.5c-3.6 10.1-9 19.4-15.9 27.4l8.2 14.3c3 5.2 1.9 11.9-2.8 15.7-9.5 7.9-20.4 14.2-32.1 18.6-5.7 2.1-12.1-.1-15.1-5.4l-8.2-14.3c-10.4 1.9-21.2 1.9-31.7 0zm-10.5-58.8c38.5 29.6 82.4-14.3 52.8-52.8-38.5-29.7-82.4 14.3-52.8 52.8zM386.3 286.1l33.7 16.8c10.1 5.8 14.5 18.1 10.5 29.1-8.9 24.2-26.4 46.4-42.6 65.8-7.4 8.9-20.2 11.1-30.3 5.3l-29.1-16.8c-16 13.7-34.6 24.6-54.9 31.7v33.6c0 11.6-8.3 21.6-19.7 23.6-24.6 4.2-50.4 4.4-75.9 0-11.5-2-20-11.9-20-23.6V418c-20.3-7.2-38.9-18-54.9-31.7L74 403c-10 5.8-22.9 3.6-30.3-5.3-16.2-19.4-33.3-41.6-42.2-65.7-4-10.9.4-23.2 10.5-29.1l33.3-16.8c-3.9-20.9-3.9-42.4 0-63.4L12 205.8c-10.1-5.8-14.6-18.1-10.5-29 8.9-24.2 26-46.4 42.2-65.8 7.4-8.9 20.2-11.1 30.3-5.3l29.1 16.8c16-13.7 34.6-24.6 54.9-31.7V57.1c0-11.5 8.2-21.5 19.6-23.5 24.6-4.2 50.5-4.4 76-.1 11.5 2 20 11.9 20 23.6v33.6c20.3 7.2 38.9 18 54.9 31.7l29.1-16.8c10-5.8 22.9-3.6 30.3 5.3 16.2 19.4 33.2 41.6 42.1 65.8 4 10.9.1 23.2-10 29.1l-33.7 16.8c3.9 21 3.9 42.5 0 63.5zm-117.6 21.1c59.2-77-28.7-164.9-105.7-105.7-59.2 77 28.7 164.9 105.7 105.7zm243.4 182.7l-8.2 14.3c-3 5.3-9.4 7.5-15.1 5.4-11.8-4.4-22.6-10.7-32.1-18.6-4.6-3.8-5.8-10.5-2.8-15.7l8.2-14.3c-6.9-8-12.3-17.3-15.9-27.4h-16.5c-6 0-11.2-4.3-12.2-10.3-2-12-2.1-24.6 0-37.1 1-6 6.2-10.4 12.2-10.4h16.5c3.6-10.1 9-19.4 15.9-27.4l-8.2-14.3c-3-5.2-1.9-11.9 2.8-15.7 9.5-7.9 20.4-14.2 32.1-18.6 5.7-2.1 12.1.1 15.1 5.4l8.2 14.3c10.5-1.9 21.2-1.9 31.7 0l8.2-14.3c3-5.3 9.4-7.5 15.1-5.4 11.8 4.4 22.6 10.7 32.1 18.6 4.6 3.8 5.8 10.5 2.8 15.7l-8.2 14.3c6.9 8 12.3 17.3 15.9 27.4h16.5c6 0 11.2 4.3 12.2 10.3 2 12 2.1 24.6 0 37.1-1 6-6.2 10.4-12.2 10.4h-16.5c-3.6 10.1-9 19.4-15.9 27.4l8.2 14.3c3 5.2 1.9 11.9-2.8 15.7-9.5 7.9-20.4 14.2-32.1 18.6-5.7 2.1-12.1-.1-15.1-5.4l-8.2-14.3c-10.4 1.9-21.2 1.9-31.7 0zM501.6 431c38.5 29.6 82.4-14.3 52.8-52.8-38.5-29.6-82.4 14.3-52.8 52.8z"
                                       stroke="white" stroke-width="2" fill="white" stroke-linecap="round"
@@ -556,34 +549,10 @@
     <script src="./vendor/codemirror/codemirror.jsmode5.39.2.js"></script>
     <script src="./vendor/codemirror/matchbrackets.js"></script> <!-- addon -->
 
-     <!-- Don't use original @goessner versions! g2 has issues since it's running async & editor is modified. -->
-    <!-- <script src="./scripts/g2 for 0520/g2.js"></script>
-    <script src="./scripts/g2 for 0520/g2.ext.js"></script>
-    <script src="./scripts/g2 for 0520/g2.lib.js"></script> -->
-    <!-- original @goessner commit 5b53fea works now -->
-    <!-- <script src="./scripts/g2.core.js"></script>
-    <script src="./scripts/g2.ext.js"></script>
-    <script src="./scripts/g2.lib.js"></script> -->
     <script src="./scripts/g2.js"></script>
-    <!-- <script src="./scripts/g2_apply.js"></script> -->
     <script src="./scripts/g2.editor.js"></script>
 
-    <!-- <script src="./scripts/mec.core.js"></script>
-    <script src="./scripts/mec.model.js"></script>
-    <script src="./scripts/mec.constraint.js"></script>
-    <script src="./scripts/mec.node.js"></script>
-    <script src="./scripts/mec.drive.js"></script>
-    <script src="./scripts/mec.load.js"></script>
-    <script src="./scripts/mec.shape.js"></script>
-    <script src="./scripts/mec.view.js"></script> -->
     <script src="./scripts/mec2.min.js"></script>
-
-    <!-- <script src="./scripts/slider.js"></script>
-    <script src="./scripts/mixin.js"></script>
-    <script src="./scripts/templates.js"></script>
-    <script src="./scripts/appevents.js"></script>
-    <script src="./scripts/examples.js"></script>
-    <script src="./app.js"></script> -->
 
     <script src="./app.min.js"></script>
 
@@ -598,7 +567,7 @@
                   console.log('Service Worker registration successful, scope is:', registration.scope);
                 })
                 .catch((error) => {
-                  console.log('Service Worker registration failed, error:', error);
+                  console.error('Service Worker registration failed, error:', error);
                 });
             }
         }

@@ -4,7 +4,7 @@
 ---
 
 
-**_mecEdit_** is a web-app that helps you
+**_mecEdit_** is a progressive web app that helps you
 
 build
 
@@ -26,6 +26,15 @@ planar linkages.
 <br><br>
 
 # Changelog
+
+## v0.6.5
+
+### general:
++ Updated `mec2` to v0.8.5 which introduced major changes to references in constraints.
++ Updated vendor dependency `bootstrap` to v4.1.3.
++ The contextmenu of constraits now shows values for their current orientation and length.
+
+---
 
 ## v0.6.1
 

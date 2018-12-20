@@ -1,10 +1,10 @@
 const APP_PREFIX = 'mecEdit'
-const VERSION = 'v0.6.1'
+const VERSION = 'v0.6.5'
 const CACHE_NAME = APP_PREFIX + '_' + VERSION
 const URLS = [
   `./`,
   `./mecEdit.html`,
-  `./vendor/bootstrap.min.css`,
+  `./vendor/bootstrap4.1.3.min.css`,
   `./app.css`,
   `./vendor/codemirror/codemirror5.39.2.css`,
   `./vendor/codemirror/lucario.css`,
@@ -48,7 +48,7 @@ self.addEventListener('fetch', function (e) {
       return response || fetch(e.request)
     })
     .catch(function(error) {
-      console.log('sw fetch error:', error);
+      console.error('sw fetch error:', error);
     })
   )
 })
@@ -62,7 +62,7 @@ self.addEventListener('install', function (e) {
                   .then(() => self.skipWaiting());
     })
     .catch(function(error) {
-      console.log('sw install error:', error);
+      console.error('sw install error:', error);
     })
   )
 })
@@ -87,7 +87,7 @@ self.addEventListener('activate', function (e) {
       }))
     })
     .catch(function(error) {
-      console.log('sw activation error:', error);
+      console.error('sw activation error:', error);
     })
   )
 })

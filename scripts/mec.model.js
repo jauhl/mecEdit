@@ -24,14 +24,18 @@
  * @property {array} shapes - Array of shape objects.
  */
 mec.model = {
-    extend(model) { 
-        Object.setPrototypeOf(model, this.prototype); 
-        model.constructor(); 
-        return model; 
+    extend(model, env = mec) {
+        Object.setPrototypeOf(model, this.prototype);
+        model.constructor(env);
+        return model;
     },
     prototype: {
-        constructor() { // always parameterless .. !
-            this.state = {dirty:true,valid:true,direc:1,itrpos:0,itrvel:0};
+        constructor(env) {
+            this.env = env; // reference environment of model
+            if (env !== mec) // it's possible that user defined a custom show object
+                this.env.show = Object.create(Object.getPrototypeOf(mec.show), Object.getOwnPropertyDescriptors(mec.show)); // copy show object including getters
+
+            this.state = {valid:true,itrpos:0,itrvel:0};
             this.timer = {t:0,dt:1/60};
             // create empty containers for all elements
             if (!this.nodes) this.nodes = [];
@@ -54,46 +58,52 @@ mec.model = {
         /**
          * Init model
          * @method
-         * @returns {object} model
+         * @returns object} model.
          */
         init() {
+            let err = false;
             if (this.gravity === true)
                 this.gravity = Object.assign({},mec.gravity,{active:true});
             else if (!this.gravity)
                 this.gravity = Object.assign({},mec.gravity,{active:false});
 
-            this.graphics = {
-                labels: Object.assign({},mec.labels,!!this.graphics?this.graphics.labels:null),
-                linkage: Object.assign({},mec.linkage,!!this.graphics?this.graphics.linkage:null)
-            };
-
-            // this.labels = Object.assign({},mec.labels,this.labels||null);
-            // this.graphics = Object.assign({},mec.labels,this.labels||null);
-
-            for (const node of this.nodes)
-                node.init(this);
-            for (const constraint of this.constraints)
-                if (!constraint.initialized)  // possibly already uinitialized by referencing .. !
-                    constraint.init(this);
-            for (const load of this.loads)
-                load.init(this);
-            for (const view of this.views)
-                view.init(this);
-            for (const shape of this.shapes)
-                shape.init(this);
-
+            for (let i=0; i < this.nodes.length && this.valid; i++)
+                this.nodes[i].init(this,i);
+            for (let i=0; i < this.constraints.length && this.valid; i++)
+//                if (!this.constraints[i].initialized)  // allow multiple initialization .. !
+                this.constraints[i].init(this,i);
+            for (let i=0; i < this.loads.length && this.valid; i++)
+                this.loads[i].init(this,i);
+            for (let i=0; i < this.views.length && this.valid; i++)
+                this.views[i].init(this,i);
+            for (let i=0; i < this.shapes.length && this.valid; i++)
+                this.shapes[i].init(this,i);
 
             return this;
         },
         /**
+         * Notification of validity by child. Error message aborts init procedure.
+         * @method
+         * @param {boolean | object} msg - message object or false in case of no error / warning.
+         * @returns {boolean | object} message object in case of logical error / warning or `false`.
+         */
+        notifyValid(msg) {
+            if (msg) {
+                this.state.msg = msg;
+                return (this.state.valid = msg.mid[0] !== 'E');
+            }
+            return true;
+        },
+        /**
          * Reset model
-         * All nodes are set to their initial position. 
+         * All nodes are set to their initial position.
          * Kinematic values are set to zero.
          * @method
          * @returns {object} model
          */
         reset() {
             this.timer.t = 0;
+            Object.assign(this.state,{valid:true,itrpos:0,itrvel:0});
             for (const node of this.nodes)
                 node.reset();
             for (const constraint of this.constraints)
@@ -102,7 +112,6 @@ mec.model = {
                 load.reset();
             for (const view of this.views)
                 view.reset();
-            Object.assign(this.state,{valid:true,direc:1,itrpos:0,itrvel:0});
             return this;
         },
         /**
@@ -135,8 +144,10 @@ mec.model = {
          * @returns {object} model
          */
         tick(dt) {
-            if (dt)  // sliders are setting simulation time explicite .. !
+            if (dt) { // sliders (dt == 0) are setting simulation time explicite .. !
+                dt = 1/60;  // BUG ?? fix: dt as a constant for now (study variable time step theoretically !!)
                 this.timer.t += (this.timer.dt = dt);
+            }
             this.pre().itr().post();
             return this;
         },
@@ -173,12 +184,17 @@ mec.model = {
         set dirty(q) { this.state.dirty = q; },
         get valid() { return this.state.valid; },
         set valid(q) { this.state.valid = q; },
+        /**
+         * Message object resulting from initialization process.
+         * @type {object}
+         */
+        get msg() { return this.state.msg; },
         get info() {
             let str = '';
             for (const view of this.views)
                 if (view.hasInfo)
                     str += view.infoString()+'<br>';
-            return str.length === 0 ? false : str; 
+            return str.length === 0 ? false : str;
         },
         /**
          * Number of positional iterations.
@@ -194,25 +210,17 @@ mec.model = {
         set itrvel(q) { this.state.itrvel = q; },
 
         /**
-         * Direction flag.
-         * Used implicite by slider input elements.
-         * Avoids setting negative `dt` by going back in time.
-         * @type {boolean}
-         */
-        get direc() { return this.state.direc; },
-        set direc(q) { this.state.direc = q; },
-        /**
          * Test, if model is active.
          * Nodes are moving (nonzero velocities) or active drives.
          * @type {boolean}
          */
         get isActive() {
             return this.hasActiveDrives   // active drives
-                || this.dof > 0           // or can move by itself
-                && !this.isSleeping;      // and does that
+                // || this.dof > 0           // or can move by itself
+                || !this.isSleeping;      // and does exactly that
         },
         /**
-         * Test, if nodes are significantly moving 
+         * Test, if nodes are significantly moving
          * @type {boolean}
          */
         get isSleeping() {
@@ -222,18 +230,14 @@ mec.model = {
             return sleeping;
         },
         /**
-         * Test, if some drives are 'idle' or 'running' 
+         * Test, if some drives are 'idle' or 'running'
          * @const
          * @type {boolean}
          */
         get hasActiveDrives() {
             let active = false;
-            for (const constraint of this.constraints) 
-                active = active
-                      || constraint.ori.type === 'drive'
-                      && this.timer.t < constraint.ori.t0 + constraint.ori.Dt
-                      || constraint.len.type === 'drive'
-                      && this.timer.t < constraint.len.t0 + constraint.len.Dt;
+            for (const constraint of this.constraints)
+                active = active || constraint.hasActiveDrives(this.timer.t);
             return active;
         },
         /**
@@ -244,7 +248,7 @@ mec.model = {
          */
         hasDependents(elem) {
             let dependency = false;
-            for (const constraint of this.constraints) 
+            for (const constraint of this.constraints)
                 dependency = constraint.dependsOn(elem) || dependency;
             for (const load of this.loads)
                 dependency = load.dependsOn(elem) || dependency;
@@ -327,7 +331,7 @@ mec.model = {
         },
         /**
          * Remove node, if there are no dependencies to other objects.
-         * The calling app has to ensure, that `node` is in fact an entry of 
+         * The calling app has to ensure, that `node` is in fact an entry of
          * the `model.nodes` array.
          * @method
          * @param {object} node - node to remove.
@@ -342,7 +346,7 @@ mec.model = {
         },
         /**
          * Delete node and all depending elements from model.
-         * The calling app has to ensure, that `node` is in fact an entry of 
+         * The calling app has to ensure, that `node` is in fact an entry of
          * the `model.nodes` array.
          * @method
          * @param {object} node - node to remove.
@@ -373,7 +377,7 @@ mec.model = {
         },
         /**
          * Remove constraint, if there are no dependencies to other objects.
-         * The calling app has to ensure, that `constraint` is in fact an entry of 
+         * The calling app has to ensure, that `constraint` is in fact an entry of
          * the `model.constraints` array.
          * @method
          * @param {object} constraint - constraint to remove.
@@ -388,7 +392,7 @@ mec.model = {
         },
         /**
          * Delete constraint and all depending elements from model.
-         * The calling app has to ensure, that `constraint` is in fact an entry of 
+         * The calling app has to ensure, that `constraint` is in fact an entry of
          * the `model.constraints` array.
          * @method
          * @param {object} constraint - constraint to remove.
@@ -419,7 +423,7 @@ mec.model = {
         },
         /**
          * Remove load, if there are no other objects depending on it.
-         * The calling app has to ensure, that `load` is in fact an entry of 
+         * The calling app has to ensure, that `load` is in fact an entry of
          * the `model.loads` array.
          * @method
          * @param {object} node - load to remove.
@@ -433,7 +437,7 @@ mec.model = {
         },
         /**
          * Delete load and all depending elements from model.
-         * The calling app has to ensure, that `load` is in fact an entry of 
+         * The calling app has to ensure, that `load` is in fact an entry of
          * the `model.loads` array.
          * @method
          * @param {object} load - load to delete.
@@ -452,7 +456,7 @@ mec.model = {
         },
         /**
          * Remove shape, if there are no other objects depending on it.
-         * The calling app has to ensure, that `shape` is in fact an entry of 
+         * The calling app has to ensure, that `shape` is in fact an entry of
          * the `model.shapes` array.
          * @method
          * @param {object} shape - shape to remove.
@@ -464,7 +468,7 @@ mec.model = {
         },
         /**
          * Delete shape and all dependent elements from model.
-         * The calling app has to ensure, that `shape` is in fact an entry of 
+         * The calling app has to ensure, that `shape` is in fact an entry of
          * the `model.shapes` array.
          * @method
          * @param {object} shape - shape to delete.
@@ -495,7 +499,7 @@ mec.model = {
         },
         /**
          * Remove view, if there are no other objects depending on it.
-         * The calling app has to ensure, that `view` is in fact an entry of 
+         * The calling app has to ensure, that `view` is in fact an entry of
          * the `model.views` array.
          * @method
          * @param {object} view - view to remove.
@@ -507,7 +511,7 @@ mec.model = {
         },
         /**
          * Delete view and all dependent elements from model.
-         * The calling app has to ensure, that `view` is in fact an entry of 
+         * The calling app has to ensure, that `view` is in fact an entry of
          * the `model.views` array.
          * @method
          * @param {object} view - view to delete.
@@ -532,7 +536,7 @@ mec.model = {
             const str = '{'
                       + '\n  "id":"'+this.id+'"'
                       + (this.gravity.active ? ',\n  "gravity":true' : '')  // in case of true, should also look at vector components  .. !
-                      + (nodeCnt ? ',\n  "nodes": [\n' : '')
+                      + (nodeCnt ? ',\n  "nodes": [\n' : '\n')
                       + (nodeCnt ? this.nodes.map((n,i) => '    '+n.asJSON()+comma(i,nodeCnt)+'\n').join('') : '')
                       + (nodeCnt ? (contraintCnt || loadCnt || shapeCnt || viewCnt) ? '  ],\n' : '  ]\n' : '')
                       + (contraintCnt ? '  "constraints": [\n' : '')
@@ -646,7 +650,7 @@ mec.model = {
             return this;
         },
         /**
-         * Perform iteration steps until constraints are valid or max-iteration 
+         * Perform iteration steps until constraints are valid or max-iteration
          * steps for assembly are reached.
          * @internal
          * @method
@@ -669,8 +673,7 @@ mec.model = {
             // post process constraints
             for (const constraint of this.constraints)
                 constraint.post(this.timer.dt);
-// console.log('itr='+this.itrCnt.pos+'/'+this.itrCnt.vel);
-            // pre process views
+            // post process views
             for (const view of this.views)
                 if (view.post)
                     view.post(this.timer.dt);
@@ -682,7 +685,7 @@ mec.model = {
          * @param {object} g - g2 object.
          * @returns {object} model
          */
-        draw(g) {                                 // todo: draw all components via 'x.draw(g)' call ! 
+        draw(g) {  // todo: draw all components via 'x.draw(g)' call !
             for (const shape of this.shapes)
                 shape.draw(g);
             for (const view of this.views)

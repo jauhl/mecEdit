@@ -10,6 +10,24 @@
  * They are named and implemented after VDI 2145 and web easing functions.
  */
 mec.drive = {
+    create({func,z0,Dz,t0,Dt,t,bounce,repeat}) {
+        const isin = (x,x1,x2) => x > x1 && x <= x2;
+        let drv = func && func in mec.drive ? mec.drive[func] :  mec.drive.linear;
+
+        if (bounce) {
+            drv = mec.drive.bounce(drv);
+            Dt *= 2;  // preserve duration per repetition
+        }
+        if (repeat) {
+            drv = mec.drive.bounce(drv,repeat);
+            Dt *= repeat;  // preserve duration per repetition
+        }
+        return {
+            f:   () => z0 + drv.f(Math.max(0,Math.min((t() - t0)/Dt,1)))*Dz,
+            ft:  () => isin(t(),t0,t0+Dt) ? drv.fd((t()-t0)/Dt)*Dz/Dt : 0,
+            ftt: () => isin(t(),t0,t0+Dt) ? drv.fdd((t()-t0)/Dt)*Dz/Dt/Dt : 0
+        };
+    },
     linear: {
         f: (q) =>q, fd: (q) => 1, fdd: (q) => 0
     },
@@ -18,15 +36,15 @@ mec.drive = {
         fd: (q) =>  q <= 0.5 ? 4*q : -4*q + 4,
         fdd: (q) =>  q <= 0.5 ? 4 : -4
     },
-    harmonic: { 
+    harmonic: {
         f:   (q) => (1 - Math.cos(Math.PI*q))/2,
         fd:  (q) => Math.PI/2*Math.sin(Math.PI*q),
-        fdd: (q) => Math.PI*Math.PI/2*Math.cos(Math.PI*q) 
+        fdd: (q) => Math.PI*Math.PI/2*Math.cos(Math.PI*q)
     },
-    sinoid: { 
+    sinoid: {
         f:   (q) => q - Math.sin(2*Math.PI*q)/2/Math.PI,
         fd:  (q) => 1 - Math.cos(2*Math.PI*q),
-        fdd: (q) =>     Math.sin(2*Math.PI*q)*2*Math.PI 
+        fdd: (q) =>     Math.sin(2*Math.PI*q)*2*Math.PI
     },
     poly5: {
         f: (q) => (10 - 15*q + 6*q*q)*q*q*q,
@@ -46,28 +64,29 @@ mec.drive = {
             const a =  1/((1-dq)*dq);
             return {f: function(q) {
                         return (q < dq)   ? 1/2*a*q*q
-                                : (q < 1-dq) ? a*(q - 1/2*dq)*dq
-                                :              a*(1 - 3/2*dq)*dq + a*(q+dq-1)*dq - 1/2*a*(q+dq-1)*(q+dq-1);
+                             : (q < 1-dq) ? a*(q - 1/2*dq)*dq
+                             :              a*(1 - 3/2*dq)*dq + a*(q+dq-1)*dq - 1/2*a*(q+dq-1)*(q+dq-1);
                     },
                     fd: function(q) {
                         return (q < dq)   ? a*q
-                            : (q < 1-dq) ? a*dq
-                            :              a*dq - a*(q+dq-1);
+                             : (q < 1-dq) ? a*dq
+                             :              a*dq - a*(q+dq-1);
                     },
                     fdd: function(q) {
                         return (q < dq)   ? a
-                            : (q < 1-dq) ? 0
-                            :             -a;
+                             : (q < 1-dq) ? 0
+                             :             -a;
                     }
             };
         }
     },
+    // todo .. test valid velocity and acceleration signs with bouncing !!
     bounce: function(drv) {
         if (typeof drv === 'string') drv = mec.drive[drv];
         return {
             f: q => drv.f(q < 0.5 ? 2*q : 2-2*q),
-            fd: q => drv.fd(q < 0.5 ? 2*q : 2-2*q),
-            fdd: q => drv.fdd(q < 0.5 ? 2*q : 2-2*q)
+            fd: q => drv.fd(q < 0.5 ? 2*q : 2-2*q)*(q < 0.5 ? 1 : -1),
+            fdd: q => drv.fdd(q < 0.5 ? 2*q : 2-2*q)*(q < 0.5 ? 1 : -1)
         }
     },
     repeat: function(drv,n) {
@@ -88,20 +107,20 @@ mec.drive = {
 
     inPot(n) { return this.pot[n]; },
 
-    outPot(n) { 
+    outPot(n) {
         const fn = this.pot[n];
-        return { f:   q => 1 - fn.f(1-q), 
-                 fd:  q =>    fn.fd(1-q), 
-                 fdd: q =>  -fn.fdd(1-q) } 
+        return { f:   q => 1 - fn.f(1-q),
+                 fd:  q =>    fn.fd(1-q),
+                 fdd: q =>  -fn.fdd(1-q) }
     },
-    
-    inOutPot(n) { 
+
+    inOutPot(n) {
         const fn = this.pot[n], exp2 = Math.pow(2,n-1);
-        return { f:   q => q < 0.5 ? exp2*fn.f(q)         : 1 - exp2*fn.f(1-q), 
-                 fd:  q => q < 0.5 ? exp2*fn.fd(q)        :  exp2*fn.fd(1-q), 
-                 fdd: q => q < 0.5 ? exp2*(n-1)*fn.fdd(q) : -exp2*(n-1)*fn.fdd(1-q) } 
+        return { f:   q => q < 0.5 ? exp2*fn.f(q)         : 1 - exp2*fn.f(1-q),
+                 fd:  q => q < 0.5 ? exp2*fn.fd(q)        :  exp2*fn.fd(1-q),
+                 fdd: q => q < 0.5 ? exp2*(n-1)*fn.fdd(q) : -exp2*(n-1)*fn.fdd(1-q) }
     },
-    
+
     get inQuad() { return this.inPot(2); },
     get outQuad() { return this.outPot(2); },
     get inOutQuad() { return this.inOutPot(2); },

@@ -2,8 +2,8 @@ i, svg {
     pointer-events: none;
 }
 
-/*  icons don't exist for mouse-events 
-*   if this wasn't set, clicking on icons wouldn't fire 
+/*  icons don't exist for mouse-events
+*   if this wasn't set, clicking on icons wouldn't fire
 *   parent event with used event delegation
 */
 

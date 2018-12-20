@@ -20,7 +20,7 @@ mec.shape = {
             Object.setPrototypeOf(shape, mec.shape[shape.type]);
             shape.constructor();
         }
-        return shape; 
+        return shape;
     }
 }
 
@@ -190,7 +190,7 @@ mec.shape.wheel = {
                 + ' }';
     },
     draw(g) {
-        const w = this.wref ? ()=>this.wref.w : this.w0 || 0, r = this.r, 
+        const w = this.wref ? ()=>this.wref.w : this.w0 || 0, r = this.r,
               sgamma = Math.sin(2*Math.PI/3), cgamma = Math.cos(2*Math.PI/3);
         g.beg({x:()=>this.p.x,y:()=>this.p.y,w})
             .lin({x1:0,y1:0,x2:r-4,y2:0,ls:"@nodcolor",lw:8,lc:"round"})
@@ -234,11 +234,11 @@ mec.shape.poly = {
     get y0() { return  this.p.y0; },
     get w0() { return  this.wref.w0; },
     get w() { return  this.wref.w - this.wref.w0; },
-    get x() { 
+    get x() {
         const w = this.wref.w - this.wref.w0;
         return this.p.x - Math.cos(w)*this.p.x0 + Math.sin(w)*this.p.y0;
     },
-    get y() { 
+    get y() {
         const w = this.wref.w - this.wref.w0;
         return this.p.y - Math.sin(w)*this.p.x0 - Math.cos(w)*this.p.y0;
     },
@@ -288,7 +288,7 @@ mec.shape.img = {
                 + ' }';
     },
     draw(g) {
-        const w0 = this.w0 || 0, w = this.wref ? ()=>this.wref.w + w0 : w0; 
+        const w0 = this.w0 || 0, w = this.wref ? ()=>this.wref.w + w0 : w0;
         g.img({uri:this.uri,x:()=>this.p.x,y:()=>this.p.y,w,scl:this.scl,xoff:this.xoff,yoff:this.yoff})
     }
 }

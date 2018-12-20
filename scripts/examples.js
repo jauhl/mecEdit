@@ -15,7 +15,7 @@ const examples = {
             { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
             { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
             { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
-            { id: 'd', p1: 'B', p2: 'C', ori: { type:'ref', ref:'b'}, len: { type: 'const' } }
+            { id: 'd', p1: 'B', p2: 'C', ori: { type:'const', ref:'b'}, len: { type: 'const' } }
         ],
         views: [
             { id:'view1',type:'trace',p:'C', fill:'rgba(255,235,13,.5)' },
@@ -52,7 +52,7 @@ const examples = {
         constraints: [
             { id:'a',p1:'A0',p2:'A', len:{type:'const'} },
             { id:'a1',p1:'A', p2:'B1',len:{type:'const'} },
-            { id:'a2',p1:'B1',p2:'B2',len:{type:'const'},ori:{type:'ref',ref:'a1'} },
+            { id:'a2',p1:'B1',p2:'B2',len:{type:'const'},ori:{type:'const',ref:'a1'} },
             { id:'b1',p1:'B1', p2:'C2',len:{type:'const'} },
             { id:'b2',p1:'B2', p2:'C1',len:{type:'const'} },
             { id:'c1',p1:'C0', p2:'C1',len:{type:'const'} },
@@ -91,7 +91,7 @@ const examples = {
         gravity: false,
         nodes: [
             { id: 'A', x: 100, y: 100, base: true },
-            { id: 'B', x: 200, y: 100, base: true },                    
+            { id: 'B', x: 200, y: 100, base: true },
             { id: 'C', x: 150, y: 200 },
         ],
         constraints: [
@@ -111,7 +111,7 @@ const examples = {
         gravity: true,
         nodes: [
             { id: 'A', x: 100, y: 100, base: true },
-            { id: 'B', x: 200, y: 100 },                    
+            { id: 'B', x: 200, y: 100 },
             { id: 'C', x: 300, y: 100 },
             { id: 'D', x: 400, y: 100 },
             { id: 'E', x: 500, y: 100, base: true },

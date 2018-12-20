@@ -10,23 +10,35 @@
  */
 const mec = {
 /**
+ * user language shortcut (for messages)
+ * @const
+ * @type {string}
+ */
+lang: 'en',
+/**
+ * namespace for user language neutral messages
+ * @const
+ * @type {object}
+ */
+msg: {},
+/**
  * minimal float difference to 1.0
  * @const
  * @type {number}
  */
 EPS: 1.19209e-07,
 /**
- * Linear tolerance for position correction.
+ * Length tolerance for position correction.
  * @const
  * @type {number}
  */
-linTol: 0.001,
+lenTol: 0.1,
 /**
  * Angular tolerance for orientation correction.
  * @const
  * @type {number}
  */
-angTol: 2 / 180 * Math.PI,
+angTol: 1 / 180 * Math.PI,
 /**
  * Velocity tolerance.
  * @const
@@ -54,7 +66,7 @@ maxLinCorrect: 20,
 /**
  * fixed limit of assembly iteration steps.
  */
-asmItrMax: 512,
+asmItrMax: 128, // 512,
 /**
  * itrMax: fixed limit of simulation iteration steps.
  */
@@ -63,106 +75,115 @@ itrMax: 256,
  * corrMax: fixed number of position correction steps.
  */
 corrMax: 64,
-/* graphics related */
 /**
- * flags for showing labels.
- * @const
- * @type {object}
- */
-labels: {
-    nodes: false,
-    constraints: true,
-    loads: true,
-},
-/**
- * flags for showing linkage.
- * @const
- * @type {object}
- */
-linkage: {
+* graphics options
+* @const
+* @type {object}
+*/
+show: {
+    /**
+     * flag for darkmode.
+     * @const
+     * @type {boolean}
+     */
+    darkmode: false,
+    /**
+     * flag for showing labels of nodes.
+     * @const
+     * @type {boolean}
+     */
+    nodeLabels: true,
+    /**
+     * flag for showing labels of constraints.
+     * @const
+     * @type {boolean}
+     */
+    constraintLabels: true,
+    /**
+     * flag for showing labels of loads.
+     * @const
+     * @type {boolean}
+     */
+    loadLabels: true,
+    /**
+     * flag for showing nodes.
+     * @const
+     * @type {boolean}
+     */
     nodes: true,
+    /**
+     * flag for showing constraints.
+     * @const
+     * @type {boolean}
+     */
     constraints: true,
-},
-/**
- * place and show labels with elements (depricated !!) 
- */
-showNodeLabels: false,
-showConstraintLabels: true,
-showLoadLabels: true,
-/*
- * color conventions
- */
-/**
- * flag for darkmode.
- * @const
- * @type {boolean}
- */
-darkmode: false,
-/**
- * color for drawing valid constraints.
- * @return {string}
- */
-get validConstraintColor() { return this.darkmode ? '#ffffff99' : '#777' },
-/**
- * color for drawing invalid constraints.
- * @const
- * @type {string}
- */
-invalidConstraintColor: '#b11',
-/**
- * color for drawing forces.
- * @return {string}
- */
-get forceColor() { return this.darkmode ? 'crimson' : 'orange' },
-/**
- * color for drawing springs.
- * @return {string}
- */
-get springColor() { return this.darkmode ? 'lightslategray' : '#aaa' },
-/**
- * color for vectortypes of constraints.
- * @return {string}
- */
-get constraintVectorColor() { return this.darkmode ? 'orange' : 'green' },
-/**
- * hovered element shading color.
- * @return {string}
- */
-get hoveredElmColor() { return this.darkmode ? 'white' : 'gray' },
-/**
- * selected element shading color.
- * @return {string}
- */
-get selectedElmColor() { return this.darkmode ? 'yellow': 'blue' },
-/**
- * color for g2.txt (ls).
- * @return {string}
- */
-get txtColor() { return this.darkmode ? 'white' : 'black' },
-/*
- * colors for analyses
- */
-color: {
+    colors: {
+        invalidConstraintColor: '#b11',
+        validConstraintColor:   { dark: '#ffffff99',        light: '#777' },
+        forceColor:             { dark: 'crimson',          light: 'orange' },
+        springColor:            { dark: 'lightslategray',   light: '#aaa' },
+        constraintVectorColor:  { dark: 'orange',           light: 'green' },
+        hoveredElmColor:        { dark: 'white',            light: 'gray' },
+        selectedElmColor:       { dark: 'yellow',           light: 'blue' },
+        txtColor:               { dark: 'white',            light: 'black' },
+        velVecColor:            { dark: 'lightsteelblue',   light: 'steelblue' },
+        accVecColor:            { dark: 'lightsalmon',      light: 'firebrick' },
+        forceVecColor:          { dark: 'wheat',            light: 'saddlebrown' }
+    },
+    /**
+     * color for drawing valid constraints.
+     * @return {string}
+     */
+    get validConstraintColor() { return this.darkmode ? this.colors.validConstraintColor.dark : this.colors.validConstraintColor.light },
+    /**
+     * color for drawing forces.
+     * @return {string}
+     */
+    get forceColor() { return this.darkmode ?  this.colors.forceColor.dark : this.colors.forceColor.light },
+    /**
+     * color for drawing springs.
+     * @return {string}
+     */
+    get springColor() { return this.darkmode ? this.colors.springColor.dark : this.colors.springColor.light },
+    /**
+     * color for vectortypes of constraints.
+     * @return {string}
+     */
+    get constraintVectorColor() { return this.darkmode ? this.colors.constraintVectorColor.dark : this.colors.constraintVectorColor.light },
+    /**
+     * hovered element shading color.
+     * @return {string}
+     */
+    get hoveredElmColor() { return this.darkmode ? this.colors.hoveredElmColor.dark : this.colors.hoveredElmColor.light },
+    /**
+     * selected element shading color.
+     * @return {string}
+     */
+    get selectedElmColor() { return this.darkmode ? this.colors.selectedElmColor.dark : this.colors.selectedElmColor.light },
+    /**
+     * color for g2.txt (ls).
+     * @return {string}
+     */
+    get txtColor() { return this.darkmode ? this.colors.txtColor.dark : this.colors.txtColor.light },
     /**
      * color for velocity arrow (ls).
      * @const
      * @type {string}
      */
-    get vel() { return mec.darkmode ? 'lightsteelblue' : 'steelblue' },
+    get velVecColor() { return this.darkmode ? this.colors.velVecColor.dark : this.colors.velVecColor.light },
     /**
      * color for acceleration arrow (ls).
      * @const
      * @type {string}
      */
-    get acc() { return mec.darkmode ? 'lightsalmon' : 'firebrick' },
+    get accVecColor() { return this.darkmode ? this.colors.accVecColor.dark : this.colors.accVecColor.light },
     /**
      * color for acceleration arrow (ls).
      * @const
      * @type {string}
      */
-    get force() { return mec.darkmode ? 'wheat' : 'saddlebrown' },
+    get forceVecColor() { return this.darkmode ? this.colors.forceVecColor.dark : this.colors.forceVecColor.light }
 },
-
 /**
  * default gravity.
  * @const
@@ -267,7 +288,7 @@ from_kgm2(x) { return x/mec.m_u/mec.m_u; },
  * @returns {boolean} test result.
  */
 isEps(a,eps) {
-    return a < (eps || mec.EPS) && a > -(eps || mec.EPS); 
+    return a < (eps || mec.EPS) && a > -(eps || mec.EPS);
  },
  /**
  * If the absolute value of a number `a` is smaller than eps, it is set to zero.
@@ -310,6 +331,20 @@ toRad(deg) { return deg*Math.PI/180; },
  */
 toDeg(rad) { return rad/Math.PI*180; },
 /**
+ * Continuously rotating objects require infinite angles, both positives and negatives.
+ * Setting an angle `winf` to a new angle `w` does this with respect to the
+ * shortest angular distance from  `winf` to `w`.
+ * @param {number} winf infinite extensible angle in radians.
+ * @param {number} w  Destination angle in radians [-pi,pi].
+ * @returns {number} Extended angle in radians.
+ */
+infAngle(winf, w) {
+    let pi = Math.PI, pi2 = 2*pi, d = w - winf % pi2;
+    if      (d >  pi) d -= pi2;
+    else if (d < -pi) d += pi2;
+    return winf + d;
+},
+/**
  * Mixin a set of prototypes into a primary object.
  * @param {object} obj Primary object.
  * @param {objects} ...protos Set of prototype objects.
@@ -319,5 +354,23 @@ mixin(obj, ...protos) {
         obj = Object.defineProperties(obj, Object.getOwnPropertyDescriptors(proto))
     })
     return obj;
+},
+/**
+ * Assign getters to an objects prototype.
+ * @param {object} obj Primary object.
+ * @param {objects} ...protos Set of prototype objects.
+ */
+assignGetters(obj,getters) {
+    for (const key in getters)
+        Object.defineProperty(obj, key, { get: getters[key], enumerable:true, configurable:true });
+},
+/**
+ * Create message string from message object.
+ * @param {object} msg message/warning/error object.
+ * @returns {string} message string.
+ */
+messageString(msg) {
+    const entry = mec.msg[mec.lang][msg.mid];
+    return entry ? msg.mid[0]+': '+entry(msg) : '';
 }
 }

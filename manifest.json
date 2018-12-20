@@ -5,7 +5,7 @@
     "start_url": "./mecEdit.html",
     "display": "standalone",
     "background_color": "#344c6b",
-    "theme_color": "#343a40",  
+    "theme_color": "#343a40",
     "icons": [
       {
         "src": "img/windows10/Square71x71Logo.scale-400.png",

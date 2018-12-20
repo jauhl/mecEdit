@@ -1,7 +1,7 @@
 {
     "name": "mecedit",
-    "version": "0.6.1",
-    "description": "Editor for Planar Mechanisms",
+    "version": "0.6.5",
+    "description": "A lightweight editor for modeling and simulation of planar linkages.",
     "keywords": [
       "vector",
       "particle",
@@ -33,4 +33,3 @@
       "jsdoc-to-markdown":"^4.0.1"
     }
   }
-  

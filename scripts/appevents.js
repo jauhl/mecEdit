@@ -3,7 +3,7 @@
 const events = {
     preventDefaultCTXM: () => document.addEventListener('contextmenu', (e) => e.preventDefault()),
     sidebarClick: (id) => {
-        /*********************************  sidebar click handler  ****************************************/ 
+        /*********************************  sidebar click handler  ****************************************/
         document.getElementById(id).addEventListener('click', (e) => { // bind to parent
             // Cancel chain-building, never move to the end of this handler!
             if (app.build) { app.resetApp(); document.body.style.cursor = 'default'; };
@@ -18,7 +18,7 @@ const events = {
         })
     },
     navbarClick: (id) => {
-        /*********************************  navbar click handler  ****************************************/ 
+        /*********************************  navbar click handler  ****************************************/
         document.getElementById(id).addEventListener('click', (e) => {
             // Cancel chain-building, never move to the end of this handler!
             if (app.build) { app.resetApp(); document.body.style.cursor = 'default'; }
@@ -30,8 +30,8 @@ const events = {
             if (e.target && e.target.id === 'import') { app.importConfirmed = confirm('All unsaved changes will be lost! Continue?') ? true : (e.preventDefault(),false)}; // false -> dont open file window (and return undefined) and return false
 
             // Edit
-            if (e.target && e.target.id === 'dragmode') { 
-                app.dragMove = !app.dragMove; 
+            if (e.target && e.target.id === 'dragmode') {
+                app.dragMove = !app.dragMove;
                 if (!app.dragMove)
                     app.reset();
             };
@@ -47,14 +47,14 @@ const events = {
                 app.instruct.innerHTML = 'Left-click on the canvas to place a new node; [ESC] to cancel';
                 document.body.style.cursor = 'crosshair';
             };
-            if (e.target && ['nav-free', 'nav-tran', 'nav-rot','nav-spring'].includes(e.target.id)) { 
+            if (e.target && ['nav-free', 'nav-tran', 'nav-rot','nav-spring'].includes(e.target.id)) {
                 app.build = { mode: e.target.id.replace('nav-','') };
-                app.instruct.innerHTML = 'select first node; [ESC] to cancel'; 
+                app.instruct.innerHTML = 'select first node; [ESC] to cancel';
             };
             if (e.target && e.target.id === 'nav-drive') {
                 app.build = { mode: e.target.id.replace('nav-','') };
                 app.instruct.innerHTML = 'Select a constraint to add a drive to; [ESC] to cancel';
-            };            
+            };
             if (e.target && e.target.id === 'nav-force') {
                 app.build = { mode: e.target.id.replace('nav-','') };
                 app.instruct.innerHTML = 'Left-click on a node to add a force; [ESC] to cancel';
@@ -68,27 +68,27 @@ const events = {
             // View
             if (e.target && e.target.id === 'darkmode') { app.toggleDarkmode(); };
             if (e.target && e.target.id === 'resetview') { app.resetView(); };
-            if (e.target && e.target.id === 'toggleNodes') { 
-                app.model.graphics.linkage.nodes = !app.model.graphics.linkage.nodes;
+            if (e.target && e.target.id === 'toggleNodes') {
+                app.show.nodes = !app.show.nodes;
                 app.notify('render');
             };
-            if (e.target && e.target.id === 'toggleConstraints') { 
-                app.model.graphics.linkage.constraints = !app.model.graphics.linkage.constraints;
+            if (e.target && e.target.id === 'toggleConstraints') {
+                app.show.constraints = !app.show.linkage.constraints;
                 app.notify('render');
             };
-            if (e.target && e.target.id === 'toggleNodeLabels') { 
-                app.model.graphics.labels.nodes = !app.model.graphics.labels.nodes;
-                if (!!app.tempElm.labelState) app.tempElm.labelState.nodes = app.model.graphics.labels.nodes;
+            if (e.target && e.target.id === 'toggleNodeLabels') {
+                app.show.nodeLabels = !app.show.nodeLabels;
+                if (!!app.tempElm.labelState) app.tempElm.labelState.nodes = app.show.nodeLabels;
                 app.notify('render');
             };
             if (e.target && e.target.id === 'toggleConstraintLabels') {
-                app.model.graphics.labels.constraints = !app.model.graphics.labels.constraints;
-                if (!!app.tempElm.labelState) app.tempElm.labelState.constraints = app.model.graphics.labels.constraints;
+                app.show.constraintLabels = !app.show.constraintLabels;
+                if (!!app.tempElm.labelState) app.tempElm.labelState.constraints = app.show.constraintLabels;
                 app.notify('render');
             };
             if (e.target && e.target.id === 'toggleLoadLabels') {
-                app.model.graphics.labels.loads = !app.model.graphics.labels.loads;
-                if (!!app.tempElm.labelState) app.tempElm.labelState.loads = app.model.graphics.labels.loads;
+                app.show.loadLabels = !app.show.loadLabels;
+                if (!!app.tempElm.labelState) app.tempElm.labelState.loads = app.show.loadLabels;
                 app.notify('render');
             };
 
@@ -105,13 +105,13 @@ const events = {
         })
     },
     navbarChange: (id) => {
-        /*********************************  navbar change handler  ****************************************/ 
+        /*********************************  navbar change handler  ****************************************/
         document.getElementById(id).addEventListener('change', e => app.loadFromJSON(e.target.files) );
     },
     keyboardDown: () => {
-        /*********************************  global keyboard handler  ****************************************/ 
+        /*********************************  global keyboard handler  ****************************************/
         document.addEventListener('keydown', (e) => {
-            console.log(`Key pressed: ${e.key}`);
+            // console.log(`Key pressed: ${e.key}`);
             if (document.getElementById('modelModal').attributes['aria-hidden'].value === 'true' && document.getElementById('viewModal').attributes['aria-hidden'].value === 'true') { // modals are hidden
                 if (e.key === 'Escape') {
                     if (app.build) {
@@ -123,21 +123,21 @@ const events = {
                 };
                 // some shortcuts
                 // console.log(e);
-                if (e.key === 'e')    
+                if (e.key === 'e')
                     app.modelModal.show(); // open model editor
-                if (e.key === 'r')    
+                if (e.key === 'r')
                     app.resetView();
-                if (e.key === 'g') { 
-                    app.model.gravity.active = !app.model.gravity.active; 
-                    app.updateg(); 
+                if (e.key === 'g') {
+                    app.model.gravity.active = !app.model.gravity.active;
+                    app.updateg();
                 };
-                if (e.key === 'v') 
+                if (e.key === 'v')
                     app.initViewModal(); // open view modal
                 if (e.key === 'i') {
                     app.dragMove = !app.dragMove; // toggle drag-mode
                     if (!app.dragMove)
                         app.reset();
-                };    
+                };
                 if (e.key === 'p') {
                     app.build = { mode: 'purgeelement' };
                     app.instruct.innerHTML = 'Left-click on an element to delete it and all its dependants; [ESC] to cancel';
@@ -146,13 +146,13 @@ const events = {
         });
     },
     ctxmClick: (id) => {
-        /*********************************  contextmenu click handler  ****************************************/ 
+        /*********************************  contextmenu click handler  ****************************************/
         document.getElementById(id).addEventListener('click', (e) => {
-            console.log('ctxmClick fired');
+            // console.log('ctxmClick fired');
             let ctxmdirty = false;  // this flag is necessary even if every case in this listener flags true because this listener can fire in the wave of other events due to delegation
 
             if (e.target && e.target.id === 'node-trash') {
-                // app.tempElm.new = false; 
+                // app.tempElm.new = false;
                 if (app.model.removeNode(app.model.nodeById(app.tempElm.old.id))) {
                     app.updateg();
                     app.hideCtxm();
@@ -211,29 +211,29 @@ const events = {
         });
     },
     ctxmInput: (id) => {
-        /*********************************  contextmenu change handler  ****************************************/ 
+        /*********************************  contextmenu change handler  ****************************************/
         document.getElementById(id).addEventListener('input', (e) => {
-            console.log('ctxmInput fired');
+            // console.log('ctxmInput fired');
             // constraints
-            if (e.target && e.target.id === 'ori-drive-Dt') { 
+            if (e.target && e.target.id === 'ori-drive-Dt') {
                 app.tempElm.new.ori.Dt = e.target.valueAsNumber;
                 app.tempElm.replace = true;
             };
-            if (e.target && e.target.id === 'len-drive-Dt') { 
+            if (e.target && e.target.id === 'len-drive-Dt') {
                 app.tempElm.new.len.Dt = e.target.valueAsNumber;
                 app.tempElm.replace = true;
             };
-            if (e.target && e.target.id === 'ori-drive-Dw') { 
+            if (e.target && e.target.id === 'ori-drive-Dw') {
                 app.tempElm.new.ori.Dw = e.target.valueAsNumber;
                 app.tempElm.replace = true;
             };
-            if (e.target && e.target.id === 'len-drive-Dr') { 
+            if (e.target && e.target.id === 'len-drive-Dr') {
                 app.tempElm.new.len.Dr = e.target.valueAsNumber;
                 app.tempElm.replace = true;
             };
 
             // nodes
-            if (e.target && e.target.id === 'node-x') { 
+            if (e.target && e.target.id === 'node-x') {
                 let node = app.model.nodeById(app.tempElm.old.id);
                 node.x0 = node.x = e.target.valueAsNumber;
                 app.updDependants(node);
@@ -245,13 +245,13 @@ const events = {
                 app.updDependants(node);
                 app.notify('render');
             };
-            if (e.target && e.target.id === 'node-base') { 
+            if (e.target && e.target.id === 'node-base') {
                 app.model.nodeById(app.tempElm.old.id).base = e.target.checked ? true : false;
                 app.notify('render');
             };
 
             // forces
-            if (e.target && e.target.id === 'force-value') { 
+            if (e.target && e.target.id === 'force-value') {
                 app.model.loadById(app.tempElm.old.id).value = mec.from_N(e.target.valueAsNumber);
                 app.notify('render');
             };
@@ -264,55 +264,63 @@ const events = {
                 app.notify('render');
             };
 
-            if (e.target && e.target.id === 'spring-k') { 
+            if (e.target && e.target.id === 'spring-k') {
                 app.model.loadById(app.tempElm.old.id).k = mec.from_N_m(e.target.valueAsNumber);
                 app.notify('render');
             };
         });
     },
     ctxmChange: (id) => {
-        /*********************************  contextmenu change handler  ****************************************/ 
+        /*********************************  contextmenu change handler  ****************************************/
         document.getElementById(id).addEventListener('change', (e) => {
-            console.log('ctxmChange fired');
+            // console.log('ctxmChange fired');
             if(app.tempElm) {
                 let ctxmdirty = false; // this flag is necessary even if every case in this listener flags true because this listener can fire in the wave of other events due to delegation
                 let doftypechanged = false;
-                
+
                 // constraints
                 if (e.target && e.target.id === 'select-p1') { app.tempElm.new.p1 = e.target.value; ctxmdirty = true; app.tempElm.replace = true; }; // todo: prevent applying same p1 & p2 when updating model
                 if (e.target && e.target.id === 'select-p2') { app.tempElm.new.p2 = e.target.value; ctxmdirty = true; app.tempElm.replace = true; };
-                if (e.target && e.target.id === 'select-ori-type') { 
-                    app.tempElm.new.ori.type = e.target.value; 
+                if (e.target && e.target.id === 'select-ori-type') {
+                    app.tempElm.new.ori.type = e.target.value;
                     ctxmdirty = true;
                     app.tempElm.replace = true;
                     if (!doftypechanged)
                         doftypechanged = [];
                     doftypechanged.push('ori');
                 };
-                if (e.target && e.target.id === 'select-len-type') { 
-                    app.tempElm.new.len.type = e.target.value; 
+                if (e.target && e.target.id === 'select-len-type') {
+                    app.tempElm.new.len.type = e.target.value;
                     ctxmdirty = true;
                     app.tempElm.replace = true;
                     if (!doftypechanged)
                         doftypechanged = [];
-                    doftypechanged.push('len'); 
+                    doftypechanged.push('len');
                 };
-                if (e.target && e.target.id === 'select-ori-ref') { app.tempElm.new.ori.ref = e.target.value; ctxmdirty = true; app.tempElm.replace = true; };
+                if (e.target && e.target.id === 'select-ori-ref') {
+                    if (!!app.tempElm.new.ori.ref && e.target.value === '') {
+                        delete app.tempElm.new.ori.ref
+                    } else {
+                        app.tempElm.new.ori.ref = e.target.value;
+                    };
+                    ctxmdirty = true;
+                    app.tempElm.replace = true;
+                };
                 if (e.target && e.target.id === 'select-len-ref') { app.tempElm.new.len.ref = e.target.value; ctxmdirty = true; app.tempElm.replace = true; };
 
                 //forces
                 if (e.target && e.target.id === 'select-force-node') {
-                    console.log(e.target);
+                    // console.log(e.target);
                     app.model.loadById(app.tempElm.old.id).p = app.model.nodeById(e.target.value);
                     app.notify('render');
-                    ctxmdirty = true; 
+                    ctxmdirty = true;
                 };
                 if (e.target && e.target.id === 'select-force-mode') {
                     app.model.loadById(app.tempElm.old.id).mode = e.target.value;
                     app.notify('render');
-                    ctxmdirty = true; 
+                    ctxmdirty = true;
                 };
-                
+
                 if (ctxmdirty)
                     app.updateCtxm(app.tempElm.new, app.tempElm.type, doftypechanged);
             }
@@ -343,7 +351,7 @@ const events = {
         window.onresize = (e) => {
             let c = document.getElementById('canvas'),
                 main = document.getElementById('main');
-        
+
             c.width = main.clientWidth;
             c.height = main.clientHeight - 30;
 
@@ -352,12 +360,12 @@ const events = {
                 document.getElementById(app.model.inputs[drive]).slider.style.width = `${rangewidth}px`;
 
             };
-        
+
             app.notify('render');
         }
     },
     viewModalChange: (id) => {
-        /*********************************  viewmodal change handler  ****************************************/ 
+        /*********************************  viewmodal change handler  ****************************************/
         document.getElementById(id).addEventListener('change', (e) => {
             let skipUpdate = true;
 
@@ -385,7 +393,7 @@ const events = {
                 app.updateTempElmNew('fill',e.target.value);
             };
 
-            if (!skipUpdate) { 
+            if (!skipUpdate) {
                 app.viewModal.setContent(tmpl.viewModal());
                 if (!!document.getElementById('view-fill-color-btn'))
                     document.getElementById('view-fill-color-btn').style.backgroundColor = document.getElementById('view-fill-color').disabled ? 'transparent' : '#e9ecef';
@@ -394,7 +402,7 @@ const events = {
         });
     },
     viewModalClick: (id) => {
-        /*********************************  viewmodal click handler  ****************************************/ 
+        /*********************************  viewmodal click handler  ****************************************/
         document.getElementById(id).addEventListener('click', (e) => {
             if (e.target && e.target.id === 'view-accept')
                 app.addViewFromModal();

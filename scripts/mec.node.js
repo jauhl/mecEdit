@@ -29,11 +29,33 @@ mec.node = {
             this.dxt = this.dyt = 0;
             this.Qx = this.Qy = 0;     // sum of external loads ...
         },
-        init(model) {
+        /**
+         * Check node properties for validity.
+         * @method
+         * @param {number} idx - index in node array.
+         * @returns {boolean | object} false - if no error was detected, error object otherwise.
+         */
+        validate(idx) {
+            if (!this.id)
+                return { mid:'E_ELEM_ID_MISSING',elemtype:'node',idx };
+            if (this.model.elementById(this.id) !== this)
+                return { mid:'E_ELEM_ID_AMBIGIOUS', id:this.id };
+            if (typeof this.m === 'number' && mec.isEps(this.m) )
+                return { mid:'E_NODE_MASS_TOO_SMALL', id:this.id, m:this.m };
+            return false;
+        },
+        /**
+         * Initialize node. Multiple initialization allowed.
+         * @method
+         * @param {object} model - model parent.
+         * @param {number} idx - index in node array.
+         */
+        init(model, idx) {
             this.model = model;
-            // make inverse mass to first class citizen ... 
-            this.im = typeof this.m === 'number' ? 1/this.m 
-                    : this.m === 'infinite'      ? 0         // deprecated  !!
+            if (!this.model.notifyValid(this.validate(idx))) return;
+
+            // make inverse mass to first class citizen ...
+            this.im = typeof this.m === 'number' ? 1/this.m
                     : this.base === true         ? 0
                     : 1;
             // ... and mass / base to getter/setter
@@ -49,11 +71,10 @@ mec.node = {
         get xtcur() { return this.xt + this.dxt },
         get ytcur() { return this.yt + this.dyt },
         // inverse mass
-//        get im() { return 1/this.m },
-        get type() { return 'node' },
+        get type() { return 'node' }, // needed for ... what .. ?
         get dof() { return this.m === Number.POSITIVE_INFINITY ? 0 : 2 },
         /**
-         * Test, if node is significantly moving 
+         * Test, if node is significantly moving
          * @const
          * @type {boolean}
          */
@@ -68,7 +89,7 @@ mec.node = {
         get energy() {
             var e = 0;
             if (!this.base) {
-                if (this.model.hasGravity) 
+                if (this.model.hasGravity)
                     e += this.m*(-this.x*this.model.gravity.x - this.y*this.model.gravity.y);
                 e += 0.5*this.m*(this.xt**2 + this.yt**2);
             }
@@ -79,15 +100,18 @@ mec.node = {
                this.x = this.x0;
                this.y = this.y0;
            }
+            // resetting kinematic values ...
             this.xt = this.yt = 0;
             this.xtt = this.ytt = 0;
             this.dxt = this.dyt = 0;
         },
         pre(dt) {
             // symplectic euler ... partially
-            this.x += this.model.direc*this.xt*dt;
-            this.y += this.model.direc*this.yt*dt;
-            // position verlet  ... just for investigating in future  
+            this.x += (this.xt + 0.5*this.dxt)*dt;
+            this.y += (this.yt + 0.5*this.dyt)*dt;
+//            this.x += this.model.direc*(this.xt + 0.5*this.dxt)*dt;
+//            this.y += this.model.direc*(this.yt + 0.5*this.dyt)*dt;
+            // position verlet  ... just for investigating in future
 //            this.x += this.model.direc*(this.xt - 0.5*this.dxt)*dt;
 //            this.y += this.model.direc*(this.yt - 0.5*this.dyt)*dt;
 /*
@@ -139,7 +163,7 @@ mec.node = {
 
         // interaction
         get isSolid() { return true },
-        get sh() { return this.state & g2.OVER ? [0, 0, 10, mec.hoveredElmColor] : this.state & g2.EDIT ? [0, 0, 10, mec.selectedElmColor] : false; },
+        get sh() { return this.state & g2.OVER ? [0, 0, 10, this.model.env.show.hoveredElmColor] : this.state & g2.EDIT ? [0, 0, 10, this.model.env.show.selectedElmColor] : false; },
         _info() { return `x:${this.x}<br>y:${this.y}` },
         hitInner({x,y,eps}) {
             return g2.isPntInCir({x,y},this,eps);
@@ -157,18 +181,19 @@ mec.node = {
             }
         },
         drag({x,y}) {
+//console.log('pntr(%d,%d)',x,y)
             this.x = x; this.y = y;
         },
         // graphics ...
         get r() { return mec.node.radius; },
         g2() {
             let g = g2();
-            if (this.model.graphics.linkage.nodes) {
+            if (this.model.env.show.nodes) {
                 const loc = mec.node.locdir[this.idloc || 'n'],
-                      xid = this.x + 3*this.r*loc[0], 
+                      xid = this.x + 3*this.r*loc[0],
                       yid = this.y + 3*this.r*loc[1];
-                
-                      g = this.base 
+
+                      g = this.base
                         ? g2().beg({x:this.x,y:this.y,sh:this.sh})
                               .cir({x:0,y:0,r:5,ls:"@nodcolor",fs:"@nodfill"})
                               .p().m({x:0,y:5}).a({dw:Math.PI/2,x:-5,y:0}).l({x:5,y:0})
@@ -176,8 +201,8 @@ mec.node = {
                               .end()
                         : g2().cir({x:this.x,y:this.y,r:this.r,
                                     ls:'#333',fs:'#eee',sh:()=>this.sh});
-                if (this.model.graphics.labels.nodes)
-                    g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle',ls:mec.txtColor});
+                if (this.model.env.show.nodeLabels)
+                    g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle',ls:this.model.env.show.txtColor});
             };
             return g;
         }
