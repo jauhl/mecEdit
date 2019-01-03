@@ -74,7 +74,6 @@ startForward: function() {
     },
     fwdStep: function() {
         let delta = this.value + this.anistep < this.max ? this.anistep : Math.max(this.max - this.value,0);
-        console.log(delta);
         if (delta) {  // proceed ...
             this.value += delta;
             this.iCbk(this.value);     // move drive
