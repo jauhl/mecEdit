@@ -14,12 +14,12 @@ mec.drive = {
         const isin = (x,x1,x2) => x > x1 && x <= x2;
         let drv = func && func in mec.drive ? mec.drive[func] :  mec.drive.linear;
 
-        if (bounce) {
+        if (bounce  && func !== 'static') {
             drv = mec.drive.bounce(drv);
             Dt *= 2;  // preserve duration per repetition
         }
-        if (repeat) {
-            drv = mec.drive.bounce(drv,repeat);
+        if (repeat && func !== 'static') {
+            drv = mec.drive.repeat(drv,repeat);
             Dt *= repeat;  // preserve duration per repetition
         }
         return {

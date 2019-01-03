@@ -27,6 +27,13 @@ planar linkages.
 
 # Changelog
 
+## v0.6.6
+
+### general:
++ Fixed some bugs.
+
+---
+
 ## v0.6.5
 
 ### general:

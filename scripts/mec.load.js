@@ -60,7 +60,7 @@ mec.load.force = {
         else
             this.wref = this.model.constraintById(this.wref);
 
-        if (typeof this.value === number && mec.isEps(this.value))
+        if (typeof this.value === 'number' && mec.isEps(this.value)) 
             return { mid:'E_FORCE_VALUE_INVALID',val:this.value,id:this.id };
 
         return warn;
@@ -93,7 +93,7 @@ mec.load.force = {
                 + ((!!this.mode && (this.mode === 'push')) ? ',"mode":"push"' : '')
                 + ((this.w0 && this.w0 > 0.0001) ? ',"w0":'+this.w0 : '')
                 + (this.wref ? ',"wref":'+this.wref.id+'"' : '')
-                + (this.value ? ',"value":'+this.value : '')
+                + (this._value && Math.abs(this._value - mec.from_N(1)) > 0.01 ? ',"value":'+mec.to_N(this._value) : '')
                 + ' }';
     },
 
@@ -184,7 +184,7 @@ mec.load.spring = {
         else
             this.p2 = this.model.nodeById(this.p2);
 
-        if (typeof this.k === number && mec.isEps(this.k))
+        if (typeof this.k === 'number' && mec.isEps(this.k))
             return { mid:'E_SPRING_RATE_INVALID',id:this.id,val:this.k};
 
         return warn;
@@ -216,7 +216,7 @@ mec.load.spring = {
     },
     asJSON() {
         return '{ "type":"'+this.type+'","id":"'+this.id+'","p1":"'+this.p1.id+'","p2":"'+this.p2.id+'"'
-                + (this.k ? ',"k":'+this.k : '')
+                + (this._k && Math.abs(this._k - mec.from_N_m(0.01)) > 0.01 ? ',"k":'+mec.to_N_m(this._k) : '')
                 + ((this.len0 && Math.abs(this.len0 - Math.hypot(this.p2.x0-this.p1.x0,this.p2.y0-this.p1.y0)) > 0.0001) ? ',"len0":'+this.len0 : '')
                 + ' }';
     },

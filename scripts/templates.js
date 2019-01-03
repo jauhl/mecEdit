@@ -139,7 +139,7 @@ tmpl = {
     ,
     forceValue: (elm) => `<li class="input-group" style="padding:.1rem;">
                               <label class="ctxm-input-label">value [N]: </label>
-                              <input type="number" class="custom-number-input" id="force-value" step="1" value="${mec.to_N(app.model.loadById(`${elm.id}`).value)}">
+                              <input type="number" class="custom-number-input" id="force-value" step="1" value="${mec.to_N(app.model.loadById(`${elm.id}`)._value)}">
                           </li>`
     ,
     springNodes: (elm) => {
@@ -164,7 +164,7 @@ tmpl = {
     springK: (elm) => `<div class="section-divider"></div>
                        <li class="input-group" style="padding-top:.3rem;">
                            <label class="ctxm-input-label">k [N/m]: </label>
-                           <input type="number" class="custom-number-input" id="spring-k" step="any" value="${mec.to_N_m(app.model.loadById(`${elm.id}`).k)}" style="margin-left:.1rem!important;">
+                           <input type="number" class="custom-number-input" id="spring-k" step="any" value="${mec.to_N_m(app.model.loadById(`${elm.id}`)._k)}" style="margin-left:.1rem!important;">
                            <div id="spring-trash" class="ctxm-right" style="padding-top:.25rem!important;"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">                             <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"                             fill="currentColor"/>                         </svg></div>
                        </li>`
     ,
@@ -286,7 +286,7 @@ tmpl = {
                             <select class="custom-select" id="select-view-value">`; // add head
 
             //  add options
-            console.log(app.model.elementById(app.tempElm.new.elem).type);
+            // console.log(app.model.elementById(app.tempElm.new.elem).type);
             if (app.tempElm.new.type === 'info' && app.model.elementById(app.tempElm.new.elem).type === 'node') {
                 app.nodeInfoValues.forEach(value => {
                     app.tempElm.new.value = 'acc'; // force select first option

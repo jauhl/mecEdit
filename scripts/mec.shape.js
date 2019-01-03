@@ -27,12 +27,35 @@ mec.shape = {
 /**
  * @param {object} - fixed node shape.
  * @property {string} p - referenced node id for position.
- * @property {number} [w0] - initial angle.
+ * @property {number} [w0=0] - initial angle.
  */
 mec.shape.fix = {
-    init(model) {
-        if (typeof this.p === 'string')
-            this.p = model.nodeById(this.p);
+    /**
+     * Check fixed node properties for validity.
+     * @method
+     * @param {number} idx - index in shape array.
+     * @returns {boolean} false - if no error / warning was detected. 
+     */
+    validate(idx) {
+        if (this.p === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'shape',id:this.id,idx,reftype:'node',name:'p'};
+        if (!this.model.nodeById(this.p)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'shape',id:this.id,idx,reftype:'node',name:this.p};
+        else
+            this.p = this.model.nodeById(this.p);
+        return false;
+    },
+    /**
+     * Initialize shape. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in shapes array.
+     */
+    init(model,idx) {
+        this.model = model;
+        if (!this.model.notifyValid(this.validate(idx))) return;
+
+        this.w0 = this.w0 || 0;
     },
     dependsOn(elem) {
         return this.p === elem;
@@ -52,9 +75,32 @@ mec.shape.fix = {
  * @property {number} [w0] - initial angle.
  */
 mec.shape.flt = {
-    init(model) {
-        if (typeof this.p === 'string')
-            this.p = model.nodeById(this.p);
+    /**
+     * Check floating node properties for validity.
+     * @method
+     * @param {number} idx - index in shape array.
+     * @returns {boolean} false - if no error / warning was detected. 
+     */
+    validate(idx) {
+        if (this.p === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'shape',id:this.id,idx,reftype:'node',name:'p'};
+        if (!this.model.nodeById(this.p)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'shape',id:this.id,idx,reftype:'node',name:this.p};
+        else
+            this.p = this.model.nodeById(this.p);
+        return false;
+    },
+    /**
+     * Initialize shape. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in shapes array.
+     */
+    init(model,idx) {
+        this.model = model;
+        if (!this.model.notifyValid(this.validate(idx))) return;
+
+        this.w0 = this.w0 || 0;
     },
     dependsOn(elem) {
         return this.p === elem;
@@ -76,11 +122,38 @@ mec.shape.flt = {
  * @property {number} [w0] - initial angle / -difference.
  */
 mec.shape.slider = {
-    init(model) {
-        if (typeof this.p === 'string')
-            this.p = model.nodeById(this.p);
-        if (typeof this.wref === 'string')
-            this.wref = model.constraintById(this.wref);
+    /**
+     * Check slider shape properties for validity.
+     * @method
+     * @param {number} idx - index in shape array.
+     * @returns {boolean} false - if no error / warning was detected. 
+     */
+    validate(idx) {
+        if (this.p === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'slider',id:this.id,idx,reftype:'node',name:'p'};
+        if (!this.model.nodeById(this.p)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'slider',id:this.id,idx,reftype:'node',name:this.p};
+        else
+            this.p = this.model.nodeById(this.p);
+
+        if (this.wref && !this.model.constraintById(this.wref)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'slider',id:this.id,idx,reftype:'constraint',name:this.wref};
+        else
+            this.wref = this.model.constraintById(this.wref);
+
+        return false;
+    },
+    /**
+     * Initialize slider shape. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in shapes array.
+     */
+    init(model,idx) {
+        this.model = model;
+        if (!this.model.notifyValid(this.validate(idx))) return;
+
+        this.w0 = this.w0 || 0;
     },
     /**
      * Check shape for dependencies on another element.
@@ -111,11 +184,38 @@ mec.shape.slider = {
  * @property {string} p2 - referenced node id for end point position.
  */
 mec.shape.bar = {
-    init(model) {
-        if (typeof this.p1 === 'string' && typeof this.p2 === 'string') {
-            this.p1 = model.nodeById(this.p1);
-            this.p2 = model.nodeById(this.p2);
-        }
+    /**
+     * Check bar shape properties for validity.
+     * @method
+     * @param {number} idx - index in shape array.
+     * @returns {boolean} false - if no error / warning was detected. 
+     */
+    validate(idx) {
+        if (this.p1 === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'bar',id:this.id,idx,reftype:'node',name:'p1'};
+        if (!this.model.nodeById(this.p1)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'bar',id:this.id,idx,reftype:'node',name:this.p1};
+        else
+            this.p1 = this.model.nodeById(this.p1);
+
+        if (this.p2 === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'bar',id:this.id,idx,reftype:'node',name:'p2'};
+        if (!this.model.nodeById(this.p2)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'bar',id:this.id,idx,reftype:'node',name:this.p2};
+        else
+            this.p2 = this.model.nodeById(this.p2);
+
+        return false;
+    },
+    /**
+     * Initialize bar shape. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in shapes array.
+     */
+    init(model,idx) {
+        this.model = model;
+        this.model.notifyValid(this.validate(idx));
     },
     dependsOn(elem) {
         return this.p1 === elem || this.p2 === elem;
@@ -138,16 +238,43 @@ mec.shape.bar = {
  * @param {object} - beam shape.
  * @property {string} p - referenced node id for start point position.
  * @property {string} wref - referenced constraint id for orientation.
- * @property {number} len - beam length
+ * @property {number} [len=100] - beam length
  */
 mec.shape.beam = {
-    init(model) {
-        if (typeof this.wref === 'string' && this.len > 0) {
-            this.p = model.nodeById(this.p);
-            this.wref = model.constraintById(this.wref);
-        } else {
-            console.log('invalid definition of beam shape in model');
-        }
+    /**
+     * Check beam shape properties for validity.
+     * @method
+     * @param {number} idx - index in shape array.
+     * @returns {boolean} false - if no error / warning was detected. 
+     */
+    validate(idx) {
+        if (this.p === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'beam',id:this.id,idx,reftype:'node',name:'p'};
+        if (!this.model.nodeById(this.p)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'beam',id:this.id,idx,reftype:'node',name:this.p};
+        else
+            this.p = this.model.nodeById(this.p);
+
+        if (this.wref === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'beam',id:this.id,idx,reftype:'constraint',name:'wref'};
+        if (!this.model.constraintById(this.wref)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'beam',id:this.id,idx,reftype:'constraint',name:this.wref};
+        else
+            this.wref = this.model.constraintById(this.wref);
+
+        return false;
+    },
+    /**
+     * Initialize beam shape. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in shapes array.
+     */
+    init(model,idx) {
+        this.model = model;
+        if (!this.model.notifyValid(this.validate(idx))) return;
+
+        this.len = this.len || 100;
     },
     dependsOn(elem) {
         return this.p === elem || this.wref === elem;
@@ -170,15 +297,45 @@ mec.shape.beam = {
  * @param {object} - wheel shape.
  * @property {string} p - referenced node id for center point position, and ...
  * @property {string} [wref] - referenced constraint id for orientation and ...
- * @property {number} w0 - start / offset angle [rad].
- * @property {number} r - radius
+ * @property {number} [w0=0] - start / offset angle [rad].
+ * @property {number} [r=20] - radius
  */
 mec.shape.wheel = {
-    init(model) {
-        if (typeof this.p === 'string')
-            this.p = model.nodeById(this.p);
-        if (typeof this.wref === 'string')
-            this.wref = model.constraintById(this.wref);
+    /**
+     * Check wheel shape properties for validity.
+     * @method
+     * @param {number} idx - index in shape array.
+     * @returns {boolean} false - if no error / warning was detected. 
+     */
+    validate(idx) {
+        if (this.p === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'wheel',id:this.id,idx,reftype:'node',name:'p'};
+        if (!this.model.nodeById(this.p)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'wheel',id:this.id,idx,reftype:'node',name:this.p};
+        else
+            this.p = this.model.nodeById(this.p);
+
+        if (this.wref === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'wheel',id:this.id,idx,reftype:'constraint',name:'wref'};
+        if (!this.model.constraintById(this.wref)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'wheel',id:this.id,idx,reftype:'constraint',name:this.wref};
+        else
+            this.wref = this.model.constraintById(this.wref);
+
+        return false;
+    },
+    /**
+     * Initialize wheel shape. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in shapes array.
+     */
+    init(model,idx) {
+        this.model = model;
+        if (!this.model.notifyValid(this.validate(idx))) return;
+
+        this.w0 = this.w0 || 0;
+        this.r = this.r || 20;
     },
     dependsOn(elem) {
         return this.p === elem || this.wref === elem;
@@ -212,21 +369,53 @@ mec.shape.wheel = {
     }
 }
 
-
 /**
  * @param {object} - filled polygon shape.
  * @property {array} pts - array of points.
- * @property {string} p - referenced node id for center point position.
+ * @property {string} p - referenced node id for reference point position.
  * @property {string} wref - referenced constraint id for orientation.
  * @property {string} [fill='#aaaaaa88'] - fill color.
  * @property {string} [stroke='transparent'] - stroke color.
  */
 mec.shape.poly = {
-    init(model) {
-        if (typeof this.p === 'string')
-            this.p = model.nodeById(this.p);
-        if (typeof this.wref === 'string')
-            this.wref = model.constraintById(this.wref);
+    /**
+     * Check polygon shape properties for validity.
+     * @method
+     * @param {number} idx - index in shape array.
+     * @returns {boolean} false - if no error / warning was detected. 
+     */
+    validate(idx) {
+        if (this.pts === undefined) 
+            return { mid:'E_POLY_PTS_MISSING',id:this.id,idx};
+        if (this.pts.length < 2) 
+            return { mid:'E_POLY_PTS_INVALID',id:this.id,idx};
+
+        if (this.p === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'polygon',id:this.id,idx,reftype:'node',name:'p'};
+        if (!this.model.nodeById(this.p)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'polygon',id:this.id,idx,reftype:'node',name:this.p};
+        else
+            this.p = this.model.nodeById(this.p);
+
+        if (this.wref === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'polygon',id:this.id,idx,reftype:'constraint',name:'wref'};
+        if (!this.model.constraintById(this.wref)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'polygon',id:this.id,idx,reftype:'constraint',name:this.wref};
+        else
+            this.wref = this.model.constraintById(this.wref);
+
+        return false;
+    },
+    /**
+     * Initialize polygon shape. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in shapes array.
+     */
+    init(model,idx) {
+        this.model = model;
+        if (!this.model.notifyValid(this.validate(idx))) return;
+
         this.fill = this.fill || '#aaaaaa88';
         this.stroke = this.stroke || 'transparent';
     },
@@ -263,17 +452,50 @@ mec.shape.poly = {
  * @property {string} uri - image uri
  * @property {string} p - referenced node id for center point position.
  * @property {string} [wref] - referenced constraint id for orientation.
- * @property {number} [w0] - start / offset angle [rad].
- * @property {number} [xoff] - x offset value.
- * @property {number} [yoff] - y offset value.
- * @property {number} [scl] - scaling factor.
+ * @property {number} [w0=0] - start / offset angle [rad].
+ * @property {number} [xoff=0] - x offset value.
+ * @property {number} [yoff=0] - y offset value.
+ * @property {number} [scl=1] - scaling factor.
  */
 mec.shape.img = {
-    init(model) {
-        if (typeof this.p === 'string')
-            this.p = model.nodeById(this.p);
-        if (typeof this.wref === 'string')
-            this.wref = model.constraintById(this.wref);
+    /**
+     * Check image shape properties for validity.
+     * @method
+     * @param {number} idx - index in shape array.
+     * @returns {boolean} false - if no error / warning was detected. 
+     */
+    validate(idx) {
+        if (this.uri === undefined) 
+            return { mid:'E_IMG_URI_MISSING',id:this.id,idx};
+
+        if (this.p === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'image',id:this.id,idx,reftype:'node',name:'p'};
+        if (!this.model.nodeById(this.p)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'image',id:this.id,idx,reftype:'node',name:this.p};
+        else
+            this.p = this.model.nodeById(this.p);
+
+        if (this.wref && !this.model.constraintById(this.wref)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'image',id:this.id,idx,reftype:'constraint',name:this.wref};
+        else
+            this.wref = this.model.constraintById(this.wref);
+
+        return false;
+    },
+    /**
+     * Initialize polygon shape. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in shapes array.
+     */
+    init(model,idx) {
+        this.model = model;
+        if (!this.model.notifyValid(this.validate(idx))) return;
+
+        this.w0 = this.w0 || 0;
+        this.xoff = this.xoff || 0;
+        this.yoff = this.yoff || 0;
+        this.scl = this.scl || 1;
     },
     dependsOn(elem) {
         return this.p === elem || this.wref === elem;

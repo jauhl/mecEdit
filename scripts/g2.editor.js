@@ -71,12 +71,12 @@ g2.editor.prototype = {
             else if (type === 'click' && !app.build) {                  // enter EDIT mode .. // dont set EDIT when building mechanism
                 if(elm.state === 3) elm.state = elm.state ^ g2.DRAG;    // remove DRAG state
                 elm.state = elm.state ^ g2.OVER | g2.EDIT;
-                app.initCtxm(elm); 
+                app.initCtxm(elm);
             }
         }
         else if (elm.state & g2.OVER) {                                 // in OVER mode
             if (type === 'pointer' && !this.elementHit(elm,this.evt))   // leave OVER mode ..
-                elm.state ^= g2.OVER;   
+                elm.state ^= g2.OVER;
             else if (type === 'buttondown' && !app.build) {             // enter DRAG mode ..
                 elm.state |= g2.DRAG;
                 this.draggable = elm;
@@ -101,7 +101,7 @@ g2.editor.prototype = {
 
         return elm.state && elm;
     },
-    elementHit(elm,{x,y,eps}) { 
+    elementHit(elm,{x,y,eps}) {
         return elm.isSolid ? elm.hitInner   && elm.hitInner({x,y,eps})
                            : elm.hitContour && elm.hitContour({x,y,eps});
     },

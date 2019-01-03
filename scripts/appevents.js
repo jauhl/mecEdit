@@ -252,7 +252,7 @@ const events = {
 
             // forces
             if (e.target && e.target.id === 'force-value') {
-                app.model.loadById(app.tempElm.old.id).value = mec.from_N(e.target.valueAsNumber);
+                app.model.loadById(app.tempElm.old.id)._value = mec.from_N(e.target.valueAsNumber);
                 app.notify('render');
             };
 
@@ -265,7 +265,7 @@ const events = {
             };
 
             if (e.target && e.target.id === 'spring-k') {
-                app.model.loadById(app.tempElm.old.id).k = mec.from_N_m(e.target.valueAsNumber);
+                app.model.loadById(app.tempElm.old.id)._k = mec.from_N_m(e.target.valueAsNumber);
                 app.notify('render');
             };
         });

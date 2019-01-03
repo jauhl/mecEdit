@@ -32,11 +32,35 @@ mec.view = {
  */
 mec.view.vector = {
     constructor() {}, // always parameterless .. !
-    init(model) {
-        if (typeof this.p === 'string')
-            this.p = model.nodeById(this.p);
-        this.model = model; // needed for colors
-//        if (this.value && this.p[this.value]) ; // node analysis value exists ? error handling required .. !
+    /**
+     * Check vector view properties for validity.
+     * @method
+     * @param {number} idx - index in views array.
+     * @returns {boolean} false - if no error / warning was detected. 
+     */
+    validate(idx) {
+        const keys = ['vel','acc','force'];
+        if (this.p === undefined) 
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'vector',id:this.id,idx,reftype:'node',name:'p'};
+        if (!this.model.nodeById(this.p)) 
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'vector',id:this.id,idx,reftype:'node',name:this.p};
+        else
+            this.p = this.model.nodeById(this.p);
+
+        if (this.value === undefined) 
+            return { mid:'E_ALY_REF_MISSING',elemtype:'vector',id:this.id,idx,reftype:'node',name:'value',keys:'['+keys.join(',')+']'};
+        
+        return false;
+    },
+    /**
+     * Initialize view. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in views array.
+     */
+    init(model,idx) {
+        this.model = model;
+        this.model.notifyValid(this.validate(idx));
     },
     dependsOn(elem) {
         return this.p === elem;

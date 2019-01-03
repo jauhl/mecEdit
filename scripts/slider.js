@@ -18,8 +18,8 @@ mecESlider.prototype = {
         this.forward = this.querySelector('.forward')
         this.reverse = this.querySelector('.reverse')
     },
-    fwdsym: '&#11208;', // ⯈
-    revsym: '&#11207;', // ⯇
+    fwdsym: '&#9655;', // ▷⯈ '&#11208; filled triangles look different/weird on android
+    revsym: '&#9665;', // ◁⯇ &#11207;
     stopsym: '&#9632;', // ■
     get html() { return `<div id="${this.id+'_rev'}" class="reverse badge badge-primary" style="cursor:pointer;  width:20.8px">${this.revsym}</div>
 <input type="range" class="custom-range" style="width:${this.width}px;" min="${this.min}" max="${this.max}" value="${this.value}" step="${this.step}" />
@@ -46,7 +46,7 @@ mecESlider.prototype = {
         this.revStepPtr = this.revStep.bind(this);
         this.setSliderPtr = this.setSlider.bind(this);
 
-        this.slider.addEventListener('input', (e) => {this.iCbk((this.value = +e.target.value)); this.observer.notify(this.id,+e.target.value) }, false);
+        this.slider.addEventListener('input', (e) => {this.iCbk(this.value = +e.target.value); this.observer.notify(this.id,+e.target.value) }, false);
         this.forward.addEventListener('click', this.startForwardPtr, false);
         this.reverse.addEventListener('click', this.startReversePtr, false);
         this.observer.on(key,this.setSliderPtr);
@@ -74,6 +74,7 @@ startForward: function() {
     },
     fwdStep: function() {
         let delta = this.value + this.anistep < this.max ? this.anistep : Math.max(this.max - this.value,0);
+        console.log(delta);
         if (delta) {  // proceed ...
             this.value += delta;
             this.iCbk(this.value);     // move drive

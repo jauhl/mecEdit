@@ -165,7 +165,7 @@ const origin = g2().beg({ lc: 'round', lj: 'round', ls:()=>app.show.darkmode?'si
 * @returns {object}
 */
 const gravvec = (cartesian = true) => {
-    const ytxt = cartesian ? - 20 : -15;
+    const ytxt = cartesian ? -20 : -15;
     return g2().beg({ w: -pi/2, lw: 2, ls:()=>app.show.darkmode?'silver':'slategray', fs: 'darkgray'})
                .p()
                    .m({ x: 0, y: 0 })
@@ -216,14 +216,14 @@ const App = {
             */
             this.model = {
                 "id":"linkage"
-            };
+              };
 
             /**
             * mecEdit version.
             * @const
             * @type {string}
             */
-            this.VERSION = '0.6.5';
+            this.VERSION = '0.6.6';
 
             /**
             * mixin requirement.
@@ -394,10 +394,8 @@ const App = {
             mec.model.extend(this.model,this);
             this.model.init();
             this.model.asmPos();
-            // this.model.draw(this.g); // in this.updateg();
             this.updateg();
 
-            // this.model.drivecount = 0;  // add drive counter to model
             this.model.inputs = [];     // track drives by id and dof for responsive range-input sizing
 
             while (actcontainer.lastChild) {  // empty actcontainer if not empty already
@@ -412,19 +410,13 @@ const App = {
 
                 let elm = document.getElementById(id);
                 mecESlider.RegisterElm(elm);
-                // console.log(prv);
                 elm.initEventHandling(this, id, this.model.constraintById(drv.constraint.id)[drv.value].inputCallbk);
-                // this.model.drivecount++;
                 this.model.inputs.push(id);
                 prv = drv;
             };
 
-            if (typeof t === 'undefined' || t === null) {   // dont start second timer if init() is called again
-                this.startTimer()                           // start synchronized ticks
-                    // .notify('render');                      // send 'render' event
-            };
-
-            this.show.nodeLabels = false;
+            if (typeof t === 'undefined' || t === null)    // dont start second timer if init() is called again
+                this.startTimer();                           // start synchronized ticks
 
             // this.state = (this.model.inputs.length > 0) ? 'input' : 'initialized';
             this.state = 'initialized';
@@ -488,15 +480,7 @@ const App = {
                 if (constraint.dependsOn(elm))
                     dependants.push(constraint);
             };
-            dependants.forEach(el => {
-                el.init(this.model);
-                if (el.type === 'ctrl' && ( el.ori.type === 'drive' || el.len.type === 'drive' )) { // each init of constraint-drives multiplies 'Dt' with 'repeat', so this value either has to be saved and restored or simply canceled out by dividing ...
-                    if (!!el.ori.repeat)
-                        el.ori.Dt /= el.ori.repeat;
-                    if (!!el.len.repeat)
-                        el.len.Dt /= el.len.repeat;
-                };
-            });
+            dependants.forEach(el =>  el.init(this.model));
         },
 
         /**
@@ -805,7 +789,7 @@ const App = {
                         case 'tran': tmpori = { type: 'const' }; break;
                         case 'rot': tmplen = { type: 'const' }; break;
                         // case 'drive': tmpori = {type:'drive'}; tmplen = {type:'drive'}; break; // todo: somehow flag for forced editing or make add drive function to add drives to constraints
-                        default: console.log('something went wrong while adding constraint...'); break;
+                        default: console.error('something went wrong while adding constraint...'); break;
                     }
 
                     let constraint = {
@@ -1014,7 +998,6 @@ const App = {
         * @method
         */
         initCtxm(elm) {
-            // console.log(elm.type)
             this.tempElm = {};  // save elm for eventlistener & state-check
             this.tempElm.replace = false; // nothing has changed yet, so no need for replacing
             this.tempElm.type = ['free', 'rot', 'tran', 'ctrl'].includes(elm.type) ? 'constraint' : elm.type; // check elm type
@@ -1080,9 +1063,6 @@ const App = {
         * @method
         */
         updateCtxm(elm, type, doftypechanged = false) {
-            // console.log(elm);
-            // console.log(`doftypechanged: ${doftypechanged}`);
-
             // clean elm up from unnessesary properties / rudiments if type of len/ori has changed
             if (doftypechanged) {
                 for (let dof of doftypechanged) {
@@ -1098,7 +1078,7 @@ const App = {
                         if (elm[dof].type === 'const') elm[dof] = {type: 'const'};
                         if (elm[dof].type === 'drive') {
                             // see if elm has ref-only props
-                            for (let prop of ['ref','refval']) {
+                            for (let prop of ['ref','reftype']) {
                                 if (elm[dof].hasOwnProperty(prop)) delete elm[dof][prop];
                             };
                         };
@@ -1185,7 +1165,6 @@ const App = {
 
             fr.onload = (() => { // async
                 return (e) => {
-                    console.log(e.target);
                     model = JSON.parse(e.target.result);
                     this.newModel(model);
                     this.importConfirmed = false; // reset
@@ -1226,12 +1205,7 @@ const App = {
 
             delete this.model;  // not necessary but better safe than sorry
             this.model = model;
-
             this.init();
-
-            // show object was overwritten
-            this.show.darkmode = true;
-            this.show.nodeLabels = false;
         },
 
         /**
@@ -1340,8 +1314,9 @@ window.onload = () => {
     events.viewModalClick('viewModal');
     events.viewModalHide('viewModal');
 
-    // protect users retina
+    // set some visuals
     app.toggleDarkmode();
+    app.show.nodeLabels = false;
 
     // dispatch 'resize' event to fit app to viewport
     window.dispatchEvent(new Event('resize'));
