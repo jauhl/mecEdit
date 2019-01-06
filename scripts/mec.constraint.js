@@ -157,6 +157,7 @@ mec.constraint = {
          * Reset constraint
          */
         reset() {
+//        console.log('reset')
             this.r0 = this.len.hasOwnProperty('r0') ? this.len.r0 : Math.hypot(this.ay,this.ax);
             this.w0 = this.ori.hasOwnProperty('w0') ? this.angle(this.ori.w0) : this.angle(Math.atan2(this.ay,this.ax));
             this._angle = this.w0;
@@ -183,9 +184,9 @@ mec.constraint = {
          */
         get forceAbs() { return -this.lambda_r; },
         /**
-         * Moment value in [Nm]
+         * Moment value in [N*u]
          */
-        get moment() { return -this.lambda_w/this.r; },
+        get moment() { return -this.lambda_w*this.r; },
 
         /**
          * Check constraint for unfinished drives.
@@ -212,6 +213,22 @@ mec.constraint = {
                 || this.ori && this.ori.ref === elem
                 || this.len && this.len.ref === elem;
         },
+        /**
+         * Check constraint for deep (indirect) dependency on another element.
+         * @method
+         * @param {object} elem - element to test deep dependency for.
+         * @returns {boolean} dependency exists.
+         */
+        /*
+        deepDependsOn(target) {
+            return this === target
+                || this.dependsOn(target) 
+                || this.model.deepDependsOn(this.p1,target)
+                || this.model.deepDependsOn(this.p2,target)
+                || this.ori && this.model.deepDependsOn(this.ori.ref,target)
+                || this.len && this.model.deepDependsOn(this.len.ref,target);
+        },
+        */
         // privates
         get ax() { return this.p2.x - this.p1.x },
         get ay() { return this.p2.y - this.p1.y },
@@ -243,9 +260,9 @@ mec.constraint = {
             // perfect location to update trig. cache
             this.cw = Math.cos(w);
             this.sw = Math.sin(w);
-            // apply angular impulse
+            // apply angular impulse (warmstarting)
             this.ori_impulse_vel(this.lambda_w * dt);
-            // apply axial impulse
+            // apply axial impulse (warmstarting)
             this.len_impulse_vel(this.lambda_r * dt);
 
             this.dlambda_r = this.dlambda_w = 0; // important !!
@@ -310,6 +327,7 @@ mec.constraint = {
 
             this.ori_impulse_vel(impulse);
             this.dlambda_w += impulse/dt;
+//            console.log(this.id+'; dlambda_w='+this.dlambda_w)
             if (this.ori.ref) {
                 const ref = this.ori.ref,
                       ratio = this.ori.ratio || 1;
@@ -323,6 +341,7 @@ mec.constraint = {
                 }
             }
 
+//            return Math.abs(impulse/dt) < mec.forceTol;  // orientation constraint satisfied .. !
             return mec.isEps(Ct*dt, mec.lenTol);  // orientation constraint satisfied .. !
         },
         /**
@@ -462,7 +481,7 @@ mec.constraint = {
                         w:  () => this.w0 + ratio*(ref.w - ref.w0),
                         wt: () => ratio*ref.wt,
                         wtt:() => ratio*ref.wtt,
-                        ori_C:  () => this.r*(this.angle(Math.atan2(this.ay,this.ax)) - this.w0) - ratio*this.r*(ref.angle(Math.atan2(ref.ay,ref.ax)) - ref.w0),
+                        ori_C:  () => this.r*(this.angle(Math.atan2(this.ay,this.ax)) - this.w0) - ratio*this.r*(ref.w - ref.w0),
                         ori_Ct: () => this.ayt*this.cw - this.axt*this.sw - ratio*this.r/ref.r*(ref.ayt*ref.cw - ref.axt*ref.sw),
                         ori_mc: () => {
                             let imc = mec.toZero(this.p1.im + this.p2.im) + ratio**2*this.r**2/ref.r**2*mec.toZero(ref.p1.im + ref.p2.im);
@@ -505,7 +524,7 @@ mec.constraint = {
             if (ori.input) {
                 // maintain a local input controlled time 'local_t'.
                 ori.local_t = 0;
-                ori.t = () => ori.local_t;
+                ori.t = () => !this.model.state.preview ? ori.local_t : this.model.timer.t;
                 ori.inputCallbk = (w) => { ori.local_t = w*Math.PI/180*ori.Dt/ori.Dw; };
             }
             else
@@ -534,7 +553,7 @@ mec.constraint = {
                         wt: () => ref.wt + ori.drive.ft(),
                         wtt:() => ref.wtt + ori.drive.ftt(),
                         ori_C:  () => this.r*(this.angle(Math.atan2(this.ay,this.ax)) - this.w0) -this.r*(ref.angle(Math.atan2(ref.ay,ref.ax)) - ref.w0) - this.r*ori.drive.f(),
-                        ori_Ct: () => this.ayt*this.cw - this.axt*this.sw - this.r/ref.r*(ref.ayt*ref.cw - ref.axt*ref.sw) - this.r*ori.drive.ft(),
+                        ori_Ct: () => {console.log('ft='+ori.drive.ft()); return this.ayt*this.cw - this.axt*this.sw - this.r/ref.r*(ref.ayt*ref.cw - ref.axt*ref.sw) - this.r*ori.drive.ft()},
                         ori_mc: () => {
                             let imc = mec.toZero(this.p1.im + this.p2.im) + this.r**2/ref.r**2*mec.toZero(ref.p1.im + ref.p2.im);
                             return imc ? 1/imc : 0;
@@ -735,13 +754,12 @@ mec.constraint = {
         // drawing
         get color() { return this.model.valid
                            ? this.model.env.show.validConstraintColor
-                           : this.model.env.show.colors.invalidConstraintColor;
+                           : this.model.env.show.colors.invalidConstraintColor;  // due to 'this.model.env.show.invalidConstraintColor' undefined
         },
         g2() {
             let g = g2();
             if (this.model.env.show.constraints) {
                 const {p1,p2,w,r,type,ls,ls2,lw,id,idloc} = this;
-
                 g.beg({x:p1.x,y:p1.y,w,scl:1,lw:2,
                         ls:this.model.env.show.constraintVectorColor,fs:'@ls',lc:'round',sh:()=>this.sh})
                     .stroke({d:`M50,0 ${r},0`,ls:()=>this.color,

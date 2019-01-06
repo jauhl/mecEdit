@@ -769,9 +769,9 @@ mec.constraint = {
          */
         get forceAbs() { return -this.lambda_r; },
         /**
-         * Moment value in [Nm]
+         * Moment value in [N*u]
          */
-        get moment() { return -this.lambda_w/this.r; },
+        get moment() { return -this.lambda_w*this.r; },
 
         /**
          * Check constraint for unfinished drives.
@@ -1581,7 +1581,7 @@ mec.load.force = {
         else
             this.wref = this.model.constraintById(this.wref);
 
-        if (typeof this.value === 'number' && mec.isEps(this.value)) 
+        if (typeof this.value === 'number' && mec.isEps(this.value))
             return { mid:'E_FORCE_VALUE_INVALID',val:this.value,id:this.id };
 
         return warn;
