@@ -1,6 +1,6 @@
 {
     "name": "mecedit",
-    "version": "0.6.6",
+    "version": "0.6.7",
     "description": "A lightweight editor for modeling and simulation of planar linkages.",
     "keywords": [
       "vector",

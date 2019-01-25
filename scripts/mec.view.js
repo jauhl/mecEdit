@@ -187,7 +187,7 @@ mec.view.info = {
             const usrval = q => (q*aly.scl).toPrecision(3);
 
             return (this.name||aly.name||this.value) + ': '
-                 + (type === 'vec' ? '{x:' + usrval(val.x)+',y:' + usrval(val.x)+'}'
+                 + (type === 'vec' ? '{x:' + usrval(val.x)+',y:' + usrval(val.y)+'}'
                                    : usrval(val))
                  + ' ' + aly.unit;
         }

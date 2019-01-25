@@ -223,7 +223,7 @@ const App = {
             * @const
             * @type {string}
             */
-            this.VERSION = '0.6.6';
+            this.VERSION = '0.6.7';
 
             /**
             * mixin requirement.
