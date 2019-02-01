@@ -419,6 +419,7 @@ const App = {
                 this.startTimer();                           // start synchronized ticks
 
             // this.state = (this.model.inputs.length > 0) ? 'input' : 'initialized';
+            runSymbol.setAttribute('d',svgplay); // for reinits
             this.state = 'initialized';
         },
 
@@ -1192,7 +1193,7 @@ const App = {
         * @param {object} [model = {}] - Passed model or empty model.
         * @method
         */
-        newModel(model = {}) {
+        newModel(model = {"id":"linkage"}) {
             if (typeof this.model === 'object' && !this.importConfirmed) {
                 if (!confirm('All unsaved changes will be lost! Continue?'))
                     return;
