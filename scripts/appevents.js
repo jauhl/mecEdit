@@ -73,7 +73,7 @@ const events = {
                 app.notify('render');
             };
             if (e.target && e.target.id === 'toggleConstraints') {
-                app.show.constraints = !app.show.linkage.constraints;
+                app.show.constraints = !app.show.constraints;
                 app.notify('render');
             };
             if (e.target && e.target.id === 'toggleNodeLabels') {
