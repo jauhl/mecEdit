@@ -106,39 +106,40 @@ const examples = {
         ]
     },
     'truss': {
-        "id":"truss",
-        "gravity":true,
+        "id":"GrossHauger-TM1-9.Aufl.-S.154",
         "nodes": [
-          { "id":"A","x":100,"y":100,"base":true },
-          { "id":"B","x":200,"y":100 },
-          { "id":"C","x":300,"y":100 },
-          { "id":"D","x":400,"y":100 },
-          { "id":"E","x":500,"y":100,"base":true },
-          { "id":"G","x":150,"y":200 },
-          { "id":"H","x":250,"y":200 },
-          { "id":"I","x":350,"y":200 },
-          { "id":"J","x":450,"y":200 }
+          { "id":"A","x":0,"y":0 },
+          { "id":"B","x":500,"y":0 },
+          { "id":"C","x":1000,"y":0 },
+          { "id":"D","x":1500,"y":0 },
+          { "id":"E","x":0,"y":250 },
+          { "id":"F","x":500,"y":250 },
+          { "id":"G","x":1000,"y":250 },
+          { "id":"H","x":1500,"y":250 },
+          { "id":"I","x":1600,"y":0,"base":true },
+          { "id":"J","x":-100,"y":0,"base":true },
+          { "id":"K","x":1500,"y":-100,"base":true }
         ],
         "constraints": [
           { "id":"a","p1":"A","p2":"B","len":{ "type":"const" } },
           { "id":"b","p1":"B","p2":"C","len":{ "type":"const" } },
           { "id":"c","p1":"C","p2":"D","len":{ "type":"const" } },
-          { "id":"d","p1":"D","p2":"E","len":{ "type":"const" } },
-          { "id":"e","p1":"A","p2":"G","len":{ "type":"const" } },
-          { "id":"f","p1":"G","p2":"B","len":{ "type":"const" } },
-          { "id":"g","p1":"B","p2":"H","len":{ "type":"const" } },
-          { "id":"h","p1":"H","p2":"C","len":{ "type":"const" } },
-          { "id":"i","p1":"C","p2":"I","len":{ "type":"const" } },
-          { "id":"j","p1":"I","p2":"D","len":{ "type":"const" } },
-          { "id":"k","p1":"D","p2":"J","len":{ "type":"const" } },
-          { "id":"l","p1":"J","p2":"E","len":{ "type":"const" } },
-          { "id":"m","p1":"G","p2":"H","len":{ "type":"const" } },
-          { "id":"n","p1":"H","p2":"I","len":{ "type":"const" } },
-          { "id":"o","p1":"I","p2":"J","len":{ "type":"const" } }
+          { "id":"d","p1":"A","p2":"E","len":{ "type":"const" } },
+          { "id":"e","p1":"E","p2":"F","len":{ "type":"const" } },
+          { "id":"f","p1":"F","p2":"G","len":{ "type":"const" } },
+          { "id":"g","p1":"G","p2":"H","len":{ "type":"const" } },
+          { "id":"h","p1":"H","p2":"D","len":{ "type":"const" } },
+          { "id":"i","p1":"B","p2":"F","len":{ "type":"const" } },
+          { "id":"j","p1":"C","p2":"G","len":{ "type":"const" } },
+          { "id":"k","p1":"E","p2":"B","len":{ "type":"const" } },
+          { "id":"l","p1":"B","p2":"G","len":{ "type":"const" } },
+          { "id":"m","p1":"G","p2":"D","len":{ "type":"const" } },
+          { "id":"n","p1":"D","p2":"I","len":{ "type":"const" } },
+          { "id":"o","p1":"K","p2":"D","len":{ "type":"const" } },
+          { "id":"p","p1":"J","p2":"A","ori":{ "type":"const" } }
         ],
         "loads": [
-          { "type":"force","id":"F1","p":"H","mode":"push","w0":-1.5707963267948966,"value":2000 },
-          { "type":"force","id":"F2","p":"J","mode":"push","w0":-2.356194490192345,"value":3000 }
+          { "type":"force","id":"F = 5 kN","p":"G","mode":"push","w0":-1.5707963267948966,"value":5000 }
         ],
         "views": [
           { "type":"info","id":"v1","elem":"a","value":"forceAbs" },
@@ -153,9 +154,10 @@ const examples = {
           { "type":"info","id":"v10","elem":"j","value":"forceAbs" },
           { "type":"info","id":"v11","elem":"k","value":"forceAbs" },
           { "type":"info","id":"v12","elem":"l","value":"forceAbs" },
-          { "type":"info","id":"v13","elem":"m","value":"forceAbs" },
-          { "type":"info","id":"v14","elem":"n","value":"forceAbs" },
-          { "type":"info","id":"v15","elem":"o","value":"forceAbs" }
+          { "type":"info","id":"v12","elem":"m","value":"forceAbs" },
+          { "type":"info","id":"v12","elem":"n","value":"forceAbs" },
+          { "type":"info","id":"v12","elem":"o","value":"forceAbs" },
+          { "type":"info","id":"v12","elem":"p","value":"moment" }
         ]
     },
     'pendulums': {
