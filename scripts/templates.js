@@ -37,8 +37,6 @@ tmpl = {
                             <select class="custom-select" id="select-ori-type">
                                 <option value="free" ${((!elm.ori || elm.ori.type === 'free') ? 'selected' : '')}>free</option>
                                 <option value="const"  ${((!!elm.ori && elm.ori.type === 'const') ? 'selected' : '')}>const</option>`;
-        if (app.model.constraints.length > 1) // min 2 contraints for ref
-            str += `<option value="ref"  ${((!!elm.ori && elm.ori.type === 'ref') ? 'selected' : '')}>ref</option>`;
         str += `<option value="drive" ${((!!elm.ori && elm.ori.type === 'drive') ? 'selected' : '')}>drive</option></select></li>`;
         return str;
     },
@@ -48,8 +46,6 @@ tmpl = {
                         <select class="custom-select" id="select-len-type">
                             <option value="free" ${((!elm.len || elm.len.type === 'free') ? 'selected' : '')}>free</option>
                             <option value="const"  ${((!!elm.len && elm.len.type === 'const') ? 'selected' : '')}>const</option>`;
-        if (app.model.constraints.length > 1) // min 2 contraints for ref
-            str += `<option value="ref"  ${((!!elm.len && elm.len.type === 'ref') ? 'selected' : '')}>ref</option>`;
         str += `<option value="drive" ${((!!elm.len && elm.len.type === 'drive') ? 'selected' : '')}>drive</option></select></li>`;
         return str;
     },
