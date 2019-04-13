@@ -156,7 +156,7 @@ output.badge {
 .navbar-nav-svg {
     width:25px;
     height:25px;
-    margin-top: .3rem;
+    /* margin-top: .3rem; */
 }
 
 /* fix nav-toogle button jumping left/right */
