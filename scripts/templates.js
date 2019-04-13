@@ -181,48 +181,472 @@ tmpl = {
                       <div class="modal-footer">
                           <button type="button" id="view-cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
                           <button type="button" id="view-accept" class="btn btn-primary" id="modalAccept">Accept</button>
-                      </div>`,
+                      </div>`
+    ,
+    // viewContent: () => {
+    //     let template;
+    //     template = `<div class="input-group mb-3">
+    //                     <div class="input-group-prepend">
+    //                         <span class="input-group-text view-inputtext">id: </span>
+    //                     </div>
+    //                     <input type="text" class="form-control" id="input-view-id" placeholder="enter id" value="${app.tempElm.new.id}" aria-label="view-id" onchange="app.tempElm.new.id = this.value">
+    //                 </div>`
+
+    //     template += `<div class="input-group mb-3">
+    //                     <div class="input-group-prepend">
+    //                         <label class="input-group-text view-inputtext" for="select-view-type">type: </label>
+    //                     </div>
+    //                     <select class="custom-select" id="select-view-type">
+    //                         <option value="trace" ${app.tempElm.new.type === 'trace' ? 'selected' : ''}>trace</option>
+    //                         <option value="vector" ${app.tempElm.new.type === 'vector' ? 'selected' : ''}>vector</option>
+    //                         <option value="info" ${app.tempElm.new.type === 'info' ? 'selected' : ''}>info</option>
+    //                     </select>
+    //                 </div>`
+
+    //     if (['vector','trace'].includes(app.tempElm.new.type)) {
+    //         // p
+    //         if (app.tempElm.new.hasOwnProperty('elem'))
+    //             delete app.tempElm.new.elem;
+    //         if (!app.tempElm.new.hasOwnProperty('p'))
+    //             app.tempElm.new.p = app.model.nodes[0].id;
+
+    //         template += `<div class="input-group mb-3">
+    //                         <div class="input-group-prepend">
+    //                             <label class="input-group-text view-inputtext" for="select-view-p">p: </label>
+    //                         </div>
+    //                         <select class="custom-select" id="select-view-p">`; // add head
+
+    //         app.model.nodes.forEach(node => { //  add options
+    //             template += `<option value="${node.id}" ${((app.tempElm.new.p === node.id) ? 'selected' : '')}>${node.id}</option>`;
+    //         });
+
+    //         template += `</select></div>`; // add tail
+    //     };
+
+    //     if (app.tempElm.new.type === 'trace') {
+    //         let fillcolorDisabled =  false;
+    //         let fillcolorBtn = document.getElementById('view-fill-color-btn');
+
+    //         if (!app.tempElm.new.hasOwnProperty('stroke'))
+    //             app.tempElm.new.stroke = '#ff0000';
+    //         if (!fillcolorBtn || !app.tempElm.new.hasOwnProperty('fill'))
+    //             fillcolorDisabled = true;
+
+    //         template += `<div class="input-group mb-3 justify-content-between">
+    //                          <div class="d-inline-flex">
+    //                          <div class="input-group-prepend">
+    //                              <span class="input-group-text view-inputtext">stroke: </span>
+    //                          </div>
+    //                          <input type="color" id="view-stroke-color" name="color" value="${app.tempElm.new.stroke}"/>
+    //                          </div>
+    //                          <div class="d-inline-flex">
+    //                          <div class="input-group-prepend">
+    //                              <button id="view-fill-color-btn" class="btn input-group-text view-inputtext">fill: </button>
+    //                          </div>
+    //                          <input type="color" id="view-fill-color" name="color" value="${app.tempElm.new.hasOwnProperty('fill') ? app.tempElm.new.fill : '#009900'}" ${fillcolorDisabled?'disabled':''}/>
+    //                          </div>
+    //                      </div>`
+    //     };
+
+    //     if (app.tempElm.new.type === 'info') {
+    //         // p
+    //         if (app.tempElm.new.hasOwnProperty('p'))
+    //             delete app.tempElm.new.p;
+    //         if (!app.tempElm.new.hasOwnProperty('elem'))
+    //             app.tempElm.new.elem = app.model.nodes[0].id;
+
+    //         template += `<div class="input-group mb-3">
+    //                         <div class="input-group-prepend">
+    //                             <label class="input-group-text view-inputtext" for="select-view-elem">elem: </label>
+    //                         </div>
+    //                         <select class="custom-select" id="select-view-elem">`; // add head
+
+    //         app.model.nodes.forEach(node => { //  add options
+    //             template += `<option value="${node.id}" ${((app.tempElm.new.elem === node.id) ? 'selected' : '')}>${node.id}</option>`;
+    //         });
+    //         app.model.constraints.forEach(constraint => { //  add options
+    //             template += `<option value="${constraint.id}" ${((app.tempElm.new.elem === constraint.id) ? 'selected' : '')}>${constraint.id}</option>`;
+    //         });
+
+    //         template += `</select></div>`; // add tail
+    //     };
+
+    //     if (['vector','info'].includes(app.tempElm.new.type)) {
+    //         // value
+    //         if (!app.tempElm.new.hasOwnProperty('value'))
+    //             app.tempElm.new.value = 'acc'; // first in array for vector & node infos
+
+    //         template += `<div class="input-group mb-3">
+    //                         <div class="input-group-prepend">
+    //                             <label class="input-group-text view-inputtext" for="select-view-value">value: </label>
+    //                         </div>
+    //                         <select class="custom-select" id="select-view-value">`; // add head
+
+    //         //  add options
+    //         // console.log(app.model.elementById(app.tempElm.new.elem).type);
+    //         if (app.tempElm.new.type === 'info' && app.model.elementById(app.tempElm.new.elem).type === 'node') {
+    //             app.nodeInfoValues.forEach(value => {
+    //                 app.tempElm.new.value = 'acc'; // force select first option
+    //                 template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
+    //             });
+    //         } else if (app.tempElm.new.type === 'vector' && app.model.elementById(app.tempElm.new.p).type === 'node') {
+    //             app.tempElm.new.value = 'acc'; // force select first option
+    //             app.nodeVectorValues.forEach(value => {
+    //                 template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
+    //             });
+    //         } else if (app.tempElm.new.type === 'info' && ['free','tran','rot','ctrl'].includes(app.model.elementById(app.tempElm.new.elem).type)) {
+    //             app.tempElm.new.value = 'w'; // force select first option
+    //             app.constraintInfoValues.forEach(value => {
+    //                 template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
+    //             });
+    //         };
+
+    //         template += `</select></div>`; // add tail
+    //     }
+
+    //     return template;
+    // },
     viewContent: () => {
-        let template;
-        template = `<div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text view-inputtext">id: </span>
-                        </div>
-                        <input type="text" class="form-control" id="input-view-id" placeholder="enter id" value="${app.tempElm.new.id}" aria-label="view-id" onchange="app.tempElm.new.id = this.value">
-                    </div>`
 
-        template += `<div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <label class="input-group-text view-inputtext" for="select-view-type">type: </label>
-                        </div>
-                        <select class="custom-select" id="select-view-type">
-                            <option value="trace" ${app.tempElm.new.type === 'trace' ? 'selected' : ''}>trace</option>
-                            <option value="vector" ${app.tempElm.new.type === 'vector' ? 'selected' : ''}>vector</option>
-                            <option value="info" ${app.tempElm.new.type === 'info' ? 'selected' : ''}>info</option>
-                        </select>
-                    </div>`
-
-        if (['vector','trace'].includes(app.tempElm.new.type)) {
-            // p
-            if (app.tempElm.new.hasOwnProperty('elem'))
-                delete app.tempElm.new.elem;
-            if (!app.tempElm.new.hasOwnProperty('p'))
-                app.tempElm.new.p = app.model.nodes[0].id;
-
-            template += `<div class="input-group mb-3">
+        /**************** ID property *****************/
+        // template holds markup-string
+        let template = `<div class="input-group mb-3">
                             <div class="input-group-prepend">
-                                <label class="input-group-text view-inputtext" for="select-view-p">p: </label>
+                                <span class="input-group-text view-inputtext">id: </span>
                             </div>
-                            <select class="custom-select" id="select-view-p">`; // add head
+                            <input type="text" class="form-control" id="input-view-id" placeholder="view${app.model.views.length + 1}" value="${app.tempElm.new.id}" aria-label="view-id" onchange="app.tempElm.new.id = this.value">
+                        </div>`;
 
-            app.model.nodes.forEach(node => { //  add options
-                template += `<option value="${node.id}" ${((app.tempElm.new.p === node.id) ? 'selected' : '')}>${node.id}</option>`;
-            });
 
-            template += `</select></div>`; // add tail
+
+        /**************** SHOW property *****************/
+
+        // head of 'show'-select
+        template += tmpl.selectHead('show', false, 'Value to analyse');
+
+        // // body of 'show'-select
+        // // add all possible options for analysis from mec.core.js' aly object, select app.tempElm.new.show = 'pos' by default as set in app.js
+        // Object.keys(mec.aly).forEach(aly => {
+        //     if (aly !== 't')
+        //         template += `<option value="${aly}" ${app.tempElm.new.show === aly ? 'selected' : ''}>${aly}</option>`;
+        // });
+        // // center of gravity 'cog' is only possible for the full model
+        // template += `<option value="cog" ${app.tempElm.new.show === 'cog' ? 'selected' : ''}>cog</option>`;
+
+        // body of 'show'-select
+        // add all options from app.alyValues.all, select app.tempElm.new.show = 'pos' by default as set in app.js
+        app.alyValues.all.forEach(aly => {
+            template += `<option value="${aly}" ${app.tempElm.new.show === aly ? 'selected' : ''}>${aly}</option>`;
+        });
+
+        // tail of 'show'-select
+        template += tmpl.selectTail();
+
+
+
+        /**************** OF property *****************/
+        // evaluate possible types of elements for selected of-property
+        let elmType =   (app.alyValues.forNodes.includes(app.tempElm.new.show) && app.tempElm.new.show !== 'forceAbs') ? 'node'
+                      : (app.alyValues.forConstraints.includes(app.tempElm.new.show) && app.tempElm.new.show !== 'forceAbs') ? 'constraint'
+                      : (app.tempElm.new.show === 'cog') ? 'model'
+                      : 'node or constraint';
+
+        // 'show'-value is for model only
+        if (app.tempElm.new.show === 'cog') {
+            app.tempElm.new.of = 'model';
+
+            // add head and pass disabled = true, <select> is only used for consistent displaying
+            template += tmpl.selectHead('show', true, 'Value to analyse');
+
+            // add body
+            template += '<option value="model" selected>model</option>';
+
+            // add tail
+            template += tmpl.selectTail();
         };
 
-        if (app.tempElm.new.type === 'trace') {
+        // 'show'-value is for nodes only
+        if (elmType === 'node') {
+
+            // select first node as default on first invocation
+            if (!app.tempElm.new.hasOwnProperty('of'))
+                app.tempElm.new.of = app.model.nodes[0].id;
+
+                // add head
+                template += tmpl.selectHead('of', false, 'Element show-value belongs to');
+
+                //  add options
+                app.model.nodes.forEach(node => {
+                    template += `<option value="${node.id}" ${((app.tempElm.new.of === node.id) ? 'selected' : '')}>${node.id}</option>`;
+                });
+
+                // add tail
+                template += tmpl.selectTail();
+
+        };
+
+        // 'show'-value is for constraints only
+        if (elmType === 'constraint') {
+
+            // select first node as default on first invocation
+            if (!app.tempElm.new.hasOwnProperty('of'))
+                app.tempElm.new.of = app.model.constraints[0].id;
+
+                // add head
+                template += tmpl.selectHead('of', false, 'Element show-value belongs to');
+
+                //  add options
+                app.model.constraints.forEach(constraint => {
+                    template += `<option value="${constraint.id}" ${((app.tempElm.new.of === constraint.id) ? 'selected' : '')}>${constraint.id}</option>`;
+                });
+
+                // add tail
+                template += tmpl.selectTail();
+
+        };
+
+        // 'show'-value is for nodes OR constraints
+        if (elmType === 'node or constraint') {
+
+            // select first node as default on first invocation
+            if (!app.tempElm.new.hasOwnProperty('of'))
+                app.tempElm.new.of = app.model.constraints[0].id;
+
+                // add head
+                template += tmpl.selectHead('of', false, 'Element show-value belongs to');
+
+                // add options
+
+                // add nodes
+                app.model.nodes.forEach(node => {
+                    template += `<option value="${node.id}" ${((app.tempElm.new.of === node.id) ? 'selected' : '')}>${node.id}</option>`;
+                });
+
+                // add constraints
+                app.model.constraints.forEach(constraint => {
+                    template += `<option value="${constraint.id}" ${((app.tempElm.new.of === constraint.id) ? 'selected' : '')}>${constraint.id}</option>`;
+                });
+
+                // add tail
+                template += tmpl.selectTail();
+
+        };
+
+        // // 'show'-value is for model only
+        // if (elmType === 'model') {
+
+        //     // select first node as default on first invocation
+        //     if (!app.tempElm.new.hasOwnProperty('of'))
+        //         app.tempElm.new.of = app.model.constraints[0].id;
+
+        //         // add head
+        //         // template += `<div class="input-group mb-3">
+        //         //              <div class="input-group-prepend">
+        //         //                  <label class="input-group-text view-inputtext" for="select-view-of">of: </label>
+        //         //              </div>
+        //         //              <select class="custom-select" id="select-view-of">`;
+        //         template += tmpl.selectHead('of');
+
+        //         //  add options
+        //         app.model.constraints.forEach(constraint => {
+        //             template += `<option value="${constraint.id}" ${((app.tempElm.new.of === constraint.id) ? 'selected' : '')}>${constraint.id}</option>`;
+        //         });
+
+        //         // add tail
+        //         // template += `</select></div>`;
+        //         template += tmpl.selectTail();
+        // };
+
+        // 'show'-value is for nodes only
+        // if (app.alyValues.nodeInfo.includes(app.tempElm.new.type)) {
+        //     app.tempElm.new.of = 'model';
+
+        //     template += `<div class="input-group mb-3">
+        //                     <div class="input-group-prepend">
+        //                         <label class="input-group-text view-inputtext" for="select-view-of">of: </label>
+        //                     </div>
+        //                     <select class="custom-select" id="select-view-of" disabled>
+        //                         <option value="model" "selected">model</option>
+        //                     </select>
+        //                  </div>`;
+        // };
+
+
+
+        /**************** AS property *****************/
+
+        // 'show'-value is for MODEL only
+        if (app.tempElm.new.show === 'cog') {
+
+            if (!app.tempElm.new.hasOwnProperty('as'))
+                app.tempElm.new.as = 'point';
+
+            // add head
+            template += tmpl.selectHead('as', false, 'Type of analysis');
+
+            ['point','trace'].forEach(opt => { //  add options
+                template += `<option value="${opt}" ${((app.tempElm.new.as === opt) ? 'selected' : '')}>${opt}</option>`;
+            });
+
+            // add tail
+            template += tmpl.selectTail();
+        };
+
+        // // 'show'-value is for NODE only
+        // if ( app.model.elementById(app.tempElm.new.of).type === 'node' ) {
+
+        //     // add head
+        //     template += tmpl.selectHead('as');
+
+        //     //  add options
+        //     // 'show' type 'info'
+        //     if ( app.alyValues.nodes.info.includes(app.tempElm.new.show) ) {
+        //         template += `<option value="${info}" ${((app.tempElm.new.as === 'info') ? 'selected' : '')}>${info}</option>`;
+        //         // initial call
+        //         if ( !app.tempElm.new.hasOwnProperty('as') )
+        //             app.tempElm.new.as = 'info';
+        //     };
+
+        //     // 'show' type 'vector'
+        //     if ( app.alyValues.nodes.vector.includes(app.tempElm.new.show) ) {
+        //         template += `<option value="${vector}" ${((app.tempElm.new.as === 'vector') ? 'selected' : '')}>${vector}</option>`;
+        //         // initial call
+        //         if ( !app.tempElm.new.hasOwnProperty('as') )
+        //             app.tempElm.new.as = 'vector';
+        //     };
+
+        //     // 'show' type 'point' OR 'trace'
+        //     if ( app.alyValues.nodes.tracePoint.includes(app.tempElm.new.show) ) {
+        //         ['point','trace'].forEach(opt => {
+        //             template += `<option value="${opt}" ${((app.tempElm.new.as === opt) ? 'selected' : '')}>${opt}</option>`;
+        //         });
+        //         // initial call
+        //         if ( !app.tempElm.new.hasOwnProperty('as') )
+        //             app.tempElm.new.as = 'trace';
+        //     };
+
+        //     // add tail
+        //     template += tmpl.selectTail();
+        // };
+
+        // 'show'-value is for constraint only
+        // if ( ['free','rot','tran','ctrl'].includes(app.model.elementById(app.tempElm.new.of)) ) {
+
+
+
+        // 'show' value is for nodes XOR constraints, noted in type
+        let type = false;
+
+        // evaluate what 'show' value is for
+        if (app.model.elementById(app.tempElm.new.of).type === 'node' ) {
+            type = 'nodes'
+        } else if (['free','rot','tran','ctrl'].includes(app.model.elementById(app.tempElm.new.of))) {
+            type = 'constraints'
+        };
+
+        if (type) { // false | 'nodes' | 'constraints'
+            // add head
+            template += tmpl.selectHead('as', false, 'Type of analysis');
+
+            //  add options
+            // 'show' type 'info'
+            if ( app.alyValues[type].info.includes(app.tempElm.new.show) ) {
+                // initial call
+                if ( !app.tempElm.new.hasOwnProperty('as') )
+                    app.tempElm.new.as = 'info';
+
+                template += `<option value="info" ${((app.tempElm.new.as === 'info') ? 'selected' : '')}>info</option>`;
+            };
+
+            // 'show' type 'vector'
+            if ( app.alyValues[type].vector.includes(app.tempElm.new.show) ) {
+                // initial call
+                if ( !app.tempElm.new.hasOwnProperty('as') )
+                    app.tempElm.new.as = 'vector';
+
+                template += `<option value="vector" ${((app.tempElm.new.as === 'vector') ? 'selected' : '')}>vector</option>`;
+            };
+
+            // 'show' type 'point' OR 'trace'
+            if ( app.alyValues[type].tracePoint.includes(app.tempElm.new.show) ) {
+                // initial call
+                if ( !app.tempElm.new.hasOwnProperty('as') )
+                    app.tempElm.new.as = 'trace';
+
+                ['point','trace'].forEach(opt => {
+                    template += `<option value="${opt}" ${((app.tempElm.new.as === opt) ? 'selected' : '')}>${opt}</option>`;
+                });
+            };
+
+            // add tail
+            template += tmpl.selectTail();
+        };
+
+
+        /**************** OPTIONAL PROPERTIES *****************/
+
+        // 'as' is POINT
+        // ['by']
+        if (app.tempElm.new.as === 'point') {
+
+            // all optional properties have been removed with app.tidyTempElmNew()
+            if (!app.tempElm.new.hasOwnProperty('by'))
+                app.tempElm.new.by = 'dot';
+
+            // add head
+            template += tmpl.selectHead('by', false, 'Symbol used for the point');
+
+            ['dot','gnd','pol'].forEach(opt => { //  add options
+                template += `<option value="${opt}" ${((app.tempElm.new.by === opt) ? 'selected' : '')}>${opt}</option>`;
+            });
+
+            // add tail
+            template += tmpl.selectTail();
+        };
+
+        // 'as' is vector
+        // ['at']
+        if (app.tempElm.new.as === 'vector') {
+
+            // all optional properties have been removed with app.tidyTempElmNew()
+            if (!app.tempElm.new.hasOwnProperty('at')) {
+                app.tempElm.new.at = app.tempElm.new.of; // copy default
+            }
+
+            // add head
+            template += tmpl.selectHead('at', false, 'Origin of vector');
+
+            app.model.nodes.forEach(node => { //  add options
+                template += `<option value="${node.id}" ${((app.tempElm.new.at === node.id) ? 'selected' : '')}>${node.id}</option>`;
+            });
+
+            // add tail
+            template += tmpl.selectTail();
+        };
+
+        // 'as' is trace
+        if (app.tempElm.new.as === 'trace') {
+
+            // ####### ['mode'] #######
+
+            // all optional properties have been removed with app.tidyTempElmNew()
+            if (!app.tempElm.new.hasOwnProperty('mode')) {
+                app.tempElm.new.mode = 'dynamic'; // set default
+            }
+
+            // add head
+            template += tmpl.selectHead('mode', false, 'Mode of trace-analysis');
+
+            ['static','dynamic','preview'].forEach(opt => { //  add options
+                template += `<option value="${opt}" ${((app.tempElm.new.mode === opt) ? 'selected' : '')}>${opt}</option>`;
+            });
+
+            // add tail
+            template += tmpl.selectTail();
+
+
+            // ####### ['stroke'] AND ['fill'] #######
+
             let fillcolorDisabled =  false;
             let fillcolorBtn = document.getElementById('view-fill-color-btn');
 
@@ -240,69 +664,18 @@ tmpl = {
                              </div>
                              <div class="d-inline-flex">
                              <div class="input-group-prepend">
-                                 <button id="view-fill-color-btn" class="btn input-group-text view-inputtext">fill: </buttton>
+                                 <button id="view-fill-color-btn" class="btn input-group-text view-inputtext">fill: </button>
                              </div>
                              <input type="color" id="view-fill-color" name="color" value="${app.tempElm.new.hasOwnProperty('fill') ? app.tempElm.new.fill : '#009900'}" ${fillcolorDisabled?'disabled':''}/>
                              </div>
                          </div>`
         };
 
-        if (app.tempElm.new.type === 'info') {
-            // p
-            if (app.tempElm.new.hasOwnProperty('p'))
-                delete app.tempElm.new.p;
-            if (!app.tempElm.new.hasOwnProperty('elem'))
-                app.tempElm.new.elem = app.model.nodes[0].id;
-
-            template += `<div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                                <label class="input-group-text view-inputtext" for="select-view-elem">elem: </label>
-                            </div>
-                            <select class="custom-select" id="select-view-elem">`; // add head
-
-            app.model.nodes.forEach(node => { //  add options
-                template += `<option value="${node.id}" ${((app.tempElm.new.elem === node.id) ? 'selected' : '')}>${node.id}</option>`;
-            });
-            app.model.constraints.forEach(constraint => { //  add options
-                template += `<option value="${constraint.id}" ${((app.tempElm.new.elem === constraint.id) ? 'selected' : '')}>${constraint.id}</option>`;
-            });
-
-            template += `</select></div>`; // add tail
-        };
-
-        if (['vector','info'].includes(app.tempElm.new.type)) {
-            // value
-            if (!app.tempElm.new.hasOwnProperty('value'))
-                app.tempElm.new.value = 'acc'; // first in array for vec & node infos
-
-            template += `<div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                                <label class="input-group-text view-inputtext" for="select-view-value">value: </label>
-                            </div>
-                            <select class="custom-select" id="select-view-value">`; // add head
-
-            //  add options
-            // console.log(app.model.elementById(app.tempElm.new.elem).type);
-            if (app.tempElm.new.type === 'info' && app.model.elementById(app.tempElm.new.elem).type === 'node') {
-                app.nodeInfoValues.forEach(value => {
-                    app.tempElm.new.value = 'acc'; // force select first option
-                    template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
-                });
-            } else if (app.tempElm.new.type === 'vector' && app.model.elementById(app.tempElm.new.p).type === 'node') {
-                app.tempElm.new.value = 'acc'; // force select first option
-                app.nodeVectorValues.forEach(value => {
-                    template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
-                });
-            } else if (app.tempElm.new.type === 'info' && ['free','tran','rot','ctrl'].includes(app.model.elementById(app.tempElm.new.elem).type)) {
-                app.tempElm.new.value = 'w'; // force select first option
-                app.constraintInfoValues.forEach(value => {
-                    template += `<option value="${value}" ${((app.tempElm.new.value === value) ? 'selected' : '')}>${value}</option>`;
-                });
-            };
-
-            template += `</select></div>`; // add tail
-        }
+        // ['t0'] -> set in JSON
+        // ['Dt'] -> set in JSON
 
         return template;
-    }
+    },
+    selectHead: (prop, disabled = false, tooltip = false) => `<div class="input-group mb-3"><div class="input-group-prepend"><label ${tooltip ? `title="${tooltip}"` : ''} class="input-group-text view-inputtext" for="select-view-${prop}">${prop}: </label></div><select class="custom-select m-0" id="select-view-${prop}" ${disabled?'disabled':''}>`,
+    selectTail: () => `</select></div>`
 };

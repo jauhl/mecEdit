@@ -23,8 +23,11 @@
 
     <!-- styles -->
     <link rel="stylesheet" href="./vendor/bootstrap4.1.3.min.css">
+    <!-- <link rel="stylesheet" href="./vendor/fontawesome/css/all.min.css"> -->
     <link rel="stylesheet" href="./app.css">
     <link rel="stylesheet" href="./vendor/codemirror/codemirror5.39.2.css" />
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/lucario.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.39.2/theme/mdn-like.css"> -->
     <link rel="stylesheet" href="./vendor/codemirror/lucario.css">
     <link rel="stylesheet" href="./vendor/codemirror/mdn-like.css">
 
@@ -33,8 +36,9 @@
 <body>
 
     <!-- ========================== navbar ========================== -->
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top flex-nowrap">
-        <svg style="margin-left: -5pt;" class="flex-shrink-0 mr-2" version="1.0" xmlns="http://www.w3.org/2000/svg" width="23pt" height="23pt" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid meet">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top flex-nowrap" id="navbar">
+        <div class="mb-auto pt-4px">
+            <svg style="margin-left: -5pt;" class="flex-shrink-0 mr-2" version="1.0" xmlns="http://www.w3.org/2000/svg" width="23pt" height="23pt" viewBox="0 0 512 512" preserveAspectRatio="xMidYMid meet">
             <g transform="translate(0,512) scale(0.1,-0.1)" fill="white" stroke="none">
                 <path d="M1300 4786 c-345 -47 -603 -160 -734 -322 -50 -61 -115 -188 -143
                 -280 -24 -81 -23 -272 2 -369 58 -225 237 -425 380 -425 34 0 35 1 35 38 0 21
@@ -74,9 +78,10 @@
                 37 313 187 350 350 13 57 13 191 0 248 -35 155 -166 294 -320 342 -81 25 -231
                 25 -311 0z"/>
             </g>
-        </svg>
+            </svg>
+        </div>
         <a id="appname" class="navbar-brand order-0">mecEdit</a>
-        <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navcollapse"
+        <button class="navbar-toggle btn btn-dark mb-auto pt-4px mr-2" type="button" data-toggle="collapse" data-target="#navcollapse"
             aria-controls="navcollapse" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -128,7 +133,11 @@
                         Edit
                     </a>
                     <div class="dropdown-menu" aria-labelledby="EditDropdown">
-                        <a class="dropdown-item" id="dragmode">Toggle Drag/Edit</a>
+                        <label class="d-flex dropdown-item" id="dragmodeTrigger" for="dragmode">
+                            <label class="ctxm-input-label pl-0" for="dragmode">Editmode </label>
+                            <input type="checkbox" id="dragmode" class="cbx d-none">
+                            <label class="lbl ml-auto" for="dragmode"></label>
+                        </label>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" id="model-edit">JSON-Editor</a>
                         <div class="dropdown-divider"></div>
@@ -239,7 +248,18 @@
                         </div>
 
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" id="darkmode">Toggle Darkmode</a>
+                        <label class="d-flex dropdown-item" id="darkmodeTrigger" for="darkmode">
+                            <label class="ctxm-input-label pl-0" for="darkmode">Darkmode </label>
+                            <input type="checkbox" id="darkmode" class="cbx d-none">
+                            <label class="lbl ml-auto" for="darkmode"></label>
+                        </label>
+
+                        <div class="dropdown-divider"></div>
+                        <label class="d-flex dropdown-item" id="nodescalingTrigger" for="nodescaling">
+                            <label class="ctxm-input-label pl-0" for="nodescaling">Nodescaling </label>
+                            <input type="checkbox" id="nodescaling" class="cbx d-none">
+                            <label class="lbl ml-auto" for="nodescaling"></label>
+                        </label>
 
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" id="resetview">Reset Editor-View</a>
@@ -283,7 +303,7 @@
                         </button>
                     </div>
                     <div class="btn-group ml-2" role="group" aria-label="gravity-group">
-                        <button type="button" id="toggle-g" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="Toggle gravity"> g
+                        <button type="button" id="toggle-g" class="btn btn-dark" data-toggle="popover" data-placement="bottom" data-content="Toggle gravity"> g<!-- <i class="fas fa-long-arrow-alt-down"></i> -->
                             <svg class="svg-icon" width="16px" height="16px" viewBox="0 0 256 512">
                                 <path d="M168 345.941V44c0-6.627-5.373-12-12-12h-56c-6.627 0-12 5.373-12 12v301.941H41.941c-21.382 0-32.09 25.851-16.971 40.971l86.059 86.059c9.373 9.373 24.569 9.373 33.941 0l86.059-86.059c15.119-15.119 4.411-40.971-16.971-40.971H168z" fill="white"/>
                             </svg>
@@ -292,9 +312,11 @@
                 </li>
             </ul>
 
-            <div class="navbar-nav ml-auto">
-                <div class="nav-item">
-                    <a class="nav-link pb-0 pt-0 nav-svg-logo" href="https://github.com/jauhl/mecEdit" target="_blank"
+
+
+        </div>
+        <div class="nav-item ml-auto mb-auto pt-4px order-3 d-inline-flex">
+                    <a class="nav-link pb-0 pt-0 nav-svg-logo text-secondary" href="https://github.com/jauhl/mecEdit" target="_blank"
                         rel="noopener" aria-label="mecEdit GitHub">
                         <svg class="navbar-nav-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 499.36"
                             focusable="false">
@@ -303,9 +325,14 @@
                                 fill="currentColor" fill-rule="evenodd" />
                         </svg>
                     </a>
-                </div>
-            </div>
-        </div>
+
+            <button id="sidebar-toggle" class="btn btn-dark order-3 mb-auto pt-4px" type="button" aria-label="Toggle sidebar">
+                    <svg class="navbar-nav-svg " viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'>
+                        <path stroke='rgba(255, 255, 255, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'>
+                    </svg>
+            </button>
+    </div>
+
     </nav>
 
     <div id="wrapper" class="container-fluid">
@@ -402,6 +429,7 @@
 
                         <button type="button" id="drive" aria-label="Add Drive" class="btn btn-dark svg-btn mb-1" data-toggle="popover"
                             data-placement="right" data-content="Drive">
+                            <!-- <i class="fas fa-cogs"></i> -->
                             <svg class="svg-icon" width="33px" height="33px" viewBox="0 0 640 512">
                                 <path d="M512.1 191l-8.2 14.3c-3 5.3-9.4 7.5-15.1 5.4-11.8-4.4-22.6-10.7-32.1-18.6-4.6-3.8-5.8-10.5-2.8-15.7l8.2-14.3c-6.9-8-12.3-17.3-15.9-27.4h-16.5c-6 0-11.2-4.3-12.2-10.3-2-12-2.1-24.6 0-37.1 1-6 6.2-10.4 12.2-10.4h16.5c3.6-10.1 9-19.4 15.9-27.4l-8.2-14.3c-3-5.2-1.9-11.9 2.8-15.7 9.5-7.9 20.4-14.2 32.1-18.6 5.7-2.1 12.1.1 15.1 5.4l8.2 14.3c10.5-1.9 21.2-1.9 31.7 0L552 6.3c3-5.3 9.4-7.5 15.1-5.4 11.8 4.4 22.6 10.7 32.1 18.6 4.6 3.8 5.8 10.5 2.8 15.7l-8.2 14.3c6.9 8 12.3 17.3 15.9 27.4h16.5c6 0 11.2 4.3 12.2 10.3 2 12 2.1 24.6 0 37.1-1 6-6.2 10.4-12.2 10.4h-16.5c-3.6 10.1-9 19.4-15.9 27.4l8.2 14.3c3 5.2 1.9 11.9-2.8 15.7-9.5 7.9-20.4 14.2-32.1 18.6-5.7 2.1-12.1-.1-15.1-5.4l-8.2-14.3c-10.4 1.9-21.2 1.9-31.7 0zm-10.5-58.8c38.5 29.6 82.4-14.3 52.8-52.8-38.5-29.7-82.4 14.3-52.8 52.8zM386.3 286.1l33.7 16.8c10.1 5.8 14.5 18.1 10.5 29.1-8.9 24.2-26.4 46.4-42.6 65.8-7.4 8.9-20.2 11.1-30.3 5.3l-29.1-16.8c-16 13.7-34.6 24.6-54.9 31.7v33.6c0 11.6-8.3 21.6-19.7 23.6-24.6 4.2-50.4 4.4-75.9 0-11.5-2-20-11.9-20-23.6V418c-20.3-7.2-38.9-18-54.9-31.7L74 403c-10 5.8-22.9 3.6-30.3-5.3-16.2-19.4-33.3-41.6-42.2-65.7-4-10.9.4-23.2 10.5-29.1l33.3-16.8c-3.9-20.9-3.9-42.4 0-63.4L12 205.8c-10.1-5.8-14.6-18.1-10.5-29 8.9-24.2 26-46.4 42.2-65.8 7.4-8.9 20.2-11.1 30.3-5.3l29.1 16.8c16-13.7 34.6-24.6 54.9-31.7V57.1c0-11.5 8.2-21.5 19.6-23.5 24.6-4.2 50.5-4.4 76-.1 11.5 2 20 11.9 20 23.6v33.6c20.3 7.2 38.9 18 54.9 31.7l29.1-16.8c10-5.8 22.9-3.6 30.3 5.3 16.2 19.4 33.2 41.6 42.1 65.8 4 10.9.1 23.2-10 29.1l-33.7 16.8c3.9 21 3.9 42.5 0 63.5zm-117.6 21.1c59.2-77-28.7-164.9-105.7-105.7-59.2 77 28.7 164.9 105.7 105.7zm243.4 182.7l-8.2 14.3c-3 5.3-9.4 7.5-15.1 5.4-11.8-4.4-22.6-10.7-32.1-18.6-4.6-3.8-5.8-10.5-2.8-15.7l8.2-14.3c-6.9-8-12.3-17.3-15.9-27.4h-16.5c-6 0-11.2-4.3-12.2-10.3-2-12-2.1-24.6 0-37.1 1-6 6.2-10.4 12.2-10.4h16.5c3.6-10.1 9-19.4 15.9-27.4l-8.2-14.3c-3-5.2-1.9-11.9 2.8-15.7 9.5-7.9 20.4-14.2 32.1-18.6 5.7-2.1 12.1.1 15.1 5.4l8.2 14.3c10.5-1.9 21.2-1.9 31.7 0l8.2-14.3c3-5.3 9.4-7.5 15.1-5.4 11.8 4.4 22.6 10.7 32.1 18.6 4.6 3.8 5.8 10.5 2.8 15.7l-8.2 14.3c6.9 8 12.3 17.3 15.9 27.4h16.5c6 0 11.2 4.3 12.2 10.3 2 12 2.1 24.6 0 37.1-1 6-6.2 10.4-12.2 10.4h-16.5c-3.6 10.1-9 19.4-15.9 27.4l8.2 14.3c3 5.2 1.9 11.9-2.8 15.7-9.5 7.9-20.4 14.2-32.1 18.6-5.7 2.1-12.1-.1-15.1-5.4l-8.2-14.3c-10.4 1.9-21.2 1.9-31.7 0zM501.6 431c38.5 29.6 82.4-14.3 52.8-52.8-38.5-29.6-82.4 14.3-52.8 52.8z"
                                       stroke="white" stroke-width="2" fill="white" stroke-linecap="round"
@@ -414,25 +442,29 @@
 
             <!-- ========================== canvas ========================== -->
             <main id="main" class="col p-0 main-container">
-                <div id="canvas-container" class="p-0">
-                    <canvas id="canvas" class="canvas" width="1200" height="820"></canvas>
-                </div>
-                <div id="instructions"></div>
-
-                <div id="actuators-container" class="d-inline-flex flex-wrap"></div>
-
-                <div id="statbar" class="statbar d-flex flex-row flex-nowrap">
-                    <div id="sbCoords" class="text-dark pl-1"></div>
-                    <div id="sbDragmode" class="text-dark pl-1"></div>
-                    <div id="sbDOF" class="text-dark pl-1"></div>
-                    <div id="sbFPS" class="text-dark pl-1"></div>
-                    <div id="sbGravity" class="text-dark pl-1"></div>
-                    <div id="sbMode" class="text-dark pl-1"></div>
-                    <div id="sbCartesian" class="text-dark pl-1"></div>
-                    <div id="sbBtn" class="text-dark pl-1"></div>
-                    <div id="sbDbtn" class="text-dark pl-1"></div>
-                    <div id="sbState" class="text-dark pl-1"></div>
-                    <div id="sbDragging" class="text-dark pl-1"></div>
+                <div class="d-flex">
+                    <div id="canvas-container" class="p-0">
+                        <canvas id="canvas" class="canvas" width="1200" height="820"></canvas>
+                    </div>
+                    <div id="instructions"></div>
+                    <div id="actuators-container" class="d-inline-flex flex-wrap"></div>
+                    <div id="statbar" class="statbar d-flex flex-row flex-nowrap">
+                        <div id="sbCoords" class="text-dark pl-1"></div>
+                        <div id="sbDragmode" class="text-dark pl-1"></div>
+                        <div id="sbDOF" class="text-dark pl-1"></div>
+                        <div id="sbFPS" class="text-dark pl-1"></div>
+                        <div id="sbGravity" class="text-dark pl-1"></div>
+                        <div id="sbMode" class="text-dark pl-1"></div>
+                        <div id="sbCartesian" class="text-dark pl-1"></div>
+                        <div id="sbBtn" class="text-dark pl-1"></div>
+                        <div id="sbDbtn" class="text-dark pl-1"></div>
+                        <div id="sbState" class="text-dark pl-1"></div>
+                        <div id="sbDragging" class="text-dark pl-1"></div>
+                    </div>
+                    <!-- padding must be set as style in element, not in stylesheet! -->
+                    <div id="sb-r" style="padding-left:270px;" >
+                        <div id="sb-canvas-container" class="glass" style="width:100%; height:100%; "><!-- canvas-elements for charts go here --></div>
+                    </div>
                 </div>
             </main>
 
@@ -541,7 +573,6 @@
         </div>
     </div>
 
-
     <!-- vendor scripts -->
     <script src="./vendor/bootstrap-native-v4.min.js"></script>
     <script src="./vendor/draggabilly.pkgd.min.js"></script>
@@ -552,8 +583,23 @@
     <script src="./scripts/g2.js"></script>
     <script src="./scripts/g2.editor.js"></script>
 
-    <script src="./scripts/mec2.min.js"></script>
+    <!-- <script src="./scripts/dev/mec/mec.core.js"></script>
+    <script src="./scripts/dev/mec/mec.model.js"></script>
+    <script src="./scripts/dev/mec/mec.constraint.js"></script>
+    <script src="./scripts/dev/mec/mec.node.js"></script>
+    <script src="./scripts/dev/mec/mec.drive.js"></script>
+    <script src="./scripts/dev/mec/mec.load.js"></script>
+    <script src="./scripts/dev/mec/mec.shape.js"></script>
+    <script src="./scripts/dev/mec/mec.view.js"></script>
+    <script src="./scripts/dev/mec/mec.msg.en.js"></script> -->
+    <script src="./scripts/mec2.js"></script>
 
+    <!-- <script src="./scripts/slider.js"></script>
+    <script src="./scripts/mixin.js"></script>
+    <script src="./scripts/templates.js"></script>
+    <script src="./scripts/appevents.js"></script>
+    <script src="./scripts/examples.js"></script>
+    <script src="./app.js"></script> -->
     <script src="./app.min.js"></script>
 
     <script>

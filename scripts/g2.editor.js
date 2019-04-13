@@ -62,7 +62,7 @@ g2.editor.prototype = {
         }
         else if ((elm.state & g2.DRAG) && !app.build) {                 // in DRAG mode
             if (type === 'drag' && elm.drag)                            // drag element ..
-                elm.drag(this.evt);
+                elm.drag({x:x, y:y, mode:app.dragMove?'drag':'edit'});
             else if (type === 'buttonup') {                             // leave DRAG mode ..
                 elm.state ^= g2.DRAG;
                 this.draggable = false;

@@ -29,6 +29,12 @@ const tooltip = document.getElementById('info'),
       */
       actcontainer = document.getElementById('actuators-container'),
       /**
+      * Container for charts.
+      * @const
+      * @type {HTMLElement}
+      */
+     chartcontainer = document.getElementById('sb-canvas-container'),
+      /**
       * SVG path container for run button.
       * @const
       * @type {HTMLElement}
@@ -216,14 +222,14 @@ const App = {
             */
             this.model = {
                 "id":"linkage"
-              };
+            };
 
             /**
             * mecEdit version.
             * @const
             * @type {string}
             */
-            this.VERSION = '0.6.7';
+            this.VERSION = '0.6.8';
 
             /**
             * mixin requirement.
@@ -244,30 +250,49 @@ const App = {
             this.build = false;  // build state
             this.tempElm = false;  // contextmenu/view state
 
+            this.charts = {}; // { canvasid:{ctx:... , g:,,, } , ... }
+
             this.devmode = false;
             this.importConfirmed = false; // skip confirmdialogue helper
             this.dragMove = true;
-            this.nodeInfoValues = ['acc','accAbs','vel','velAbs','force','forceAbs'];
-            this.constraintInfoValues = ['w','wt','wtt','r','rt','rtt','forceAbs','moment'];
-            this.nodeVectorValues = ['acc','vel','force']; // objects only
+            this.alyValues = { // possible values for view-components
+                model: {
+                    tracePoint: ['cog']
+                },
+                nodes: {
+                    info: ['m','vel','acc','force','velAbs','accAbs','forceAbs','energy'],
+                    vector: ['vel','acc','force'],
+                    tracePoint: ['pos']
+                },
+                constraints: {
+                    info: ['w','wt','wtt','r','rt','rtt','forceAbs','moment'],
+                    vector: ['polAcc','polChgVel'],
+                    tracePoint: ['pole','velPole','accPole','inflPole']
+                }
+            };
+
+            // deprecated
+            // this.nodeInfoValues = ['m','vel','acc','force','velAbs','accAbs','forceAbs','energy'];
+            // this.constraintInfoValues = ['w','wt','wtt','r','rt','rtt','forceAbs','moment'];
+            // this.nodeVectorValues = ['acc','vel','force']; // objects only
 
             this.g = g2();
 
             this.registerEventsFor(this.ctx.canvas)
-                .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], (e) => { this.g.exe( editor.on(this.pntToUsr(Object.assign({}, e))) ).exe(this.ctx);})  // apply events to g2 ...
+                .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], e => { this.g.exe( editor.on(this.pntToUsr(Object.assign({}, e))) ).exe(this.ctx); })  // apply events to g2 ...
                 .on(['pointer', 'drag', 'pan', 'fps', 'buttondown', 'buttonup', 'click', 'pointerenter', 'pointerleave'], () => this.showStatus())
-                .on('drag', (e) => {
+                .on('drag', e => {
                     if (!this.dragMove) { // dragEdit mode
                         editor.curElm.x0 = editor.curElm.x;
                         editor.curElm.y0 = editor.curElm.y;
                     };
                     this.showTooltip(e);
                 })
-                .on('pan', (e) => {
+                .on('pan', e => {
                     this.pan(e);
                     this.g.exe(this.ctx);
                 })
-                .on('pointer',(e)=>this.showTooltip(e)) // show tooltip view info
+                .on('pointer', e => this.showTooltip(e)) // show tooltip view info
                 .on(['buttonup', 'click'], () => this.hideTooltip()) // hide tooltip info
                 .on('buttondown', () => {
                     if (this.build) {
@@ -280,8 +305,15 @@ const App = {
                         if (['fix', 'flt'].includes(this.build.mode)) this.addSupportShape();
                     }
                 })
-                .on('render', () => this.g.exe(this.ctx))
-                .on('tick', (e) => this.tick(e));
+                .on('render', () => {
+                    this.g.exe(this.ctx);
+                    if (Object.keys(this.charts).length) { // this.model.state.hasChart also true for charts on main canvas...
+                        for (const chart in this.charts) { // this.charts doesn't have iterator
+                            this.charts[chart].g.exe(this.charts[chart].ctx);
+                        }
+                    }
+                })
+                .on('tick', e => this.tick(e));
 
             this.state = 'created';
         }, // constructor
@@ -376,13 +408,15 @@ const App = {
                 }
                 else if (this.state === 'active') {     // perform time step
                     this.model.tick(1/60);
+                    // if (!this.model.valid) this.idle();
                     if (!this.model.isActive)
                         this.stop();        // this causes state intentionally being set to 'idle' for model without gravity even when run was clicked
                 }
                 else if (this.state === 'input') {     // perform time step, input state is only set from slider.js events!
                     this.model.tick(0);
                 }
-                this.g.exe(this.ctx);
+                // this.g.exe(this.ctx);
+                this.notify('render');
             }
         },
 
@@ -396,11 +430,21 @@ const App = {
             this.model.asmPos();
             this.updateg();
 
-            this.model.inputs = [];     // track drives by id and dof for responsive range-input sizing
-
             while (actcontainer.lastChild) {  // empty actcontainer if not empty already
                 actcontainer.removeChild(actcontainer.lastChild);
             };
+
+            while (chartcontainer.lastChild) {  // empty chartcontainer if not empty already
+                chartcontainer.removeChild(chartcontainer.lastChild);
+            };
+
+            this.checkForPreviews(); // check if model has preview-views and set model state accordingly
+            this.checkForCharts();   // check if model has chart-views and set model state accordingly
+
+            // expand or retract sidebar for charts
+            document.querySelector('#sb-r').style['padding-left'] = Object.keys(this.charts).length ? '0px' : '270px';
+
+            this.model.inputs = [];     // track drives by id and dof for responsive range-input sizing
 
             let drv, prv=false;
             while (drv = this.driveByInput(prv)) {
@@ -476,12 +520,14 @@ const App = {
         * @param {object} elm - Element whose dependants should be reinitialized.
         */
         updDependants(elm) {
-            let dependants = [];
+            let dependants = []; // declaring and filling array would be way more efficient in app scope since dependents don't change during drag
             for (const constraint of this.model.constraints) {
                 if (constraint.dependsOn(elm))
                     dependants.push(constraint);
             };
             dependants.forEach(el =>  el.init(this.model));
+            if (this.model.state.hasPreview)
+                this.model.preview();
         },
 
         /**
@@ -499,13 +545,42 @@ const App = {
         * Switch between dark- and lightmode.
         * @method
         */
-        toggleDarkmode() {
+        toggleDarkmode(eventTarget = false) {
             this.show.darkmode = !this.show.darkmode;
             this.jsonEditor.setOption("theme",`${this.show.darkmode ? 'lucario' : 'mdn-like'}`);
-            this.cnv.style.backgroundColor = this.show.darkmode ? '#344c6b' : 'rgb(250, 253, 242)';
+            this.cnv.style.backgroundColor = this.show.darkmode ? '#344c6b' : '#eee7';
+
+            // handle toggle switch in navbar when called programmatically or from element that isn't linked to the checkbox
+            if (!eventTarget) {
+                const toggle = document.querySelector('#darkmode');
+                if (this.show.darkmode && !toggle.checked) {
+                    toggle.checked = true;
+                } else if (!this.show.darkmode && toggle.checked) {
+                    toggle.checked = false;
+                }
+            }
+
             this.notify('render');
         },
 
+            //     /**
+    //     *
+    //     * @method
+    //     */
+    //    toggleHelper(flag = null, toogleId = null, invertFlag = false) {
+    //     const flagVal = invertFlag ? !flag : flag;
+    //     // handle toggle switch in navbar when called programmatically or from element that isn't linked to the checkbox
+    //     if (toogleId) {
+    //         const toggle = document.querySelector(`#${toogleId}`);
+    //         if (flagVal && !toggle.checked ) {
+    //             toggle.checked = true;
+    //         } else if (!flagVal && toggle.checked) {
+    //             toggle.checked = false;
+    //         }
+    //     }
+
+    //     this.notify('render');
+    //     },
         /**
         * Reset `this.view` to its initial state.
         * @method
@@ -553,15 +628,57 @@ const App = {
                 .use({grp:origin,x: () => (10 - this.view.x)/this.view.scl, y: () => (10 - this.view.y)/this.view.scl, scl: () => this.view.scl});
                 if(apphasmodel && this.model.hasGravity) {
                     if(this.cartesian) {
-                        this.g.use({grp:gravvec(true),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (this.cnv.height - 15 - this.view.y)/this.view.scl, scl: () => this.view.scl});
+                        this.g.use({grp:gravvec(true),x: () => (this.cnv.width - 30 - this.view.x)/this.view.scl, y: () => (this.cnv.height - 15 - this.view.y)/this.view.scl, scl: () => this.view.scl});
                     } else {
-                        this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 15 - this.view.x)/this.view.scl, y: () => (- this.view.y + 69 )/this.view.scl, scl: () => this.view.scl});
+                        this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 30 - this.view.x)/this.view.scl, y: () => (- this.view.y + 69 )/this.view.scl, scl: () => this.view.scl});
                     };
                 };
 
             if (apphasmodel)
                 this.model.draw(this.g);
             this.notify('render')
+        },
+
+        // /**
+        // * Create a canvas for a chart, set options & append to container.
+        // * @method
+        // * @param {object} chart - chart-view for canvas.
+        // */
+        // createCanvas(chart) {
+        //     let canvas = document.createElement('canvas');
+        //     canvas.id = chart.canvas;
+        //     canvas.width = 350;
+        //     canvas.height = 200;
+        //     chartcontainer.appendChild(canvas);
+        // },
+
+        /**
+        * Builds a g2-command-queue for charts in secondary canvas-elements.
+        * @method
+        * @param {object} chart - chart-view for canvas.
+        */
+        createChart(chart) {
+            // create canvas & set options
+            let canvas = document.createElement('canvas');
+            canvas.id = chart.canvas;
+            canvas.width = 350;
+            canvas.height = 200;
+            chartcontainer.appendChild(canvas);
+
+            // declare context as property
+            this.charts[chart.canvas] = {
+                ctx: document.querySelector(`#${chart.canvas}`).getContext('2d'),
+                g: g2().clr().view({cartesian: true})
+            };
+
+            // overwrite positioning
+            chart.x = chart.graph.x = chart.y = chart.graph.y = 40;
+
+            // declare g2-object and append chart-graphics
+            chart.draw(this.charts[chart.canvas].g);
+
+            // render
+            this.notify('render');
         },
 
         /**
@@ -647,8 +764,8 @@ const App = {
                     this.model.purgeConstraint(elem);
                 } else if (['force','spring'].includes(elem.type)) {
                     this.model.purgeLoad(elem);
-                } else if (['vector','trace','info'].includes(elem.type)) { // not detectable yet
-                    this.model.purgeView(elem);
+                // } else if (['vector','trace','info'].includes(elem.type)) { // views not detectable yet
+                //     this.model.purgeView(elem);
                 } else { // propably misclicked
                     return;
                 };
@@ -966,12 +1083,17 @@ const App = {
         * Initializes and shows a modal to add view components.
         * @method
         */
-        initViewModal() {
-            if (!this.tempElm)
-                this.tempElm = {new:{id:'',type:'trace'}}; // default
-            this.viewModal.setContent(tmpl.viewModal());
-            document.getElementById('view-fill-color-btn').style.backgroundColor = 'transparent';
-            this.viewModal.show();
+       initViewModal() {
+            if (this.model.nodes.length) { // model has components to add views to
+                if (!this.tempElm)
+                    this.tempElm = {new:{id:'',show:'pos'}}; // default
+                this.viewModal.setContent(tmpl.viewModal());
+                document.getElementById('view-fill-color-btn').style.backgroundColor = 'transparent';
+                this.viewModal.show();
+            } else {
+                this.instruct.innerHTML = `<span class="blink" style="color:orange;">Model is empty.</span>`;
+                setTimeout ( ()=>{this.instruct.innerHTML = ''}, 2400 );
+            }
         },
 
         // closeViewModal() { // deprecated
@@ -983,12 +1105,20 @@ const App = {
         * @method
         */
         addViewFromModal() {
-            if (this.tempElm.new.id.length === 0) // no id defined
+            if (this.tempElm.new.id.length === 0) // no id defined, generate and set one...
                 this.tempElm.new.id = `view${this.model.views.length + 1}`;
+
             this.model.addView(mec.view.extend(this.tempElm.new));
             this.tempElm.new.init(this.model);
-            if (['trace','vector'].includes(this.tempElm.new.type))
+
+            this.checkForPreviews(); // check if model has preview-views and set model state accordingly
+            // show preview of trace when defined
+            if (this.tempElm.new.as === 'trace' && this.tempElm.new.mode === 'preview')
+                this.model.preview();
+            // if view has graphics add them to g2-queue
+            if (['trace','vector','point'].includes(this.tempElm.new.as))
                 this.updateg();
+
             this.resetApp();
             this.viewModal.hide()
         },
@@ -1199,10 +1329,10 @@ const App = {
                     return;
             };
 
-            // delete old range-inputs
-            while (actcontainer.lastChild) {
-                actcontainer.removeChild(actcontainer.lastChild);
-            };
+            // delete old range-inputs -> done in init()
+            // while (actcontainer.lastChild) {
+            //     actcontainer.removeChild(actcontainer.lastChild);
+            // };
 
             delete this.model;  // not necessary but better safe than sorry
             this.model = model;
@@ -1217,6 +1347,41 @@ const App = {
         */
         updateTempElmNew(key, value) { // this seems to be a problem from appevents.js since tempElm is sometimes falsely undefined ...
             this.tempElm.new[key] = value;
+        },
+
+        /**
+        * Removes properties from 'tempELm' when view-type 'as' changes.
+        * @param {string} as - new 'as' value of view component.
+        * @method
+        */
+        tidyTempElmNew(as) {
+            const optional = {
+                      point: ['by'],
+                      vector: ['at'],
+                      trace: ['t0','Dt','mode','ref','stroke','fill']
+                  };
+            let temp = JSON.parse(JSON.stringify(this.tempElm.new)); // copy for immutability
+
+            // build array of NOT selected types
+            let toRemove = [];
+            ['point','vector','trace'].forEach( (key) => {
+                if (key !== as)
+                    toRemove.push(key);
+            });
+
+            // clean up copy
+            for (let element of toRemove) { // element is 'optional' key
+                optional[element].forEach( (prop) => { // prop is string (array entry)
+                    if ( temp.hasOwnProperty(prop) )
+                        delete temp[prop];
+                })
+
+                // if ( temp.hasOwnProperty(element) )
+                //     delete temp.element;
+            };
+
+            // assign copy
+            app.tempElm.new = temp;
         },
 
         /**
@@ -1236,18 +1401,119 @@ const App = {
             } else if (!fill.disabled && !this.tempElm.new.hasOwnProperty('fill')) {
                 this.tempElm.new.fill = '#009900'
             };
-        }
+        },
+
+        /**
+        * Checks if one or more previews are in the model and sets model.state accordingly.
+        * @method
+        */
+        checkForPreviews() {
+            if (this.model.state.hasOwnProperty('hasPreview'))
+                this.model.state.hasPreview = false;    // mecEdit only state, assume no preview
+            for (const view of this.model.views) {
+                if (view.mode === 'preview' && view.as !== 'chart') {
+                    this.model.state.hasPreview = true;
+                }
+            }
+        },
+
+        /**
+        * Checks if one or more charts are in the model and sets model.state accordingly.
+        * Charts marked for a secondary canvas-elements are also handled.
+        * @method
+        */
+        checkForCharts() {
+            if (this.model.state.hasOwnProperty('hasChart'))
+                this.model.state.hasChart = false;    // mecEdit only state, assume no preview
+            for (const view of this.model.views) {
+                if (view.as === 'chart') {
+                    this.model.state.hasChart = true;
+                    if (view.canvas) { // chart needs to be rendered to secondary-canvas
+                        this.createChart(view);
+                    }
+                }
+            }
+        },
     }, mixin.observable,      // for handling (custom) events ..
        mixin.pointerEventHdl, // managing (delegated) pointer events
        mixin.tickTimer,       // synchronize pointer events and rendering
        mixin.zoomPan)
 };
 
+// scope for App instance
 let app;
 
-window.onload = () => {
+// const sleep = (ms) => (new Promise(resolve => setTimeout(resolve, ms)));  // e.g. await sleep(2000);
+
+// promise/async might resolve laptop/pwa sizing bug
+function load() {
+    return new Promise(function(resolve) {
+        window.onload = resolve; // promise resolves on load event
+    });
+};
+
+// Initialize App
+load()
+.then(() => {
+// window.onload = () => {
     // create App instance
     (app = App.create()).init();
+
+    // arrays for view-modal, do this whenever...
+    (async () => {
+        //  Slower version of new Set method
+        // copy-merge alyValue arrays for faster checking in view-modal (keep in mind that some (eg. acc, vel, forceAbs) are in multiple!)
+        // app.alyValues.forNodes = await app.alyValues.nodes.info.concat(app.alyValues.nodes.vector, app.alyValues.nodes.tracePoint);
+        // app.alyValues.forConstraints = await app.alyValues.constraints.info.concat(app.alyValues.constraints.vector, app.alyValues.constraints.tracePoint);
+
+        //build filtered array (no duplicates) with all possible aly values for all components
+        // copy node values to new array
+        // app.alyValues.all = await app.alyValues.forNodes.concat();
+        // app.alyValues.all = [];
+
+        // await app.alyValues.forNodes.forEach(element => {
+        //     if ( !app.alyValues.all.includes(element) )
+        //         app.alyValues.all.push(element);
+        // });
+        // // add constraint values
+        // await app.alyValues.forConstraints.forEach(element => {
+        //     if ( !app.alyValues.all.includes(element) )
+        //         app.alyValues.all.push(element);
+        // });
+        // // add model value(s) (currently a single element...)
+        // await app.alyValues.model.tracePoint.forEach(element => {
+        //     if ( !app.alyValues.all.includes(element) )
+        //         app.alyValues.all.push(element);
+        // });
+
+
+        // copy-merge alyValue arrays for faster checking in view-modal (keep in mind that some (eg. acc, vel, forceAbs) are in multiple!)
+        app.alyValues.forNodes = await [... new Set([
+            ... app.alyValues.nodes.info,
+            ... app.alyValues.nodes.vector,
+            ... app.alyValues.nodes.tracePoint
+        ])];
+
+        app.alyValues.forConstraints = await [... new Set([
+            ... app.alyValues.constraints.info,
+            ... app.alyValues.constraints.vector,
+            ... app.alyValues.constraints.tracePoint
+        ])];
+
+        // Sets contain only unique values, so duplicates are filtered out. Order is preserved. Also faster that concat & filtering with foreach..., Spread back to array when done.
+        app.alyValues.all = await [... new Set([
+            // ... app.alyValues.nodes.info,
+            // ... app.alyValues.nodes.vector,
+            // ... app.alyValues.nodes.tracePoint,
+            ... app.alyValues.forNodes,
+            // ... app.alyValues.constraints.info,
+            // ... app.alyValues.constraints.vector,
+            // ... app.alyValues.constraints.tracePoint,
+            ... app.alyValues.forConstraints,
+            ... app.alyValues.model.tracePoint
+        ])];
+
+    })();
 
     // initialize bootstrap modals
     app.modelModal = new Modal(document.getElementById('modelModal'), {
@@ -1301,7 +1567,7 @@ window.onload = () => {
     });
 
     // define non-editor events
-    events.navbarClick('navcollapse');
+    events.navbarClick('navbar');
     events.navbarChange('import');
     events.sidebarClick('sb-l');
     events.keyboardDown(); // binds to document
@@ -1319,6 +1585,12 @@ window.onload = () => {
     app.toggleDarkmode();
     app.show.nodeLabels = false;
 
+})
+.then(() => {
     // dispatch 'resize' event to fit app to viewport
     window.dispatchEvent(new Event('resize'));
-};
+
+})
+.catch((error) => {
+    console.error('Initialisation failed, error:', error);
+});

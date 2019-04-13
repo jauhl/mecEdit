@@ -3,7 +3,7 @@
 const examples = {
     'crankrocker': {
         id: 'crank-rocker',
-        gravity: false,
+        gravity: true,
         nodes: [
             { id: 'A0', x: 100, y: 100, base: true },
             { id: 'A', x: 100, y: 150 },
@@ -18,8 +18,12 @@ const examples = {
             { id: 'd', p1: 'B', p2: 'C', ori: { type:'const', ref:'b'}, len: { type: 'const' } }
         ],
         views: [
-            { id:'view1',type:'trace',p:'C', stroke:'rgba(255,0,0,1)', fill:'rgba(255,235,13,.5)' },
-            { id:'ia',type:'info',elem:'a',value:'w' }
+            { "id":"view1","show":"pos","of":'C',"as":'trace',"stroke":"rgba(255,0,0,1)", "fill":"rgba(255,235,13,.5)" },
+            { "id":"ia",   "show":"w",  "of":"a","as":'info' },
+            { "as":"chart","x":0,"b":200,"h":150,"t0":0.25,"Dt":3,"mode":"preview","canvas":"chart1",
+                "yaxis":{"show":"w","of":"c"},
+                "xaxis":{"show":"w","of":"a"}
+            },
         ]
     },
     'slidercrank': {
@@ -101,24 +105,21 @@ const examples = {
           { "type":"force","id":"F = 1 N","p":"C","mode":"push","w0":-1.5707963267948966,"value":1 }
         ],
         "views": [
-          { "type":"info","id":"v1","elem":"a","value":"forceAbs" },
-          { "type":"info","id":"v2","elem":"b","value":"forceAbs" }
+          { "id":"v1","show":"forceAbs","of":"a","as":"info" },
+          { "id":"v2","show":"forceAbs","of":"b","as":"info" }
         ]
     },
     'truss': {
         "id":"GrossHauger-TM1-9.Aufl.-S.154",
         "nodes": [
-          { "id":"A","x":0,"y":0 },
+          { "id":"A","x":0,"y":0,"base":true },
           { "id":"B","x":500,"y":0 },
           { "id":"C","x":1000,"y":0 },
-          { "id":"D","x":1500,"y":0 },
+          { "id":"D","x":1500,"y":0,"base":true },
           { "id":"E","x":0,"y":250 },
           { "id":"F","x":500,"y":250 },
           { "id":"G","x":1000,"y":250 },
-          { "id":"H","x":1500,"y":250 },
-          { "id":"I","x":1600,"y":0,"base":true },
-          { "id":"J","x":-100,"y":0,"base":true },
-          { "id":"K","x":1500,"y":-100,"base":true }
+          { "id":"H","x":1500,"y":250 }
         ],
         "constraints": [
           { "id":"a","p1":"A","p2":"B","len":{ "type":"const" } },
@@ -133,31 +134,28 @@ const examples = {
           { "id":"j","p1":"C","p2":"G","len":{ "type":"const" } },
           { "id":"k","p1":"E","p2":"B","len":{ "type":"const" } },
           { "id":"l","p1":"B","p2":"G","len":{ "type":"const" } },
-          { "id":"m","p1":"G","p2":"D","len":{ "type":"const" } },
-          { "id":"n","p1":"D","p2":"I","len":{ "type":"const" } },
-          { "id":"o","p1":"K","p2":"D","len":{ "type":"const" } },
-          { "id":"p","p1":"J","p2":"A","ori":{ "type":"const" } }
+          { "id":"m","p1":"G","p2":"D","len":{ "type":"const" } }
         ],
         "loads": [
           { "type":"force","id":"F = 5 kN","p":"G","mode":"push","w0":-1.5707963267948966,"value":5000 }
         ],
         "views": [
-          { "type":"info","id":"v1","elem":"a","value":"forceAbs" },
-          { "type":"info","id":"v2","elem":"b","value":"forceAbs" },
-          { "type":"info","id":"v3","elem":"c","value":"forceAbs" },
-          { "type":"info","id":"v4","elem":"d","value":"forceAbs" },
-          { "type":"info","id":"v5","elem":"e","value":"forceAbs" },
-          { "type":"info","id":"v6","elem":"f","value":"forceAbs" },
-          { "type":"info","id":"v7","elem":"g","value":"forceAbs" },
-          { "type":"info","id":"v8","elem":"h","value":"forceAbs" },
-          { "type":"info","id":"v9","elem":"i","value":"forceAbs" },
-          { "type":"info","id":"v10","elem":"j","value":"forceAbs" },
-          { "type":"info","id":"v11","elem":"k","value":"forceAbs" },
-          { "type":"info","id":"v12","elem":"l","value":"forceAbs" },
-          { "type":"info","id":"v12","elem":"m","value":"forceAbs" },
-          { "type":"info","id":"v12","elem":"n","value":"forceAbs" },
-          { "type":"info","id":"v12","elem":"o","value":"forceAbs" },
-          { "type":"info","id":"v12","elem":"p","value":"moment" }
+          { "id":"v1", "show":"forceAbs","of":"a","as":"info" },
+          { "id":"v2", "show":"forceAbs","of":"b","as":"info" },
+          { "id":"v3", "show":"forceAbs","of":"c","as":"info" },
+          { "id":"v4", "show":"forceAbs","of":"d","as":"info" },
+          { "id":"v5", "show":"forceAbs","of":"e","as":"info" },
+          { "id":"v6", "show":"forceAbs","of":"f","as":"info" },
+          { "id":"v7", "show":"forceAbs","of":"g","as":"info" },
+          { "id":"v8", "show":"forceAbs","of":"h","as":"info" },
+          { "id":"v9", "show":"forceAbs","of":"i","as":"info" },
+          { "id":"v10","show":"forceAbs","of":"j","as":"info" },
+          { "id":"v11","show":"forceAbs","of":"k","as":"info" },
+          { "id":"v12","show":"forceAbs","of":"l","as":"info" },
+          { "id":"v12","show":"forceAbs","of":"m","as":"info" },
+          { "id":"v12","show":"forceAbs","of":"n","as":"info" },
+          { "id":"v12","show":"forceAbs","of":"o","as":"info" },
+          { "id":"v12","show":"moment"  ,"of":"p","as":"info" }
         ]
     },
     'pendulums': {
@@ -196,10 +194,10 @@ const examples = {
           { "id":"d3","p1":"D2","p2":"D3","len":{ "type":"const" } }
         ],
         "views": [
-          { "type":"trace","id":"view1","p":"A3","Dt":1,"stroke":"rgba(255,0,0,.5)" },
-          { "type":"trace","id":"view2","p":"B3","Dt":1,"stroke":"rgba(0,255,0,.5)" },
-          { "type":"trace","id":"view3","p":"C3","Dt":1,"stroke":"rgba(255,255,0,.5)" },
-          { "type":"trace","id":"view4","p":"D3","Dt":1,"stroke":"rgba(255,0,255,.5)" }
+          { "id":"view1","show":"pos","of":"A3","as":"trace","Dt":1,"stroke":"rgba(255,0,0,.5)" },
+          { "id":"view2","show":"pos","of":"B3","as":"trace","Dt":1,"stroke":"rgba(0,255,0,.5)" },
+          { "id":"view3","show":"pos","of":"C3","as":"trace","Dt":1,"stroke":"rgba(255,255,0,.5)" },
+          { "id":"view4","show":"pos","of":"D3","as":"trace","Dt":1,"stroke":"rgba(255,0,255,.5)" }
         ]
     }
 };

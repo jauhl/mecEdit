@@ -66,7 +66,11 @@ const events = {
             if (e.target && e.target.id === 'nav-addview') { app.initViewModal(); };
 
             // View
-            if (e.target && e.target.id === 'darkmode') { app.toggleDarkmode(); };
+            if (e.target && e.target.id === 'darkmode') { app.toggleDarkmode(e.target.id); };
+            if (e.target && e.target.id === 'nodescaling') {
+                app.show.nodeScaling = !app.show.nodeScaling;
+                app.notify('render');
+            };
             if (e.target && e.target.id === 'resetview') { app.resetView(); };
             if (e.target && e.target.id === 'toggleNodes') {
                 app.show.nodes = !app.show.nodes;
@@ -102,6 +106,11 @@ const events = {
             if (e.target && e.target.id === 'stop') { app.stop(); };
             if (e.target && e.target.id === 'reset') { app.reset(); };
             if (e.target && e.target.id === 'toggle-g') { app.model.gravity.active = !app.model.gravity.active; app.updateg(); };
+
+            if (e.target && e.target.id === 'sidebar-toggle') {
+                const sb = document.querySelector('#sb-r');
+                sb.style['padding-left'] = sb.style['padding-left'] === '0px' ? '270px' : '0px';
+            };
         })
     },
     navbarChange: (id) => {
@@ -134,9 +143,14 @@ const events = {
                 if (e.key === 'v')
                     app.initViewModal(); // open view modal
                 if (e.key === 'i') {
+                    let cb = document.querySelector('#dragmode');
                     app.dragMove = !app.dragMove; // toggle drag-mode
-                    if (!app.dragMove)
+                    if (!app.dragMove) {
                         app.reset();
+                        cb.checked = true;
+                    } else {
+                        cb.checked = false;
+                    }
                 };
                 if (e.key === 'p') {
                     app.build = { mode: 'purgeelement' };
@@ -372,19 +386,34 @@ const events = {
             if (e.target && e.target.id === 'input-view-id') {
                 app.updateTempElmNew('id',e.target.value);
             }
-            if (e.target && e.target.id === 'select-view-type') {
-                app.updateTempElmNew('type',e.target.value);
+            if (e.target && e.target.id === 'select-view-show') {
+                app.updateTempElmNew('show',e.target.value);
                 skipUpdate = false;
             };
-            if (e.target && e.target.id === 'select-view-p') {
-                app.updateTempElmNew('p',e.target.value);
+            if (e.target && e.target.id === 'select-view-of') {
+                app.updateTempElmNew('of',e.target.value);
+                skipUpdate = false;
+            };
+            if (e.target && e.target.id === 'select-view-as') {
+                app.updateTempElmNew('as',e.target.value);
+                app.tidyTempElmNew(app.tempElm.new.as); // remove not needed optional properties
+                skipUpdate = false;
+            };
+            if (e.target && e.target.id === 'select-view-by') {
+                app.updateTempElmNew('by',e.target.value);
+                skipUpdate = false;
+            };
+            if (e.target && e.target.id === 'select-view-at') {
+                app.updateTempElmNew('at',e.target.value);
+                skipUpdate = false;
+            };
+            if (e.target && e.target.id === 'select-view-mode') {
+                app.updateTempElmNew('mode',e.target.value);
+                skipUpdate = false;
             };
             if (e.target && e.target.id === 'select-view-elem') {
                 app.updateTempElmNew('elem',e.target.value);
                 skipUpdate = false; // valid values can change between elems
-            };
-            if (e.target && e.target.id === 'select-view-value') {
-                app.updateTempElmNew('value',e.target.value);
             };
             if (e.target && e.target.id === 'view-stroke-color') {
                 app.updateTempElmNew('stroke',e.target.value);

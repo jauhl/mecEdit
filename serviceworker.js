@@ -1,5 +1,5 @@
 const APP_PREFIX = 'mecEdit'
-const VERSION = 'v0.6.7a'
+const VERSION = 'v0.6.8'
 const CACHE_NAME = APP_PREFIX + '_' + VERSION
 const URLS = [
   `./`,
@@ -15,15 +15,8 @@ const URLS = [
   `./vendor/codemirror/codemirror.jsmode5.39.2.js`,
   `./vendor/codemirror/matchbrackets.js`,
   `./scripts/g2.js`,
-  // `https://gitcdn.xyz/repo/goessner/g2/master/src/g2.js`,
   `./scripts/g2.editor.js`,
   `./scripts/mec2.min.js`,
-  // `./scripts/slider.js`,
-  // `./scripts/mixin.js`,
-  // `./scripts/ctxm-templates.js`,
-  // `./scripts/appevents.js`,
-  // `./scripts/examples.js`,
-  // `./app.js`,
   `./app.min.js`,
   `./img/favicon/favicon-16x16.png`,
   `./img/favicon/favicon-32x32.png`,

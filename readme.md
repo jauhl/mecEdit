@@ -35,6 +35,15 @@ english version: todo
 
 # Changelog
 
+## v0.6.8
+
+### general:
++ `mec2` charts-views are now fully supported. Charts have to be added via the JSON-editor. They can either be rendered directly to the main canvas or to a separate canvas for each chart. To do so simply give the chart definition in your model a property `"canvas":"canvasId"` with an arbitrary id as a value. Everething else is handled by *mecEdit*.
++ Added an option to scale the radius of each node by its mass. This can be toggled from the navigationbar under __View__ -> __Nodescaling__.
++ Some CSS fine-tuning.
+
+---
+
 ## v0.6.6
 
 ### general:

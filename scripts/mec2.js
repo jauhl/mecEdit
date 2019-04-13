@@ -1,5 +1,5 @@
 /**
- * mec (c) 2018 Stefan Goessner
+ * mec (c) 2018-19 Stefan Goessner
  * @license MIT License
  */
 "use strict";
@@ -32,7 +32,7 @@ EPS: 1.19209e-07,
  * @const
  * @type {number}
  */
-lenTol: 0.01,
+lenTol: 0.001,
 /**
  * Angular tolerance for orientation correction.
  * @const
@@ -82,6 +82,12 @@ corrMax: 64,
 */
 show: {
     /**
+     * flag for radius scaling by nodemass.
+     * @const
+     * @type {boolean}
+     */
+    nodeScaling: false,
+    /**
      * flag for darkmode.
      * @const
      * @type {boolean}
@@ -92,7 +98,7 @@ show: {
      * @const
      * @type {boolean}
      */
-    nodeLabels: true,
+    nodeLabels: false,
     /**
      * flag for showing labels of constraints.
      * @const
@@ -194,7 +200,8 @@ gravity: {x:0,y:-10,active:false},
  * analysing values
  */
 aly: {
-    mass: { get scl() { return 1}, type:'num', name:'m', unit:'kg' },
+    m: { get scl() { return 1}, type:'num', name:'m', unit:'kg' },
+    pos: { type:'pnt', name:'p', unit:'m' },
     vel: { get scl() {return mec.m_u}, type:'vec', name:'v', unit:'m/s', get drwscl() {return 40*mec.m_u} },
     acc: { get scl() {return mec.m_u}, type:'vec', name:'a', unit:'m/s^2', get drwscl() {return 10*mec.m_u} },
     w: { get scl() { return 180/Math.PI}, type:'num', name:'φ', unit:'°' },
@@ -208,6 +215,13 @@ aly: {
     accAbs: { get scl() {return mec.m_u}, type:'num', name:'a', unit:'m/s' },
     forceAbs: { get scl() {return mec.m_u}, type:'num', name:'F', unit:'N' },
     moment: { get scl() {return mec.m_u**2}, type:'num', name:'M', unit:'Nm' },
+    energy: { get scl() {return mec.to_J(1)}, type:'num', name:'E', unit:'J' },
+    pole: { type:'pnt', name:'P', unit:'m' },
+    polAcc: { get scl() {return mec.m_u}, type:'vec', name:'a_P', unit:'m/s^2', get drwscl() {return 10*mec.m_u} },
+    polChgVel: { get scl() {return mec.m_u}, type:'vec', name:'u_P', unit:'m/s', get drwscl() {return 40*mec.m_u} },
+    accPole: { type:'pnt', name:'Q', unit:'m' },
+    inflPole: { type:'pnt', name:'I', unit:'m' },
+    t: { get scl() { return 1 }, type:'num', name:'t', unit:'sec' }
 },
 /**
  * unit specifiers and relations
@@ -254,7 +268,7 @@ from_Nm(x) { return x/mec.m_u/mec.m_u; },
  */
 to_N_m(x) { return x; },
 /**
- * convert [N/m] = [kg/s^2] => [k/s^2]
+ * convert [N/m] = [kg/s^2] => [kg/s^2]
  * @return {number} Value in [kg/s^2]
  */
 from_N_m(x) { return x; },
@@ -375,7 +389,7 @@ messageString(msg) {
 }
 }
 /**
- * mec.node (c) 2018 Stefan Goessner
+ * mec.node (c) 2018-19 Stefan Goessner
  * @license MIT License
  * @requires mec.core.js
  * @requires mec.model.js
@@ -441,23 +455,28 @@ mec.node = {
             Object.defineProperty(this,'base',{ get: () => this.im === 0,
                                                 set: (q) => this.im = q ? 0 : 1,
                                                 enumerable:true, configurable:true });
+            this.radius = !!this.base   ?  8
+                        : (this.m > 20) ? 18
+                        : 3.13874*Math.log(12.9244*this.m); // coefficients https://www.wolframalpha.com/input/?i=log+fit+%7B1,8%7D,%7B2,10.1%7D,%7B3,11.6%7D,%7B5,13.3%7D,%7B10,15%7D,%7B20,17.5%7D
         },
         // kinematics
         // current velocity state .. only used during iteration.
         get xtcur() { return this.xt + this.dxt },
         get ytcur() { return this.yt + this.dyt },
         // inverse mass
-        get type() { return 'node' }, // needed for ... what .. ?
+        get type() { return 'node' }, // needed for consistency among components, used in mecEdit
         get dof() { return this.m === Number.POSITIVE_INFINITY ? 0 : 2 },
         /**
-         * Test, if node is significantly moving
+         * Test, if node is not resting
          * @const
          * @type {boolean}
          */
         get isSleeping() {
             return this.base
                 || mec.isEps(this.xt,mec.velTol)
-                && mec.isEps(this.yt,mec.velTol);
+                && mec.isEps(this.yt,mec.velTol)
+                && mec.isEps(this.xtt,mec.velTol/this.model.timer.dt)
+                && mec.isEps(this.ytt,mec.velTol/this.model.timer.dt);
         },
         /**
          * Energy [kgu^2/s^2]
@@ -466,7 +485,7 @@ mec.node = {
             var e = 0;
             if (!this.base) {
                 if (this.model.hasGravity)
-                    e += this.m*(-this.x*this.model.gravity.x - this.y*this.model.gravity.y);
+                    e += this.m*(-(this.x-this.x0)*mec.from_m(this.model.gravity.x) - (this.y-this.y0)*mec.from_m(this.model.gravity.y));
                 e += 0.5*this.m*(this.xt**2 + this.yt**2);
             }
             return e;
@@ -497,27 +516,48 @@ mec.node = {
             this.xtt = this.ytt = 0;
             this.dxt = this.dyt = 0;
         },
-        pre(dt) {
-            // symplectic euler ... partially
-            this.x += (this.xt + 0.5*this.dxt)*dt;
-            this.y += (this.yt + 0.5*this.dyt)*dt;
-//            this.x += this.model.direc*(this.xt + 0.5*this.dxt)*dt;
-//            this.y += this.model.direc*(this.yt + 0.5*this.dyt)*dt;
-            // position verlet  ... just for investigating in future
-//            this.x += this.model.direc*(this.xt - 0.5*this.dxt)*dt;
-//            this.y += this.model.direc*(this.yt - 0.5*this.dyt)*dt;
-            // if applied forces are acting, set velocity diffs initially by forces.
-            //console.log('node('+this.id+')=['+this.Qx+','+this.Qy+']')
-            if (this.Qx || this.Qy) {
-                this.dxt = this.Qx*this.im * dt;
-                this.dyt = this.Qy*this.im * dt;
-            }
-            else
-                this.dxt = this.dyt = 0;  // zero out velocity differences .. important !!
+
+        /**
+         * First step of node pre-processing.
+         * Zeroing out node forces and differential velocities.
+         * @method
+         */
+        pre_0() {
+            this.Qx = this.Qy = 0;
+            this.dxt = this.dyt = 0;
         },
+        /**
+         * Second step of node pre-processing.
+         * @method
+         * @param {number} dt - time increment [s].
+         * @returns {boolean} dependency exists.
+         */
+        pre(dt) {
+            // apply optional gravitational force
+            if (!this.base && this.model.hasGravity) {
+                this.Qx += this.m*mec.from_m(this.model.gravity.x);
+                this.Qy += this.m*mec.from_m(this.model.gravity.y);
+            }
+            // semi-implicite Euler step ... !
+            this.dxt += this.Qx*this.im * dt;
+            this.dyt += this.Qy*this.im * dt;
+
+            // increasing velocity is done dynamically and implicitly by using `xtcur, ytcur` during iteration ...
+
+            // increase positions using previously incremented velocities ... !
+            // x = x0 + (dx/dt)*dt + 1/2*(dv/dt)*dt^2
+            this.x += (this.xt + 1.5*this.dxt)*dt;
+            this.y += (this.yt + 1.5*this.dyt)*dt;
+        },
+
+        /**
+         * Node post-processing.
+         * @method
+         * @param {number} dt - time increment [s].
+         * @returns {boolean} dependency exists.
+         */
         post(dt) {
-            // symplectic euler ... partially
-//            console.log(`${this.id}:${this.dxt}/${this.dyt},${dt}`)
+            // update velocity from `xtcur, ytcur`
             this.xt += this.dxt;
             this.yt += this.dyt;
             // get accelerations from velocity differences...
@@ -533,6 +573,7 @@ mec.node = {
 
         // analysis getters
         get force() { return {x:this.Qx,y:this.Qy}; },
+        get pos() { return {x:this.x,y:this.y}; },
         get vel() { return {x:this.xt,y:this.yt}; },
         get acc() { return {x:this.xtt,y:this.ytt}; },
         get forceAbs() { return Math.hypot(this.Qx,this.Qy); },
@@ -553,26 +594,27 @@ mec.node = {
             }
         },
         drag({x,y,mode}) {
-            if (mode === 'edit' && !this.base) { this.x0 = x; this.y0 = y; }
-            else                               { this.x = x; this.y = y; }
+            if ( mode === 'drag' && !this.base) { this.x = x; this.y = y; }
+            else if ( mode === 'edit' )         { this.x0 = this.x = x; this.y0 = this.y = y; }
+            else return false;
         },
         // graphics ...
-        get r() { return mec.node.radius; },
+        get r() { return this.model.env.show.nodeScaling ? this.state & g2.OVER ? 1.5*this.radius : this.radius : mec.node.radius; },
         g2() {
             let g = g2();
             if (this.model.env.show.nodes) {
                 const loc = mec.node.locdir[this.idloc || 'n'],
-                      xid = this.x + 3*this.r*loc[0],
-                      yid = this.y + 3*this.r*loc[1];
+                      xid = this.x + (this.r + 15)*loc[0],
+                      yid = this.y + (this.r + 15)*loc[1];
 
                       g = this.base
                         ? g2().beg({x:this.x,y:this.y,sh:this.sh})
-                              .cir({x:0,y:0,r:5,ls:"@nodcolor",fs:"@nodfill"})
-                              .p().m({x:0,y:5}).a({dw:Math.PI/2,x:-5,y:0}).l({x:5,y:0})
-                              .a({dw:-Math.PI/2,x:0,y:-5}).z().fill({fs:"@nodcolor"})
+                              .cir({x:0,y:0,r:this.r,ls:"@nodcolor",fs:"@nodfill"})
+                              .p().m({x:0,y:this.r}).a({dw:Math.PI/2,x:-this.r,y:0}).l({x:this.r,y:0})
+                              .a({dw:-Math.PI/2,x:0,y:-this.r}).z().fill({fs:"@nodcolor"})
                               .end()
                         : g2().cir({x:this.x,y:this.y,r:this.r,
-                                    ls:'#333',fs:'#eee',sh:()=>this.sh});
+                                    ls:'#333',fs:'#eee',sh:this.sh});
                 if (this.model.env.show.nodeLabels)
                     g.txt({str:this.id||'?',x:xid,y:yid,thal:'center',tval:'middle',ls:this.model.env.show.txtColor});
             };
@@ -742,7 +784,6 @@ mec.constraint = {
          * Reset constraint
          */
         reset() {
-//        console.log('reset')
             this.r0 = this.len.hasOwnProperty('r0') ? this.len.r0 : Math.hypot(this.ay,this.ax);
             this.w0 = this.ori.hasOwnProperty('w0') ? this.angle(this.ori.w0) : this.angle(Math.atan2(this.ay,this.ax));
             this._angle = this.w0;
@@ -772,19 +813,48 @@ mec.constraint = {
          * Moment value in [N*u]
          */
         get moment() { return -this.lambda_w*this.r; },
+        /**
+         * Instantaneous centre of velocity
+         */
+        get pole() {
+            return { x:this.p1.x-this.p1.yt/this.wt, y:this.p1.y+this.p1.xt/this.wt };
+        },
+        get velPole() { return this.pole; },
+        /**
+         * Inflection pole
+         */
+        get inflPole() {
+            return {
+                x:this.p1.x + this.p1.xtt/this.wt**2-this.wtt/this.wt**3*this.p1.xt,
+                y:this.p1.y + this.p1.ytt/this.wt**2-this.wtt/this.wt**3*this.p1.yt
+            };
+        },
+        /**
+         * Acceleration pole
+         */
+        get accPole() {
+            const wt2  = this.wt**2,
+                  wtt  = this.wtt,
+                  den  = wtt**2 + wt2**2;
+            return {
+                x:this.p1.x + (wt2*this.p1.xtt - wtt*this.p1.ytt)/den,
+                y:this.p1.y + (wt2*this.p1.ytt + wtt*this.p1.xtt)/den
+            };
+        },
 
         /**
-         * Check constraint for unfinished drives.
+         * Number of active drives.
          * @method
          * @param {number} t - current time.
-         * @returns {boolean} true, if any drive is active.
+         * @returns {int} Number of active drives.
          */
-        hasActiveDrives(t) {
-            let ori = this.ori, len = this.len;
-            return ori.type === 'drive'
-                && (ori.input || t <= ori.t0 + ori.Dt*(ori.bounce ? 2 : 1)*(ori.repeat || 1) + 0.5*this.model.timer.dt)
-                || len.type === 'drive'
-                && (len.input || t <= len.t0 + len.Dt*(len.bounce ? 2 : 1)*(len.repeat || 1) + 0.5*this.model.timer.dt);
+        activeDriveCount(t) {
+            let ori = this.ori, len = this.len, drvCnt = 0;
+            if (ori.type === 'drive' && (ori.input || t <= ori.t0 + ori.Dt*(ori.bounce ? 2 : 1)*(ori.repeat || 1) + 0.5*this.model.timer.dt)) 
+                ++drvCnt;
+            if (len.type === 'drive' && (len.input || t <= len.t0 + len.Dt*(len.bounce ? 2 : 1)*(len.repeat || 1) + 0.5*this.model.timer.dt))
+                ++drvCnt;
+            return drvCnt;
         },
         /**
          * Check constraint for dependencies on another element.
@@ -807,7 +877,7 @@ mec.constraint = {
         /*
         deepDependsOn(target) {
             return this === target
-                || this.dependsOn(target) 
+                || this.dependsOn(target)
                 || this.model.deepDependsOn(this.p1,target)
                 || this.model.deepDependsOn(this.p2,target)
                 || this.ori && this.model.deepDependsOn(this.ori.ref,target)
@@ -921,8 +991,9 @@ mec.constraint = {
                     ref.dlambda_r -= ratio*impulse/dt;
                 }
                 else {
-                    ref.ori_impulse_vel(this.r/ref.r*ratio*impulse);
-                    ref.dlambda_w -= this.r/ref.r*ratio*impulse/dt;
+                    const refimp = this.r/ref.r*ratio*impulse;
+                    ref.ori_impulse_vel(-refimp);
+                    ref.dlambda_w -= refimp/dt;
                 }
             }
 
@@ -1122,7 +1193,9 @@ mec.constraint = {
                                             Dt: ori.Dt,
                                             t: ori.t,
                                             bounce: ori.bounce,
-                                            repeat: ori.repeat });
+                                            repeat: ori.repeat,
+                                            args: ori.args
+                                         });
 
             if (!!ori.ref) {
                 const ref = ori.ref = this.model.constraintById(ori.ref) || ori.ref,
@@ -1138,7 +1211,7 @@ mec.constraint = {
                         wt: () => ref.wt + ori.drive.ft(),
                         wtt:() => ref.wtt + ori.drive.ftt(),
                         ori_C:  () => this.r*(this.angle(Math.atan2(this.ay,this.ax)) - this.w0) -this.r*(ref.angle(Math.atan2(ref.ay,ref.ax)) - ref.w0) - this.r*ori.drive.f(),
-                        ori_Ct: () => {console.log('ft='+ori.drive.ft()); return this.ayt*this.cw - this.axt*this.sw - this.r/ref.r*(ref.ayt*ref.cw - ref.axt*ref.sw) - this.r*ori.drive.ft()},
+                        ori_Ct: () => { return this.ayt*this.cw - this.axt*this.sw - this.r/ref.r*(ref.ayt*ref.cw - ref.axt*ref.sw) - this.r*ori.drive.ft()},
                         ori_mc: () => {
                             let imc = mec.toZero(this.p1.im + this.p2.im) + this.r**2/ref.r**2*mec.toZero(ref.p1.im + ref.p2.im);
                             return imc ? 1/imc : 0;
@@ -1234,21 +1307,22 @@ mec.constraint = {
             if (len.input) {
                 // maintain a local input controlled time 'local_t'.
                 len.local_t = 0;
-                len.t = () => len.local_t;
+                len.t = () => !this.model.state.preview ? len.local_t : this.model.timer.t;
                 len.inputCallbk = (u) => { len.local_t = u*len.Dt/len.Dr; };
             }
             else
                 len.t = () => this.model.timer.t;
 
-
             len.drive = mec.drive.create({func: len.func || len.input && 'static' || 'linear',
-                                          z0: this.r0,
+                                          z0: len.ref ? 0 : this.r0,
                                           Dz: len.Dr,
                                           t0: len.t0,
                                           Dt: len.Dt,
                                           t: len.t,
                                           bounce: len.bounce,
-                                          repeat: len.repeat });
+                                          repeat: len.repeat,
+                                          args: len.args
+                                        });
 
             if (!!len.ref) {
                 const ref = len.ref = this.model.constraintById(len.ref) || len.ref,
@@ -1344,12 +1418,14 @@ mec.constraint = {
         g2() {
             let g = g2();
             if (this.model.env.show.constraints) {
-                const {p1,p2,w,r,type,ls,ls2,lw,id,idloc} = this;
+                const {p1,p2,w,r,type,ls,ls2,lw,id,idloc} = this, rvis = r - p1.r - p2.r, scaling = this.model.env.show.nodeScaling;
                 g.beg({x:p1.x,y:p1.y,w,scl:1,lw:2,
-                        ls:this.model.env.show.constraintVectorColor,fs:'@ls',lc:'round',sh:()=>this.sh})
-                    .stroke({d:`M50,0 ${r},0`,ls:()=>this.color,
-                            lw:lw+1,lsh:true})
-                    .drw({d:mec.constraint.arrow[type],lsh:true})
+                       ls:this.model.env.show.constraintVectorColor, fs:'@ls', lc:'round', sh:this.sh})
+                    if (rvis > 45) {
+                        g.stroke({d:`M${(scaling ? 50 : 45) + p1.r},0 ${r - p2.r},0`, ls:this.color, // 45 needs to be variable
+                                  lw:lw+1,lsh:true})
+                    }
+                    g.drw({d:mec.constraint[type](p1.r, scaling, rvis), lsh:true})
                   .end();
 
                 if (this.model.env.show.constraintLabels) {
@@ -1377,11 +1453,37 @@ mec.constraint = {
             return g;
         }
     },
-    arrow: {
-        'ctrl': 'M0,0 35,0M45,0 36,-3 37,0 36,3 Z',
-        'rot': 'M12,0 8,6 12,0 8,-6Z M0,0 8,0M15,0 35,0M45,0 36,-3 37,0 36,3 Z',
-        'tran': 'M0,0 12,0M16,0 18,0M22,0 24,0 M28,0 35,0M45,0 36,-3 37,0 36,3 Z',
-        'free': 'M12,0 8,6 12,0 8,-6ZM0,0 8,0M15,0 18,0M22,0 24,0 M28,0 35,0M45,0 36,-3 37,0 36,3 Z'
+    //deprecated
+    // arrow: {
+    //     'ctrl': 'M0,0 35,0M45,0 36,-3 37,0 36,3 Z',
+    //     'rot': 'M12,0 8,6 12,0 8,-6Z M0,0 8,0M15,0 35,0M45,0 36,-3 37,0 36,3 Z',
+    //     'tran': 'M0,0 12,0M16,0 18,0M22,0 24,0 M28,0 35,0M45,0 36,-3 37,0 36,3 Z',
+    //     'free': 'M12,0 8,6 12,0 8,-6ZM0,0 8,0M15,0 18,0M22,0 24,0 M28,0 35,0M45,0 36,-3 37,0 36,3 Z'
+    // },
+    ctrl: (r1 = mec.node.radius, scl = false, rvis = 45) => {
+        const l = rvis < 45 ? rvis : 45;
+        return scl ? `${rvis > 20 ? `M${r1},0 ${r1 + l - 10},0` : ''}M${r1 + l},0 ${r1 + l - 9},-3 ${r1 + l - 8},0 ${r1 + l - 9},3 Z`
+                   : 'M0,0 35,0M45,0 36,-3 37,0 36,3 Z'
+    },
+    rot: (r1 = mec.node.radius, scl = false, rvis = 45) => {
+        const l = rvis < 45 ? rvis : 45;
+        return scl ? `M${8 + r1},0 ${4 + r1},6 ${8 + r1},0 ${4 + r1},-6Z ${rvis > 20 ? `M${r1},0 ${4 + r1},0 M${11 + r1},0 ${r1 + l - 10},0` : ''}M${r1 + l},0 ${r1 + l - 9},-3 ${r1 + l - 8},0 ${r1 + l - 9},3 Z` // `M${a},0 ${b},6 ${a},0 ${b},-6Z M0,0 ${b},0 M${15 + dif},0 35,0M45,0 36,-3 37,0 36,3 Z`
+                   : 'M12,0 8,6 12,0 8,-6Z M0,0 8,0M15,0 35,0M45,0 36,-3 37,0 36,3 Z'
+    },
+    tran: (r1 = mec.node.radius, scl = false, rvis = 45) => {
+        const l = rvis < 45 ? rvis : 45;
+        return scl ? `${rvis > 20 ? `M${r1},0 ${5 + r1},0 M${9 + r1},0 ${11 + r1},0 M${15 + r1},0 ${17 + r1},0 M${21 + r1},0 ${r1 + l - 10},0`:''}M${r1 + l},0 ${r1 + l - 9},-3 ${r1 + l - 8},0 ${r1 + l - 9},3 Z`
+                   : 'M0,0 12,0M16,0 18,0M22,0 24,0 M28,0 35,0M45,0 36,-3 37,0 36,3 Z'
+    },
+    free: (r1 = mec.node.radius, scl = false, rvis = 45) => {
+        const l = rvis < 45 ? rvis : 45;
+        return scl ? `M${8 + r1},0 ${4 + r1},6 ${8 + r1},0 ${4 + r1},-6Z ${rvis > 20 ? `M${r1},0 ${4 + r1},0 M${11 + r1},0 ${13 + r1},0 M${17 + r1},0 ${19 + r1},0 M${23 + r1},0 ${25 + r1},0 ${r1 + l - 10},0` : ''}M${r1 + l},0 ${r1 + l - 9},-3 ${r1 + l - 8},0 ${r1 + l - 9},3 Z`
+                   : 'M12,0 8,6 12,0 8,-6ZM0,0 8,0M15,0 18,0M22,0 24,0 M28,0 35,0M45,0 36,-3 37,0 36,3 Z'
+    },
+    arrowFn: {
+        'rot': g => g.m({x:12,y:0}).l({x:8,y:6}).m({x:12,y:0}).l({x:8,y:-6})
+                     .m({x:0,y:0}).l({x:8,y:0}).m({x:15,y:0}).l({x:35,y:-0})
+                     .m({x:45,y:0}).l({x:36,y:-3}).m({x:37,y:0}).l({x:36,y:3}).z()
     }
 }/**
  * mec.drive (c) 2018 Stefan Goessner
@@ -1395,23 +1497,30 @@ mec.constraint = {
  * They are named and implemented after VDI 2145 and web easing functions.
  */
 mec.drive = {
-    create({func,z0,Dz,t0,Dt,t,bounce,repeat}) {
+    create({func,z0,Dz,t0,Dt,t,bounce,repeat,args}) {
         const isin = (x,x1,x2) => x >= x1 && x < x2;
-        let drv = func && func in mec.drive ? mec.drive[func] :  mec.drive.linear;
+        let drv = func && func in mec.drive ? mec.drive[func] : mec.drive.linear,
+            DtTotal = Dt;
 
-        if (bounce  && func !== 'static') {
+        if (typeof drv === 'function') {
+            drv = drv(args);
+        }
+        if (bounce && func !== 'static') {
             drv = mec.drive.bounce(drv);
-            Dt *= 2;  // preserve duration per repetition
+            DtTotal *= 2;  // preserve duration while bouncing
         }
         if (repeat && func !== 'static') {
             drv = mec.drive.repeat(drv,repeat);
-            Dt *= repeat;  // preserve duration per repetition
+            DtTotal *= repeat;  // preserve duration per repetition
         }
         return {
-            f:   () => z0 + drv.f(Math.max(0,Math.min((t() - t0)/Dt,1)))*Dz,
-            ft:  () => isin(t(),t0,t0+Dt) ? drv.fd((t()-t0)/Dt)*Dz/Dt : 0,
-            ftt: () => isin(t(),t0,t0+Dt) ? drv.fdd((t()-t0)/Dt)*Dz/Dt/Dt : 0
+            f:   () => z0 + drv.f(Math.max(0,Math.min((t() - t0)/DtTotal,1)))*Dz,
+            ft:  () => isin(t(),t0,t0+DtTotal) ? drv.fd((t()-t0)/DtTotal)*Dz/Dt : 0,
+            ftt: () => isin(t(),t0,t0+DtTotal) ? drv.fdd((t()-t0)/DtTotal)*Dz/Dt/Dt : 0
         };
+    },
+    "const": {   // used for resting segments in a composite drive sequence.
+        f: (q) => 0, fd: (q) => 0, fdd: (q) => 0
     },
     linear: {
         f: (q) =>q, fd: (q) => 1, fdd: (q) => 0
@@ -1439,34 +1548,45 @@ mec.drive = {
     static: {   // used for actuators (Stellantrieb) without velocities and accelerations
         f: (q) =>q, fd: (q) => 0, fdd: (q) => 0
     },
-    ramp(dq) {
-        dq = mec.clamp(dq,0,0.5);
-        if (dq === 0)
-            return mec.drive.linear;
-        else if (dq === 0.5)
-            return mec.drive.quadratic;
-        else {
-            const a =  1/((1-dq)*dq);
-            return {f: function(q) {
-                        return (q < dq)   ? 1/2*a*q*q
-                             : (q < 1-dq) ? a*(q - 1/2*dq)*dq
-                             :              a*(1 - 3/2*dq)*dq + a*(q+dq-1)*dq - 1/2*a*(q+dq-1)*(q+dq-1);
-                    },
-                    fd: function(q) {
-                        return (q < dq)   ? a*q
-                             : (q < 1-dq) ? a*dq
-                             :              a*dq - a*(q+dq-1);
-                    },
-                    fdd: function(q) {
-                        return (q < dq)   ? a
-                             : (q < 1-dq) ? 0
-                             :             -a;
+    seq(segments) {
+        let zmin = Number.POSITIVE_INFINITY,
+            zmax = Number.NEGATIVE_INFINITY,
+            z = 0, Dz = 0, Dt = 0,
+            segof = (t) => {
+                let tsum = 0, zsum = 0, dz;
+                for (const seg of segments) {
+                    dz = seg.dz||0;
+                    if (tsum <= t && t <= tsum + seg.dt) {
+                        return {
+                            f: zsum + mec.drive[seg.func].f((t-tsum)/seg.dt)*dz,
+                            fd: mec.drive[seg.func].fd((t-tsum)/seg.dt)*dz/Dt,
+                            fdd: mec.drive[seg.func].fdd((t-tsum)/seg.dt)*dz/Dt/Dt
+                        }
                     }
+                    tsum += seg.dt;
+                    zsum += dz;
+                }
+                return {};  // error
             };
+
+        for (const seg of segments) {
+            if (typeof seg.func === 'string') { // add error logging here ..
+                Dt += seg.dt;
+                z += seg.dz || 0;
+                zmin = Math.min(z, zmin);
+                zmax = Math.max(z, zmax);
+            }
+        }
+        Dz = zmax - zmin;
+//        console.log({Dt,Dz,zmin,zmax,segof:segof(0.5*Dt).f})
+        return {
+            f: (q) => (segof(q*Dt).f - zmin)/Dz,
+            fd: (q) => segof(q*Dt).fd/Dz,
+            fdd: (q) => 0
         }
     },
     // todo .. test valid velocity and acceleration signs with bouncing !!
-    bounce: function(drv) {
+    bounce(drv) {
         if (typeof drv === 'string') drv = mec.drive[drv];
         return {
             f: q => drv.f(q < 0.5 ? 2*q : 2-2*q),
@@ -1474,7 +1594,7 @@ mec.drive = {
             fdd: q => drv.fdd(q < 0.5 ? 2*q : 2-2*q)*(q < 0.5 ? 1 : -1)
         }
     },
-    repeat: function(drv,n) {
+    repeat(drv,n) {
         if (typeof drv === 'string') drv = mec.drive[drv];
         return {
             f: q => drv.f((q*n)%1),
@@ -1581,7 +1701,7 @@ mec.load.force = {
         else
             this.wref = this.model.constraintById(this.wref);
 
-        if (typeof this.value === 'number' && mec.isEps(this.value))
+        if (typeof this.value === 'number' && mec.isEps(this.value)) 
             return { mid:'E_FORCE_VALUE_INVALID',val:this.value,id:this.id };
 
         return warn;
@@ -1620,8 +1740,9 @@ mec.load.force = {
 
  // cartesian components
     get w() { return this.wref ? this.wref.w + this.w0 : this.w0; },
-    get Qx() { return this._value*Math.cos(this.w)},
-    get Qy() { return this._value*Math.sin(this.w)},
+    get Qx() { return this._value*Math.cos(this.w); },
+    get Qy() { return this._value*Math.sin(this.w); },
+    get energy() { return 0; },
     reset() {},
     apply() {
         this.p.Qx += this.Qx;
@@ -1745,9 +1866,10 @@ mec.load.spring = {
     // cartesian components
     get len() { return Math.hypot(this.p2.y-this.p1.y,this.p2.x-this.p1.x); },
     get w() { return Math.atan2(this.p2.y-this.p1.y,this.p2.x-this.p1.x); },
-    get force() { return this._k*(this.len - this.len0); },                           // todo: rename due to analysis convention .. !
+    get force() { return this._k*(this.len - this.len0); },                      // todo: rename due to analysis convention .. !
     get Qx() { return this.force*Math.cos(this.w)},
     get Qy() { return this.force*Math.sin(this.w)},
+    get energy() { return 0.5*this._k*(this.len - this.len0)**2; },
     reset() {},
     apply() {
         const f = this.force, w = this.w,
@@ -1790,7 +1912,7 @@ mec.load.spring = {
                    .stroke(Object.assign({}, {ls:this.model.env.show.springColor},this,{fs:'transparent',lc:'round',lw:2,lj:'round',sh:()=>this.sh,lsh:true}));
     }
 }/**
- * mec.shape (c) 2018 Stefan Goessner
+ * mec.view (c) 2018 Stefan Goessner
  * @license MIT License
  * @requires mec.core.js
  * @requires mec.node.js
@@ -1802,14 +1924,14 @@ mec.load.spring = {
 
 /**
  * @method
- * @param {object} - plain javascript shape object.
+ * @param {object} - plain javascript view object.
  * @property {string} id - view id.
  * @property {string} type - view type ['vector','trace','info'].
  */
 mec.view = {
     extend(view) {
-        if (view.type && mec.view[view.type]) {
-            Object.setPrototypeOf(view, mec.view[view.type]);
+        if (view.as && mec.view[view.as]) {
+            Object.setPrototypeOf(view, mec.view[view.as]);
             view.constructor();
         }
         return view;
@@ -1817,9 +1939,77 @@ mec.view = {
 }
 
 /**
+ * @param {object} - point view.
+ * @property {string} show - kind of property to show as point.
+ * @property {string} of - element property belongs to.
+ */
+mec.view.point = {
+    constructor() {}, // always parameterless .. !
+    /**
+     * Check point view properties for validity.
+     * @method
+     * @param {number} idx - index in views array.
+     * @returns {boolean} false - if no error / warning was detected.
+     */
+    validate(idx) {
+        if (this.of === undefined)
+            return { mid:'E_ELEM_MISSING',elemtype:'view as point',id:this.id,idx,reftype:'element',name:'of'};
+        if (!this.model.elementById(this.of))
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'view as point',id:this.id,idx,reftype:'element',name:this.of};
+        else
+            this.of = this.model.elementById(this.of);
+
+        if (this.show && !(this.show in this.of))
+            return { mid:'E_ALY_PROP_INVALID',elemtype:'view as point',id:this.id,idx,reftype:this.of,name:this.show};
+
+        return false;
+    },
+    /**
+     * Initialize view. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in views array.
+     */
+    init(model,idx) {
+        this.model = model;
+        this.model.notifyValid(this.validate(idx));
+        this.p = Object.assign({},this.of[this.show]);
+        this.p.r = this.r;
+    },
+    dependsOn(elem) {
+        return this.of === elem || this.ref === elem;
+    },
+    reset() {
+        Object.assign(this.p,this.of[this.show]);
+    },
+    post() {
+        Object.assign(this.p,this.of[this.show]);
+    },
+    asJSON() {
+        return '{ "show":"'+this.show+'","of":"'+this.of.id+'","as":"point" }';
+    },
+    // interaction
+    get r() { return 6; },
+    get isSolid() { return true },
+    get sh() { return this.state & g2.OVER ? [0, 0, 10, this.model.env.show.hoveredElmColor] : false; },
+    hitInner({x,y,eps}) {
+        return g2.isPntInCir({x,y},this.p,eps);
+    },
+    g2() {
+        return this.g2cache
+            || (this.g2cache = g2().beg({x:()=>this.p.x,y:()=>this.p.y,sh:()=>this.sh})
+                                     .cir({r:6,fs:'snow'})
+                                     .cir({r:2.5,fs:'@ls',ls:'transparent'})
+                                   .end());
+    },
+    draw(g) { g.ins(this); },
+}
+
+/**
  * @param {object} - vector view.
- * @property {string} p - referenced node id.
- * @property {string} [value] - node value to view.
+ * @property {string} show - kind of property to show as vector.
+ * @property {string} of - element property belongs to.
+ * @property {string} [at] - node id as anchor to show vector at.
  */
 mec.view.vector = {
     constructor() {}, // always parameterless .. !
@@ -1827,20 +2017,249 @@ mec.view.vector = {
      * Check vector view properties for validity.
      * @method
      * @param {number} idx - index in views array.
-     * @returns {boolean} false - if no error / warning was detected. 
+     * @returns {boolean} false - if no error / warning was detected.
      */
     validate(idx) {
-        const keys = ['vel','acc','force'];
-        if (this.p === undefined) 
-            return { mid:'E_ELEM_REF_MISSING',elemtype:'vector',id:this.id,idx,reftype:'node',name:'p'};
-        if (!this.model.nodeById(this.p)) 
-            return { mid:'E_ELEM_INVALID_REF',elemtype:'vector',id:this.id,idx,reftype:'node',name:this.p};
+        if (this.show === undefined)
+            return { mid:'E_SHOW_PROP_MISSING',elemtype:'view as vector',id:this.id,idx,name:'show'};
+        if (this.of === undefined)
+            return { mid:'E_ELEM_REF_MISSING',elemtype:'view as vector',id:this.id,idx,reftype:'node',name:'of'};
+        if (!this.model.elementById(this.of))
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'view as vector',id:this.id,idx,reftype:'node',name:this.of};
         else
-            this.p = this.model.nodeById(this.p);
+            this.of = this.model.elementById(this.of);
 
-        if (this.value === undefined) 
-            return { mid:'E_ALY_REF_MISSING',elemtype:'vector',id:this.id,idx,reftype:'node',name:'value',keys:'['+keys.join(',')+']'};
-        
+        if (this.at === undefined) {
+            if ('pos' in this.of)
+                Object.defineProperty(this, 'anchor', { get: () => this.of['pos'], enumerable:true, configurable:true });
+            else
+                return { mid:'E_SHOW_VEC_ANCHOR_MISSING',elemtype:'view as vector',id:this.id,idx,name:'at' };
+        }
+        else {
+            if (this.model.nodeById(this.at)) {
+                let at = this.model.nodeById(this.at);
+                Object.defineProperty(this, 'anchor', { get: () => at['pos'], enumerable:true, configurable:true });
+            }
+            else if (this.at in this.of)
+                Object.defineProperty(this, 'anchor', { get: () => this.of[this.at], enumerable:true, configurable:true });
+            else
+                return { mid:'E_SHOW_VEC_ANCHOR_INVALID',elemtype:'view as vector',id:this.id,idx,name:'at' };
+        }
+
+        return false;
+    },
+    /**
+     * Initialize view. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in views array.
+     */
+    init(model,idx) {
+        this.model = model;
+        this.model.notifyValid(this.validate(idx));
+        this.p = Object.assign({},this.anchor);
+        this.v = Object.assign({},this.of[this.show]);
+    },
+    dependsOn(elem) {
+        return this.of === elem || this.at === elem;
+    },
+    update() {
+        Object.assign(this.p,this.anchor);
+        Object.assign(this.v,this.of[this.show]);
+        const vabs = Math.hypot(this.v.y,this.v.x);
+        const vview = !mec.isEps(vabs,0.5)
+                    ? mec.asympClamp(mec.aly[this.show].drwscl*vabs,25,100)
+                    : 0;
+        this.v.x *= vview/vabs;
+        this.v.y *= vview/vabs;
+    },
+    reset() { this.update(); },
+    post() {  this.update(); },
+    asJSON() {
+        return '{ "show":"'+this.show+'","of":"'+this.of.id+'","as":"vector"'
+                + (this.id ? ',"id":"'+this.id+'"' : '')
+                + ' }';
+    },
+    // interaction
+    get isSolid() { return false },
+    get sh() { return this.state & g2.OVER ? [0, 0, 10, this.model.env.show.hoveredElmColor] : false; },
+    hitContour({x,y,eps}) {
+        const p = this.p, v = this.v;
+        return g2.isPntOnLin({x,y},p,{x:p.x+v.x,y:p.y+v.y},eps);
+    },
+    g2() {
+        return this.g2cache
+            || (this.g2cache = g2().vec({x1:()=>this.p.x,
+                                         y1:()=>this.p.y,
+                                         x2:()=>this.p.x+this.v.x,
+                                         y2:()=>this.p.y+this.v.y,
+                                         ls:this.model.env.show[this.show+'VecColor'],
+                                         lw:1.5,
+                                         sh:this.sh
+        }));
+    },
+    draw(g) { g.ins(this); },
+}
+
+/**
+ * @param {object} - trace view.
+ * @property {string} show - kind of property to show as trace.
+ * @property {string} of - element property belongs to.
+ * @property {string} ref - reference constraint id.
+ * @property {string} [mode='dynamic'] - ['static','dynamic','preview'].
+ * @property {string} [p] - node id to trace ... (deprecated .. use 'show':'pos' now!)
+ * @property {number} [t0=0] - trace begin [s].
+ * @property {number} [Dt=1] - trace duration [s].
+ * @property {string} [stroke='navy'] - stroke web color.
+ * @property {string} [fill='transparent'] - fill web color.
+ */
+mec.view.trace = {
+    constructor() {
+        this.pts = [];  // allocate array
+    },
+    /**
+     * Check trace view properties for validity.
+     * @method
+     * @param {number} idx - index in views array.
+     * @returns {boolean} false - if no error / warning was detected.
+     */
+    validate(idx) {
+        if (this.of === undefined)
+            return { mid:'E_ELEM_MISSING',elemtype:'view as trace',id:this.id,idx,reftype:'element',name:'of'};
+        if (!this.model.elementById(this.of))
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'view as trace',id:this.id,idx,reftype:'element',name:this.of};
+        else
+            this.of = this.model.elementById(this.of);
+
+        if (this.show && !(this.show in this.of))
+            return { mid:'E_ALY_INVALID_PROP',elemtype:'view as trace',id:this.id,idx,reftype:this.of,name:this.show};
+
+        if (this.ref && !this.model.constraintById(this.ref))
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'view as trace',id:this.id,idx,reftype:'constraint',name:this.ref};
+        else
+            this.ref = this.model.constraintById(this.ref);
+
+        // (deprecated !)
+        if (this.p) {
+            if (!this.model.nodeById(this.p))
+                return { mid:'E_ELEM_INVALID_REF',elemtype:'trace',id:this.id,idx,reftype:'node',name:this.p};
+            else {
+                this.show = 'pos';
+                this.of = this.model.nodeById(this.p);
+            }
+        }
+
+        return false;
+    },
+    /**
+     * Initialize view. Multiple initialization allowed.
+     * @method
+     * @param {object} model - model parent.
+     * @param {number} idx - index in views array.
+     */
+    init(model,idx) {
+        this.model = model;
+        if (!this.model.notifyValid(this.validate(idx)))
+            return;
+
+        this.t0 = this.t0 || 0;
+        this.Dt = this.Dt || 1;
+        this.mode = this.mode || 'dynamic';
+        this.pts.length = 0;  // clear points array ...
+    },
+    dependsOn(elem) {
+        return this.of === elem
+            || this.ref === elem
+            || this.p === elem;  // deprecated !!
+    },
+    addPoint() {
+        const t = this.model.timer.t,
+              pnt = this.of[this.show],
+              sw = this.ref ? Math.sin(this.ref.w) : 0,      // transform to ..
+              cw = this.ref ? Math.cos(this.ref.w) : 1,      // reference system, i.e ...
+              xp = pnt.x - (this.ref ? this.ref.p1.x : 0),   // `ref.p1` as origin ...
+              yp = pnt.y - (this.ref ? this.ref.p1.y : 0),
+              p = {x:cw*xp+sw*yp,y:-sw*xp+cw*yp};
+//console.log("wref="+this.wref)
+        if (this.mode === 'static' || this.mode === 'preview') {
+            if (this.t0 <= t && t <= this.t0 + this.Dt)
+                this.pts.push(p);
+        }
+        else if (this.mode === 'dynamic') {
+            if (this.t0 < t)
+                this.pts.push(p);
+            if (this.t0 + this.Dt < t)
+                this.pts.shift();
+        }
+    },
+    preview() {
+        if (this.mode === 'preview' && this.model.valid)
+            this.addPoint();
+    },
+    reset(preview) {
+        if (preview || this.mode !== 'preview')
+            this.pts.length = 0;
+    },
+    post(dt) {  // add model.timer.t to parameter list .. or use timer as parameter everywhere !
+        if (this.mode !== 'preview' && this.model.valid)
+            this.addPoint();
+    },
+    asJSON() {
+        return '{ "show":"'+this.show+'","of":"'+this.of.id+'","as":"'+this.as+'"'
+                + (this.ref ? ',"ref":'+this.ref.id : '')
+                + (this.mode !== 'dynamic' ? ',"mode":"'+this.mode+'"' : '')
+                + (this.id ? ',"id":"'+this.id+'"' : '')
+                + (this.Dt !== 1 ? ',"Dt":'+this.Dt : '')
+                + (this.stroke && !(this.stroke === 'navy') ? ',"stroke":"'+this.stroke+'"' : '')
+                + (this.fill && !(this.stroke === 'transparent') ? ',"fill":"'+this.fill+'"' : '')
+                + ' }';
+    },
+    // interaction
+    get isSolid() { return false },
+    get sh() { return this.state & g2.OVER ? [0, 0, 10, this.model.env.show.hoveredElmColor] : false; },
+    hitContour({x,y,eps}) {
+        return false;
+    },
+    g2() {
+        return this.g2cache
+           || (this.g2cache = g2().ply({pts: this.pts,
+                                        format: '{x,y}',
+                                        x: this.ref ? ()=>this.ref.p1.x : 0,
+                                        y: this.ref ? ()=>this.ref.p1.y : 0,
+                                        w: this.ref ? ()=>this.ref.w : 0,
+                                        ls: this.stroke || 'navy',
+                                        lw: 1.5,
+                                        fs: this.fill || 'transparent',
+                                        sh: ()=>this.sh
+        }));
+    },
+    draw(g) { g.ins(this); },
+}
+
+/**
+ * @param {object} - info view.
+ * @property {string} show - kind of property to show as info.
+ * @property {string} of - element, the property belongs to.
+ */
+mec.view.info = {
+    constructor() {}, // always parameterless .. !
+    /**
+     * Check info view properties for validity.
+     * @method
+     * @param {number} idx - index in views array.
+     * @returns {boolean} false - if no error / warning was detected.
+     */
+    validate(idx) {
+        if (this.of === undefined)
+            return { mid:'E_ELEM_MISSING',elemtype:'view as info',id:this.id,idx,reftype:'element',name:'of'};
+        if (!this.model.elementById(this.of))
+            return { mid:'E_ELEM_INVALID_REF',elemtype:'view as info',id:this.id,idx,reftype:'element',name:this.of};
+        else
+            this.of = this.model.elementById(this.of);
+
+        if (this.show && !(this.show in this.of))
+            return { mid:'E_ALY_PROP_INVALID',elemtype:'view as infot',id:this.id,idx,reftype:this.of,name:this.show};
+
         return false;
     },
     /**
@@ -1854,74 +2273,119 @@ mec.view.vector = {
         this.model.notifyValid(this.validate(idx));
     },
     dependsOn(elem) {
-        return this.p === elem;
+        return this.of === elem;
     },
-    preview() {},
     reset() {},
     asJSON() {
-        return '{ "type":"'+this.type+'","id":"'+this.id+'","p":"'+this.p.id+'"'
-                + (this.value ? ',"value":"'+this.value+'"' : '')
-                + ' }';
+        return '{ "show":"'+this.show+'","of":"'+this.of.id+'","as":"info"'
+                + (this.id ? ',"id":"'+this.id+'"' : '')
+                + ' }'
     },
-    // interaction
-    get isSolid() { return false },
-    get sh() { return this.state & g2.OVER ? [0, 0, 10, this.model.env.show.hoveredElmColor] : false; },
-    get endPoints() {
-        const scale = mec.aly[this.value].drwscl;
-        const v = this.p[this.value];
-        const vabs = Math.hypot(v.y,v.x);
-        const vview = !mec.isEps(vabs,0.5)
-                    ? mec.asympClamp(scale*vabs,25,100)
-                    : 0;
-        return { p1:this.p,
-                 p2:{ x:this.p.x + v.x/vabs*vview, y:this.p.y + v.y/vabs*vview }
-        };
+    get hasInfo() {
+        return this.of.state === g2.OVER;  // exclude: OVER & DRAG
     },
-    hitContour({x,y,eps}) {
-        const pts = this.endPoints;
-        return g2.isPntOnLin({x,y},pts.p1,pts.p2,eps);
+    infoString() {
+        if (this.show in this.of) {
+            const val = this.of[this.show];
+            const aly = mec.aly[this.name || this.show];
+            const type = aly.type;
+            const nodescl = (this.of.type === 'node' && this.model.env.show.nodeScaling) ? 1.5 : 1;
+            const usrval = q => (q*aly.scl/nodescl).toPrecision(3);
+
+            return (aly.name||this.show) + ': '
+                 + (type === 'vec' ? '{x:' + usrval(val.x)+',y:' + usrval(val.y)+'}'
+                                   : usrval(val))
+                 + ' ' + aly.unit;
+        }
+        return '?';
     },
-    g2() {
-        const pts = this.endPoints;
-        return g2().vec({x1:pts.p1.x,
-                         y1:pts.p1.y,
-                         x2:pts.p2.x,
-                         y2:pts.p2.y,
-                         ls:this.model.env.show[this.value+'VecColor'],
-                         lw:1.5,
-                         sh:this.sh
-        });
-    }
+    draw(g) {}
 }
 
 /**
- * @param {object} - trace view.
- * @property {string} p - referenced node id.
+ * @param {object} - chart view.
+ * @property {string} [mode='dynamic'] - ['static','dynamic','preview'].
  * @property {number} [t0=0] - trace begin [s].
  * @property {number} [Dt=1] - trace duration [s].
- * @property {boolean} [mode='dynamic'] - ['static','dynamic','preview'].
- * @property {string} [stroke='navy'] - web color.
- * @property {string} [fill='transparent'] - web color.
+ * @property {number} [x=0] - x-position.
+ * @property {number} [y=0] - y-position.
+ * @property {number} [h=100] - height of chart area.
+ * @property {number} [b=150] - breadth / width of chart area.
+ *
+ * @property {object} [xaxis] - definition of xaxis.
+ * @property {object | array} [yaxis] - definition of yaxis (potentially multiple).
+ *
+ * @property {string} show - kind of property to show on axis.
+ * @property {string} of - element property belongs to.
  */
-mec.view.trace = {
-    constructor() {
-        this.pts = [];  // allocate array
-    }, // always parameterless .. !
+mec.view.chart = {
+    constructor() {}, // always parameterless .. !
     /**
      * Check vector view properties for validity.
      * @method
      * @param {number} idx - index in views array.
-     * @returns {boolean} false - if no error / warning was detected. 
+     * @returns {boolean} false - if no error / warning was detected.
      */
     validate(idx) {
-        if (this.p === undefined) 
-            return { mid:'E_ELEM_REF_MISSING',elemtype:'trace',id:this.id,idx,reftype:'node',name:'p'};
-        if (!this.model.nodeById(this.p)) 
-            return { mid:'E_ELEM_INVALID_REF',elemtype:'trace',id:this.id,idx,reftype:'node',name:this.p};
-        else
-            this.p = this.model.nodeById(this.p);
-        
+        const def = {elemtype: 'view as chart', id: this.id, idx};
+        const y = Array.isArray(this.yaxis) ? this.yaxis : [this.yaxis];
+        const x = this.xaxis;
+        if (x.of === undefined)
+            return { mid: 'E_ELEM_MISSING', ...def, reftype: 'element', name:'of in xaxis' };
+        if (y.some(e => e.of === undefined))
+            return { mid: 'E_ELEM_MISSING', ...def, reftype: 'element', name:'of in yaxis'};
+
+        const xelem = this.model.elementById(x.of) || this.model[x.of];
+        const yelem = y.map(e => this.model.elementById(e.of) || this.model[e.of]);
+
+        if(!xelem)
+            return { mid:'E_ELEM_INVALID_REF',...def, reftype: 'element', name: this.xaxis.of };
+        // else this.xaxis.of = this.model.elementById(this.xaxis.of);
+        y.forEach(e => {
+            if(!yelem)
+                return { mid: 'E_ELEM_INVALID_REF', ...def, reftype: 'element', name: this.xaxis.of };
+        });
+
+        if (x.show && !(x.show in xelem))
+            return { mid: 'E_ALY_INVALID_PROP', ...def, reftype: x.of, name: x.show };
+        y.forEach(e => {
+            if(e.show && !(e.show in yelem))
+                return { mid: 'E_ALY_INVALID_PROP', ...def, reftype: e.of, name: e.show};
+        });
+
+        if (this.ref) {
+            const ref = this.model.elementById(this.ref);
+            if(!ref) {
+                return { mid:'E_ELEM_INVALID_REF', ...def, reftype: 'element', name: this.ref };
+            }
+            if(ref.ori.type !== 'drive') {
+                return { mid:'E_ELEM_INVALID_REF', ...def, reftype: 'element', name: 'ref is no drive' }
+            }
+        }
+
         return false;
+    },
+    // Get element a. a might be an element of the model, or a timer
+    elem(a) {
+        const ret = this.model.elementById(a.of) || this.model[a.of] || undefined;
+        // Get the corresponding property from a to show on the graph
+        return ret ? ret[a.show] : undefined;
+    },
+    // Check the mec.core.aly object for analysing parameters
+    aly(val) {
+        return mec.aly[val.show]
+        // If it does not exist, take a normalized template
+            || { get scl() { return 1}, type:'num', name:val.show, unit:val.unit || '' };
+    },
+    getAxis(t) {
+        const fs = () => this.model.env.show.darkmode ? 'white' : 'black';
+        const text = t.map((a) => a.of + '.' + a.show + ' [' + a.aly.unit + '] ').join(' / ');
+        return {
+            title: { text, style: { font:'12px serif', fs: () => fs() } },
+            labels: { style: { fs: () => fs() } },
+            origin: true,
+            grid: true,
+        };
     },
     /**
      * Initialize view. Multiple initialization allowed.
@@ -1929,107 +2393,119 @@ mec.view.trace = {
      * @param {object} model - model parent.
      * @param {number} idx - index in views array.
      */
-    init(model,idx) {
+    init(model, idx) {
         this.model = model;
-        if (!this.model.notifyValid(this.validate(idx))) 
+        this.mode = this.mode || 'static';
+        if (!this.model.notifyValid(this.validate(idx))) {
             return;
-
+        }
+        // Create a copy of xaxis propety and append aly property to created object for later use
+        const x = Object.assign(this.xaxis, {aly: this.aly(this.xaxis)});
+        // If yaxis is passed as object, put it in an array for uniform processing, then add aly
+        const y = Array.isArray(this.yaxis) ? this.yaxis : [this.yaxis];
+        y.forEach((a) => a.aly = this.aly(a));
         this.t0 = this.t0 || 0;
-        this.Dt = this.Dt || 1;
-        this.mode = this.mode || 'dynamic';
-        this.pts.length = 0;  // clear points array ...
+        this.Dt = this.Dt || (this.mode === 'dynamic' ? 0 : 1);
+        // Create a graph as a baseline for later modification
+        this.graph       = Object.assign({x:0 ,y:0, funcs: []},this);
+        this.graph.xaxis = Object.assign(this.getAxis([x]), this.xaxis);
+        this.graph.yaxis = Object.assign(this.getAxis( y ), this.yaxis);
+        this.data = {
+            // Return the current value for x translated to its corresponding scl, defined in aly
+            x: () => x.aly.scl * this.elem(this.xaxis),
+            // This has to be done for each y value, so it is an array of those functions
+            y: y.map((e,idx) => {
+                this.graph.funcs[idx] = {data:[]};
+                return () => e.aly.scl * this.elem(e);
+            })
+        };
+
+        if (this.ref) {
+            this.previewTimeTable = [];
+            this.local_t = () => this.model.constraintById(this.ref)['ori'].t();
+        }
     },
     dependsOn(elem) {
-        return this.p === elem;
+        return this.yaxis.some(y => y.of === elem) || this.xaxis.of === elem;
     },
-    build() {
+    addPoint() {
+        const g = this.graph;
         const t = this.model.timer.t;
-        if (this.mode === 'static' || this.mode === 'preview') {
-            if (this.t0 <= t && t <= this.t0 + this.Dt)
-                this.pts.push({x:this.p.x,y:this.p.y});
+
+        if (this.t0 < t) {
+            // In viable time span for static or preview mode
+            const inTimeSpan = t <= this.t0 + (this.Dt || 0);
+            if (this.mode === 'dynamic' || inTimeSpan) {
+                this.ref && this.previewTimeTable.push(this.model.timer.t);
+                const x = this.data.x();
+                this.data.y.forEach((y,idx) => g.funcs[idx].data.push({x,y:y()}));
+                // Remove tail in dynamic
+                if (!inTimeSpan) {
+                    g.funcs.forEach((e) => e.data.shift());
+                }
+            }
         }
-        else if (this.mode === 'dynamic') {
-            if (this.t0 < t)
-                this.pts.push({x:this.p.x,y:this.p.y});
-            if (this.t0 + this.Dt < t)
-                this.pts.shift();
-        }
+
+        // Redundant if g2.chart gets respective update ...
+        [g.xmin, g.xmax, g.ymin, g.ymax] = [];
     },
     preview() {
-        if (this.mode === 'preview')
-            this.build();
+        if (this.mode === 'preview') {
+            this.addPoint();
+        }
     },
     reset(preview) {
-        if (preview || this.mode !== 'preview')
-            this.pts.length = 0;
+        if (this.graph && preview || this.mode !== 'preview')
+                this.graph.funcs.forEach((d) => d.data = []);
     },
-    post(dt) {  // add model.timer.t to parameter list .. or use timer as parameter everywhere !
-        if (this.mode !== 'preview')
-            this.build();
-    },
-    asJSON() {
-        return '{ "type":"'+this.type+'","id":"'+this.id+'","p":"'+this.p.id+'"'
-                + (this.Dt ? ',"Dt":'+this.Dt : '')
-                + (this.stroke && !(this.stroke === 'navy') ? ',"stroke":"'+this.stroke+'"' : '')
-                + (this.fill && !(this.stroke === 'transparent') ? ',"fill":"'+this.fill+'"' : '')
-                + ' }';
-    },
-    // interaction
-    get isSolid() { return false },
-    get sh() { return this.state & g2.OVER ? [0, 0, 10, this.model.env.show.hoveredElmColor] : false; },
-    hitContour({x,y,eps}) {
-        return false;
-    },
-    g2() {
-//    console.log('!')
-        return g2().ply({pts: this.pts,
-                         format: '{x,y}',
-                         ls: this.stroke || 'navy',
-                         lw: 1.5,
-                         fs: this.fill || 'transparent',
-                         sh: this.sh
-        });
-    }
-}
-
-/**
- * @param {object} - info view.
- * @property {string} elem - referenced elem id.
- * @property {string} value - elem value to view.
- * @property {string} [name] - elem value name to show.
- */
-mec.view.info = {
-    constructor() {}, // always parameterless .. !
-    init(model) {
-        if (typeof this.elem === 'string')
-            this.elem = model.elementById(this.elem);
-    },
-    dependsOn(elem) {
-        return this.elem === elem;
-    },
-    reset() {},
-    asJSON() {
-        return '{ "type":"'+this.type+'","id":"'+this.id+'","elem":"'+this.elem.id+'"'
-                + (this.value ? ',"value":"'+this.value+'"' : '')
-                + (this.name ? ',"name":"'+this.name+'"' : '')
-                + ' }';
-    },
-    get hasInfo() {
-        return this.elem.state === g2.OVER;  // exclude: OVER & DRAG
-    },
-    infoString() {
-        if (this.value in this.elem) {
-            const val = this.elem[this.value];
-            const aly = mec.aly[this.value];
-            const type = aly.type;
-            const usrval = q => (q*aly.scl).toPrecision(3);
-
-            return (this.name||aly.name||this.value) + ': '
-                 + (type === 'vec' ? '{x:' + usrval(val.x)+',y:' + usrval(val.y)+'}'
-                                   : usrval(val))
-                 + ' ' + aly.unit;
+    post() {
+        if (this.mode !== 'preview') {
+            this.addPoint();
         }
-        return '?';
+        // If mode is preview and preview was already rendered once
+        else if (this.graph.xAxis && this.ref) {
+            const g = this.graph;
+            const local_t = this.local_t();
+            g.funcs.forEach((func,idx) => {
+                const pt = this.previewTimeTable.findIndex(t => t > local_t);
+                this.nods[idx] = pt === -1
+                    ? { x:0, y:0, scl: 0 } // If point is out of bounds
+                    : { ...g.pntOf(func.data[pt]), scl: 1}
+            });
+        }
+    },
+    asJSON() {
+        return JSON.stringify({
+            as: this.as,
+            id: this.id,
+            canvas: this.canvas,
+            x: this.x,
+            y: this.y,
+            b: this.b,
+            h: this.h,
+            t0: this.t0,
+            Dt: this.Dt,
+            mode: this.mode,
+            xaxis: this.xaxis,
+            yaxis: this.yaxis
+        }).replace('"yaxis"', '\n"yaxis"');
+    },
+    draw(g) {
+        g.chart(this.graph);
+        if (this.mode === 'preview') {
+            const n = this.nods = [];
+            this.graph.funcs.forEach((_,i) => {
+                    // Create references for automatic modification
+                    n.push({x:0,y:0,scl:0});
+                    g.nod({
+                        x: () => n[i].x,
+                        y: () => n[i].y,
+                        scl: () => n[i].scl
+                    })
+                }
+            );
+        }
+        return g;
     }
 }
 /**
@@ -2068,12 +2544,12 @@ mec.shape.fix = {
      * Check fixed node properties for validity.
      * @method
      * @param {number} idx - index in shape array.
-     * @returns {boolean} false - if no error / warning was detected. 
+     * @returns {boolean} false - if no error / warning was detected.
      */
     validate(idx) {
-        if (this.p === undefined) 
+        if (this.p === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'shape',id:this.id,idx,reftype:'node',name:'p'};
-        if (!this.model.nodeById(this.p)) 
+        if (!this.model.nodeById(this.p))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'shape',id:this.id,idx,reftype:'node',name:this.p};
         else
             this.p = this.model.nodeById(this.p);
@@ -2100,7 +2576,7 @@ mec.shape.fix = {
                 + ' }';
     },
     draw(g) {
-        g.use({grp:'nodfix',x:()=>this.p.x,y:()=>this.p.y,w:this.w0 || 0});
+        g.nodfix({x:()=>this.p.x,y:()=>this.p.y,w:this.w0 || 0});
     }
 },
 /**
@@ -2113,12 +2589,12 @@ mec.shape.flt = {
      * Check floating node properties for validity.
      * @method
      * @param {number} idx - index in shape array.
-     * @returns {boolean} false - if no error / warning was detected. 
+     * @returns {boolean} false - if no error / warning was detected.
      */
     validate(idx) {
-        if (this.p === undefined) 
+        if (this.p === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'shape',id:this.id,idx,reftype:'node',name:'p'};
-        if (!this.model.nodeById(this.p)) 
+        if (!this.model.nodeById(this.p))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'shape',id:this.id,idx,reftype:'node',name:this.p};
         else
             this.p = this.model.nodeById(this.p);
@@ -2145,7 +2621,7 @@ mec.shape.flt = {
                 + ' }';
     },
     draw(g) {
-        g.use({grp:'nodflt',x:()=>this.p.x,y:()=>this.p.y,w:this.w0 || 0});
+        g.nodflt({x:()=>this.p.x,y:()=>this.p.y,w:this.w0 || 0});
     }
 }
 
@@ -2160,17 +2636,17 @@ mec.shape.slider = {
      * Check slider shape properties for validity.
      * @method
      * @param {number} idx - index in shape array.
-     * @returns {boolean} false - if no error / warning was detected. 
+     * @returns {boolean} false - if no error / warning was detected.
      */
     validate(idx) {
-        if (this.p === undefined) 
+        if (this.p === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'slider',id:this.id,idx,reftype:'node',name:'p'};
-        if (!this.model.nodeById(this.p)) 
+        if (!this.model.nodeById(this.p))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'slider',id:this.id,idx,reftype:'node',name:this.p};
         else
             this.p = this.model.nodeById(this.p);
 
-        if (this.wref && !this.model.constraintById(this.wref)) 
+        if (this.wref && !this.model.constraintById(this.wref))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'slider',id:this.id,idx,reftype:'constraint',name:this.wref};
         else
             this.wref = this.model.constraintById(this.wref);
@@ -2222,19 +2698,19 @@ mec.shape.bar = {
      * Check bar shape properties for validity.
      * @method
      * @param {number} idx - index in shape array.
-     * @returns {boolean} false - if no error / warning was detected. 
+     * @returns {boolean} false - if no error / warning was detected.
      */
     validate(idx) {
-        if (this.p1 === undefined) 
+        if (this.p1 === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'bar',id:this.id,idx,reftype:'node',name:'p1'};
-        if (!this.model.nodeById(this.p1)) 
+        if (!this.model.nodeById(this.p1))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'bar',id:this.id,idx,reftype:'node',name:this.p1};
         else
             this.p1 = this.model.nodeById(this.p1);
 
-        if (this.p2 === undefined) 
+        if (this.p2 === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'bar',id:this.id,idx,reftype:'node',name:'p2'};
-        if (!this.model.nodeById(this.p2)) 
+        if (!this.model.nodeById(this.p2))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'bar',id:this.id,idx,reftype:'node',name:this.p2};
         else
             this.p2 = this.model.nodeById(this.p2);
@@ -2279,19 +2755,19 @@ mec.shape.beam = {
      * Check beam shape properties for validity.
      * @method
      * @param {number} idx - index in shape array.
-     * @returns {boolean} false - if no error / warning was detected. 
+     * @returns {boolean} false - if no error / warning was detected.
      */
     validate(idx) {
-        if (this.p === undefined) 
+        if (this.p === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'beam',id:this.id,idx,reftype:'node',name:'p'};
-        if (!this.model.nodeById(this.p)) 
+        if (!this.model.nodeById(this.p))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'beam',id:this.id,idx,reftype:'node',name:this.p};
         else
             this.p = this.model.nodeById(this.p);
 
-        if (this.wref === undefined) 
+        if (this.wref === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'beam',id:this.id,idx,reftype:'constraint',name:'wref'};
-        if (!this.model.constraintById(this.wref)) 
+        if (!this.model.constraintById(this.wref))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'beam',id:this.id,idx,reftype:'constraint',name:this.wref};
         else
             this.wref = this.model.constraintById(this.wref);
@@ -2339,19 +2815,19 @@ mec.shape.wheel = {
      * Check wheel shape properties for validity.
      * @method
      * @param {number} idx - index in shape array.
-     * @returns {boolean} false - if no error / warning was detected. 
+     * @returns {boolean} false - if no error / warning was detected.
      */
     validate(idx) {
-        if (this.p === undefined) 
+        if (this.p === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'wheel',id:this.id,idx,reftype:'node',name:'p'};
-        if (!this.model.nodeById(this.p)) 
+        if (!this.model.nodeById(this.p))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'wheel',id:this.id,idx,reftype:'node',name:this.p};
         else
             this.p = this.model.nodeById(this.p);
 
-        if (this.wref === undefined) 
+        if (this.wref === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'wheel',id:this.id,idx,reftype:'constraint',name:'wref'};
-        if (!this.model.constraintById(this.wref)) 
+        if (!this.model.constraintById(this.wref))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'wheel',id:this.id,idx,reftype:'constraint',name:this.wref};
         else
             this.wref = this.model.constraintById(this.wref);
@@ -2416,24 +2892,24 @@ mec.shape.poly = {
      * Check polygon shape properties for validity.
      * @method
      * @param {number} idx - index in shape array.
-     * @returns {boolean} false - if no error / warning was detected. 
+     * @returns {boolean} false - if no error / warning was detected.
      */
     validate(idx) {
-        if (this.pts === undefined) 
+        if (this.pts === undefined)
             return { mid:'E_POLY_PTS_MISSING',id:this.id,idx};
-        if (this.pts.length < 2) 
+        if (this.pts.length < 2)
             return { mid:'E_POLY_PTS_INVALID',id:this.id,idx};
 
-        if (this.p === undefined) 
+        if (this.p === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'polygon',id:this.id,idx,reftype:'node',name:'p'};
-        if (!this.model.nodeById(this.p)) 
+        if (!this.model.nodeById(this.p))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'polygon',id:this.id,idx,reftype:'node',name:this.p};
         else
             this.p = this.model.nodeById(this.p);
 
-        if (this.wref === undefined) 
+        if (this.wref === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'polygon',id:this.id,idx,reftype:'constraint',name:'wref'};
-        if (!this.model.constraintById(this.wref)) 
+        if (!this.model.constraintById(this.wref))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'polygon',id:this.id,idx,reftype:'constraint',name:this.wref};
         else
             this.wref = this.model.constraintById(this.wref);
@@ -2496,20 +2972,20 @@ mec.shape.img = {
      * Check image shape properties for validity.
      * @method
      * @param {number} idx - index in shape array.
-     * @returns {boolean} false - if no error / warning was detected. 
+     * @returns {boolean} false - if no error / warning was detected.
      */
     validate(idx) {
-        if (this.uri === undefined) 
+        if (this.uri === undefined)
             return { mid:'E_IMG_URI_MISSING',id:this.id,idx};
 
-        if (this.p === undefined) 
+        if (this.p === undefined)
             return { mid:'E_ELEM_REF_MISSING',elemtype:'image',id:this.id,idx,reftype:'node',name:'p'};
-        if (!this.model.nodeById(this.p)) 
+        if (!this.model.nodeById(this.p))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'image',id:this.id,idx,reftype:'node',name:this.p};
         else
             this.p = this.model.nodeById(this.p);
 
-        if (this.wref && !this.model.constraintById(this.wref)) 
+        if (this.wref && !this.model.constraintById(this.wref))
             return { mid:'E_ELEM_INVALID_REF',elemtype:'image',id:this.id,idx,reftype:'constraint',name:this.wref};
         else
             this.wref = this.model.constraintById(this.wref);
@@ -2537,7 +3013,7 @@ mec.shape.img = {
     asJSON() {
         return '{ "type":"'+this.type+'","uri":"'+this.uri+'","p":"'+this.p.id+'"'
                 + (this.wref ? ',"wref":"'+this.wref.id+'"' : '')
-                + ((this.w0 && this.w0 > 0.0001) ? ',"w0":'+this.w0 : '')
+                + ((this.w0 && Math.abs(this.w0) > 0.0001) ? ',"w0":'+this.w0 : '')
                 + ((this.xoff && Math.abs(this.xoff) > 0.0001) ? ',"xoff":'+this.xoff : '')
                 + ((this.yoff && Math.abs(this.yoff) > 0.0001) ? ',"yoff":'+this.yoff : '')
                 + ((this.scl && Math.abs(this.scl - 1) > 0.0001) ? ',"scl":'+this.scl : '')
@@ -2547,8 +3023,9 @@ mec.shape.img = {
         const w0 = this.w0 || 0, w = this.wref ? ()=>this.wref.w + w0 : w0;
         g.img({uri:this.uri,x:()=>this.p.x,y:()=>this.p.y,w,scl:this.scl,xoff:this.xoff,yoff:this.yoff})
     }
-}/**
- * mec.model (c) 2018 Stefan Goessner
+}
+/**
+ * mec.model (c) 2018-19 Stefan Goessner
  * @license MIT License
  * @requires mec.core.js
  * @requires mec.node.js
@@ -2584,8 +3061,8 @@ mec.model = {
             if (env !== mec && !env.show) // it's possible that user defined a (complete!) custom show object
                 this.env.show = Object.create(Object.getPrototypeOf(mec.show), Object.getOwnPropertyDescriptors(mec.show)); // copy show object including getters
 
-            this.state = {valid:true,itrpos:0,itrvel:0,preview:false};
-            this.timer = {t:0,dt:1/60};
+            this.state = { valid:true,itrpos:0,itrvel:0,preview:false };
+            this.timer = { t:0,dt:1/60,sleepMin:1 };
             // create empty containers for all elements
             if (!this.nodes) this.nodes = [];
             if (!this.constraints) this.constraints = [];
@@ -2627,6 +3104,8 @@ mec.model = {
             for (let i=0; i < this.shapes.length && this.valid; i++)
                 this.shapes[i].init(this,i);
 
+            this.preview(); // preview traceviews
+
             return this;
         },
         /**
@@ -2651,6 +3130,7 @@ mec.model = {
          */
         reset() {
             this.timer.t = 0;
+            this.timer.sleepMin = 1;
             Object.assign(this.state,{valid:true,itrpos:0,itrvel:0});
             for (const node of this.nodes)
                 node.reset();
@@ -2718,17 +3198,15 @@ mec.model = {
          * Perform timer tick.
          * Model time is incremented by `dt`.
          * Model time is independent of system time.
-         * Input elements may set simulation time and `dt` explicite.
+         * Input elements may set simulation time and `dt` explicite. Depricated, they maintain their local time in parallel !
          * `model.tick()` is then called with `dt = 0`.
          * @method
          * @param {number} [dt=0] - time increment.
          * @returns {object} model
          */
         tick(dt) {
-            if (dt) { // sliders (dt == 0) are setting simulation time explicite .. !
-                dt = 1/60;  // BUG ?? fix: dt as a constant for now (study variable time step theoretically !!)
-                this.timer.t += (this.timer.dt = dt);
-            }
+            // fix: ignore dt for now, take it as a constant (study variable time step theoretically) !!
+            this.timer.t += (this.timer.dt = 1/60);
             this.pre().itr().post();
             return this;
         },
@@ -2761,8 +3239,6 @@ mec.model = {
          */
         get hasGravity() { return this.gravity.active; },
 
-        get dirty() { return this.state.dirty; },  // deprecated !!
-        set dirty(q) { this.state.dirty = q; },
         get valid() { return this.state.valid; },
         set valid(q) { this.state.valid = q; },
         /**
@@ -2789,38 +3265,98 @@ mec.model = {
          */
         get itrvel() { return this.state.itrvel; },
         set itrvel(q) { this.state.itrvel = q; },
-
+        /**
+         * Set offset to current time, when testing nodes for sleeping state shall begin.
+         * @type {number}
+         */
+        set sleepMinDelta(dt) { this.timer.sleepMin = this.timer.t + dt; },
+        /**
+         * Test, if none of the nodes are moving (velocity = 0).
+         * @type {boolean}
+         */
+        get isSleeping() {
+            let sleeping = this.timer.t > this.timer.sleepMin;  // chance for sleeping exists ...
+            if (sleeping)
+                for (const node of this.nodes)
+                    sleeping = sleeping && node.isSleeping;
+            return sleeping;
+        },
+        /**
+         * Number of active drives
+         * @const
+         * @type {int}
+         */
+        get activeDriveCount() {
+            let activeCnt = 0;
+            for (const constraint of this.constraints)
+                activeCnt += constraint.activeDriveCount(this.timer.t);
+            return activeCnt;
+        },
+        /**
+         * Some drives are active
+         * deprecated: Use `activeDriveCount` instead.
+         * @const
+         * @type {boolean}
+         */
+        get hasActiveDrives() { return this.activeDriveCount > 0; },
+        /**
+         * Array of objects referencing constraints owning at least one input controlled drive.
+         * The array objects are structured like so: 
+         * { constraint: <constraint reference>,
+         *   sub: <string of `['ori', 'len']`
+         * }
+         * If no input controlled drives exist, an empty array is returned.
+         * @const
+         * @type {array} Array holding objects of type {constraint, sub};
+         */
+        get inputControlledDrives() {
+            const inputs = [];
+            for (const constraint of this.constraints) {
+                if (constraint.ori.type === 'drive' && constraint.ori.input)
+                    inputs.push({constraint:constraint,sub:'ori'})
+                if (constraint.len.type === 'drive' && constraint.len.input)
+                    inputs.push({constraint:constraint,sub:'len'})
+            }
+            return inputs;
+        },
         /**
          * Test, if model is active.
-         * Nodes are moving (nonzero velocities) or active drives.
+         * Nodes are moving (nonzero velocities) or active drives exist.
          * @type {boolean}
          */
         get isActive() {
-            return this.hasActiveDrives   // active drives
+            return this.activeDriveCount > 0   // active drives
                 || this.dof > 0           // or can move by itself
                 && !this.isSleeping;      // and does exactly that
         },
         /**
-         * Test, if nodes are significantly moving
-         * @type {boolean}
+         * Energy [kgu^2/s^2]
          */
-        get isSleeping() {
-            let sleeping = true;
+        get energy() {
+            var e = 0;
             for (const node of this.nodes)
-                sleeping = sleeping && node.isSleeping;
-            return sleeping;
+                e += node.energy;
+            for (const load of this.loads)
+                e += load.energy;
+            return e;
         },
         /**
-         * Test, if some drives are 'idle' or 'running'
-         * @const
-         * @type {boolean}
+         * center of gravity 
          */
-        get hasActiveDrives() {
-            let active = false;
-            for (const constraint of this.constraints)
-                active = active || constraint.hasActiveDrives(this.timer.t);
-            return active;
+        get cog() {
+            var center = {x:0,y:0}, m = 0;
+            for (const node of this.nodes) {
+                if (!node.base) {
+                    center.x += node.x*node.m;
+                    center.y += node.y*node.m;
+                    m += node.m;
+                }
+            }
+            center.x /= m;
+            center.y /= m;
+            return center;
         },
+
         /**
          * Check, if other elements are dependent on specified element.
          * @method
@@ -2919,7 +3455,8 @@ mec.model = {
             return this.nodeById(id)
                 || this.constraintById(id)
                 || this.loadById(id)
-                || this.viewById(id);
+                || this.viewById(id)
+                || id === 'model' && this;
         },
         /**
          * Add node to model.
@@ -3146,6 +3683,7 @@ mec.model = {
             const comma = (i,n) => i < n-1 ? ',' : '';
             const str = '{'
                       + '\n  "id":"'+this.id+'"'
+                      + (this.title ? (',\n  "title":"'+this.title+'"') : '')
                       + (this.gravity.active ? ',\n  "gravity":true' : '')  // in case of true, should also look at vector components  .. !
                       + (nodeCnt ? ',\n  "nodes": [\n' : '\n')
                       + (nodeCnt ? this.nodes.map((n,i) => '    '+n.asJSON()+comma(i,nodeCnt)+'\n').join('') : '')
@@ -3177,8 +3715,8 @@ mec.model = {
             for (const node of this.nodes) {
                 node.Qx = node.Qy = 0;
                 if (!node.base && this.hasGravity) {
-                    node.Qx = node.m*mec.from_N(this.gravity.x);
-                    node.Qy = node.m*mec.from_N(this.gravity.y);
+                    node.Qx = node.m*mec.from_m(this.gravity.x);
+                    node.Qy = node.m*mec.from_m(this.gravity.y);
                 }
             }
             // Apply external loads.
@@ -3223,7 +3761,7 @@ mec.model = {
             this.itrvel = 0;
             while (!valid && this.itrvel++ < mec.asmItrMax)
                 valid = this.velStep();
-            return valid;
+            return this.valid = valid;
         },
         /**
          * Velocity iteration step over all constraints.
@@ -3243,7 +3781,8 @@ mec.model = {
          * @method
          * @returns {object} model
          */
-        pre() {
+/*
+         pre() {
             this.applyLoads();
             // pre process nodes
             for (const node of this.nodes)
@@ -3259,6 +3798,29 @@ mec.model = {
                     view.pre(this.timer.dt);
             return this;
         },
+*/
+        pre() {
+            // Clear node loads and velocity differences.
+            for (const node of this.nodes)
+                node.pre_0();
+            // Apply external loads.
+            for (const load of this.loads)
+                load.apply();
+            // pre process nodes
+            for (const node of this.nodes)
+                node.pre(this.timer.dt);
+            // pre process constraints
+            for (const constraint of this.constraints)
+                constraint.pre(this.timer.dt);
+            // eliminate drift ...
+            this.asmPos(this.timer.dt);
+            // pre process views
+            for (const view of this.views)
+                if (view.pre)
+                    view.pre(this.timer.dt);
+            return this;
+        },
+
         /**
          * Perform iteration steps until constraints are valid or max-iteration
          * steps for assembly are reached.
@@ -3267,7 +3829,8 @@ mec.model = {
          * @returns {object} model
          */
         itr() {
-            this.asmVel();
+            if (this.valid)  // valid asmPos as prerequisite ...
+                this.asmVel();
             return this;
         },
         /**
@@ -3277,18 +3840,18 @@ mec.model = {
          * @returns {object} model
          */
         post() {
-            // post process constraints
-            for (const constraint of this.constraints)
-                constraint.post(this.timer.dt);
             // post process nodes
             for (const node of this.nodes)
                 node.post(this.timer.dt);
+            // post process constraints
+            for (const constraint of this.constraints)
+                constraint.post(this.timer.dt);
             // post process views
             for (const view of this.views)
                 if (view.post)
                     view.post(this.timer.dt);
 
-//    console.log(this.state.itrpos)
+//    console.log('E:'+mec.to_J(this.energy))
             return this;
         },
         /**
@@ -3297,11 +3860,13 @@ mec.model = {
          * @param {object} g - g2 object.
          * @returns {object} model
          */
-        draw(g) {  // todo: draw all components via 'x.draw(g)' call !
+        draw(g) {  // todo: draw all elements via 'x.draw(g)' call !
             for (const shape of this.shapes)
                 shape.draw(g);
-            for (const view of this.views)
-                g.ins(view);
+            for (const view of this.views) {
+                if (!(view.as === 'chart' && view.canvas)) // app handles charts with canvas properties
+                    view.draw(g);
+            }
             for (const constraint of this.constraints)
                 g.ins(constraint);
             for (const load of this.loads)
