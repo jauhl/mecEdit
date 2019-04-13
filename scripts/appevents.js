@@ -388,10 +388,12 @@ const events = {
             }
             if (e.target && e.target.id === 'select-view-show') {
                 app.updateTempElmNew('show',e.target.value);
+                app.cleanTempElmNew('show'); // harshly remove not needed properties
                 skipUpdate = false;
             };
             if (e.target && e.target.id === 'select-view-of') {
                 app.updateTempElmNew('of',e.target.value);
+                app.cleanTempElmNew('of'); // harshly remove not needed properties
                 skipUpdate = false;
             };
             if (e.target && e.target.id === 'select-view-as') {
