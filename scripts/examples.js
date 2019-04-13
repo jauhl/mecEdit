@@ -152,10 +152,9 @@ const examples = {
           { "id":"v10","show":"forceAbs","of":"j","as":"info" },
           { "id":"v11","show":"forceAbs","of":"k","as":"info" },
           { "id":"v12","show":"forceAbs","of":"l","as":"info" },
-          { "id":"v12","show":"forceAbs","of":"m","as":"info" },
-          { "id":"v12","show":"forceAbs","of":"n","as":"info" },
-          { "id":"v12","show":"forceAbs","of":"o","as":"info" },
-          { "id":"v12","show":"moment"  ,"of":"p","as":"info" }
+          { "id":"v13","show":"forceAbs","of":"m","as":"info" },
+          { "id":"v14","show":"force",   "of":"A","as":"info" },
+          { "id":"v15","show":"force",   "of":"D","as":"info" }
         ]
     },
     'pendulums': {

@@ -1355,16 +1355,23 @@ const App = {
         * @method
         */
         tidyTempElmNew(as) {
-            const optional = {
+            let optional = {
                       point: ['by'],
                       vector: ['at'],
-                      trace: ['t0','Dt','mode','ref','stroke','fill']
+                      trace: ['t0','Dt','mode','ref','stroke','fill'],
+
                   };
+            optional.info = [... new Set([
+                ... optional.point,
+                ... optional.vector,
+                ... optional.trace
+            ])];
+
             let temp = JSON.parse(JSON.stringify(this.tempElm.new)); // copy for immutability
 
             // build array of NOT selected types
             let toRemove = [];
-            ['point','vector','trace'].forEach( (key) => {
+            ['point','vector','trace','info'].forEach( (key) => {
                 if (key !== as)
                     toRemove.push(key);
             });
@@ -1379,6 +1386,26 @@ const App = {
                 // if ( temp.hasOwnProperty(element) )
                 //     delete temp.element;
             };
+
+            // assign copy
+            app.tempElm.new = temp;
+        },
+
+        /**
+        * Removes properties harsh from 'tempELm' when view changes.
+        * @param {string} prop - new prop of view component.
+        * @method
+        */
+        cleanTempElmNew(prop) {
+            let temp = JSON.parse(JSON.stringify(this.tempElm.new)); // copy for immutability
+
+            const order = ['show','of','as'];
+
+            let startIndex = order.indexOf(prop) + 1;
+
+            for (let i = startIndex; i < order.length; i++) {
+                delete temp[order[i]];
+            }
 
             // assign copy
             app.tempElm.new = temp;
