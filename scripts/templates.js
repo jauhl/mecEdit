@@ -488,9 +488,9 @@ ${app.model.asJSON()}
 
     <script src="https://gitcdn.xyz/repo/goessner/g2/master/src/g2.js"></script>
     <script src="https://gitcdn.xyz/repo/goessner/mec2/master/mec2.min.js"></script>
-    <script src="https://gitcdn.xyz/repo/jauhl/mecEdit/master/scripts/mecelement/canvasInteractor.js"></script>
-    <script src="https://gitcdn.xyz/repo/jauhl/mecEdit/master/scripts/mecelement/g2.selector.js"></script>
-    <script src="https://gitcdn.xyz/repo/jauhl/mecEdit/master/scripts/mecelement/mec.htmlelement.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jauhl/mecEdit@0cc975150b605d88c301648d10a4ca8630c63754/scripts/mecelement/canvasInteractor.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jauhl/mecEdit@0cc975150b605d88c301648d10a4ca8630c63754/scripts/mecelement/g2.selector.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jauhl/mecEdit@0cc975150b605d88c301648d10a4ca8630c63754/scripts/mecelement/mec.htmlelement.js"></script>
 </body>
 
 </html>`
