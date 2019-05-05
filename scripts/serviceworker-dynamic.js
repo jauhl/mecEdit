@@ -92,7 +92,6 @@ self.addEventListener('install', function (e) {
 
 // Delete outdated caches
 self.addEventListener('activate', function (e) {
-  console.error('activate fired');
   e.waitUntil(
     updateHash().then( () => {
       caches.keys().then(function (keyList) {
