@@ -1,35 +1,39 @@
 {
-    "name": "mecedit",
-    "version": "0.6.8",
-    "description": "A lightweight editor for modeling and simulation of planar linkages.",
-    "keywords": [
-      "vector",
-      "particle",
-      "mechanism",
-      "linkage",
-      "node",
-      "constraint",
-      "load",
-      "model",
-      "2d",
-      "javascript"
-    ],
-    "main": "mecEdit.html",
-    "scripts": {
-      "build": "npm run minify && npm run jsdoc && npm run gzip",
-      "minify": "uglifyjs ./scripts/mixin.js ./scripts/slider.js ./scripts/templates.js ./scripts/appevents.js ./scripts/examples.js ./app.js -o ./app.min.js --comments -c",
-      "jsdoc": "jsdoc2md ./app.js > ./docs/app.md",
-      "gzip": "ngzip ./app.min.js > ./app.min.js.gz"
-    },
-    "author": "Jan Uhlig",
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/jauhl/mecEdit"
-    },
-    "license": "MIT",
-    "devDependencies": {
-      "uglify-es": "^3.3.9",
-      "ngzip": "^1.1.3",
-      "jsdoc-to-markdown":"^4.0.1"
-    }
+  "name": "mecedit",
+  "version": "0.6.9",
+  "description": "A lightweight editor for modeling and simulation of planar linkages.",
+  "keywords": [
+    "vector",
+    "particle",
+    "mechanism",
+    "linkage",
+    "node",
+    "constraint",
+    "load",
+    "model",
+    "2d",
+    "javascript"
+  ],
+  "private": true,
+  "homepage": "https://mecedit.com",
+  "scripts": {
+    "build": "npm run minify && npm run minify-css && npm run minify-sw && npm run jsdoc && npm run gzip",
+    "minify": "uglifyjs ./scripts/mixin.js ./scripts/slider.js ./scripts/templates.js ./scripts/appevents.js ./scripts/examples.js ./app.js -o ./app.min.js --comments -c",
+    "minify-sw": "uglifyjs ./scripts/serviceworker.js -o ./sw.js --comments -c",
+    "minify-css": "postcss app.css > app.min.css",
+    "jsdoc": "jsdoc2md ./app.js > ./docs/app.md",
+    "gzip": "ngzip ./app.min.js > ./app.min.js.gz"
+  },
+  "author": "Jan Uhlig",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jauhl/mecEdit"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "cssnano": "^4.1.10",
+    "jsdoc-to-markdown": "^4.0.1",
+    "ngzip": "^1.1.3",
+    "uglify-es": "^3.3.9"
   }
+}

@@ -1,5 +1,5 @@
 /**
- * This is the main file of mecEdit. You can find this app on {@link https://github.com/jauhl/mecEdit GitHub}.
+ * This is the main file of mecEdit. You can find this apps repository {@link https://github.com/jauhl/mecEdit @GitHub}.
  * @name mecEdit
  * @author Jan Uhlig
  * @copyright Jan Uhlig 2018
@@ -165,29 +165,30 @@ const origin = g2().beg({ lc: 'round', lj: 'round', ls:()=>app.show.darkmode?'si
                         .txt({str:'y', x: 6, y: 30})
                     .end();
 
-/**
-* Returns a gravity vector as a g2-object.
-* @method
-* @returns {object}
-*/
-const gravvec = (cartesian = true) => {
-    const ytxt = cartesian ? -20 : -15;
-    return g2().beg({ w: -pi/2, lw: 2, ls:()=>app.show.darkmode?'silver':'slategray', fs: 'darkgray'})
-               .p()
-                   .m({ x: 0, y: 0 })
-                   .l({ x: 50, y: 0 })
-               .stroke()
-               .p()
-                   .m({ x: 50, y: 0 })
-                   .l({ x: 50 - 17.5, y: -3.5 })
-                   .a({ dw: pi/3, x: 50 - 17.5, y: 3.5 })
-               .z()
-               .drw()
-            .end()
-            .beg({ ls:()=>app.show.darkmode?'silver':'slategray', font: '14px roboto'})
-                .txt({str:'g', x: -15, y: ytxt})
-            .end();
-};
+// deprecated
+// /**
+// * Returns a gravity vector as a g2-object.
+// * @method
+// * @returns {object}
+// */
+// const gravvec = (cartesian = true) => {
+//     const ytxt = cartesian ? -20 : -15;
+//     return g2().beg({ w: -pi/2, lw: 2, ls:()=>app.show.darkmode?'silver':'slategray', fs: 'darkgray'})
+//                .p()
+//                    .m({ x: 0, y: 0 })
+//                    .l({ x: 50, y: 0 })
+//                .stroke()
+//                .p()
+//                    .m({ x: 50, y: 0 })
+//                    .l({ x: 50 - 17.5, y: -3.5 })
+//                    .a({ dw: pi/3, x: 50 - 17.5, y: 3.5 })
+//                .z()
+//                .drw()
+//             .end()
+//             .beg({ ls:()=>app.show.darkmode?'silver':'slategray', font: '14px roboto'})
+//                 .txt({str:'g', x: -15, y: ytxt})
+//             .end();
+// };
 
 /**
 * Container for `create()` & `prototype()`.
@@ -223,13 +224,61 @@ const App = {
             this.model = {
                 "id":"linkage"
             };
+            // this.model = {
+            //     id: 'crank-rocker',
+            //     gravity: true,
+            //     nodes: [
+            //         { id: 'A0', x: 100, y: 100, base: true },
+            //         { id: 'A', x: 100, y: 150 },
+            //         { id: 'B', x: 350, y: 220 },
+            //         { id: 'B0', x: 300, y: 100, base: true },
+            //         { id: 'C', x: 250, y: 320, m: 1 }
+            //     ],
+            //     constraints: [
+            //         { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori:{ "type":"drive","Dt":3,"Dw":6.283185307179586 } },
+            //         { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
+            //         { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
+            //         { id: 'd', p1: 'B', p2: 'C', ori: { type:'const', ref:'b'}, len: { type: 'const' } }
+            //     ],
+            //     views: [
+            //         { "id":"view1","show":"pos","of":'C',"as":'trace',"stroke":"rgba(255,0,0,1)", "fill":"rgba(255,235,13,.5)" },
+            //         { "id":"ia",   "show":"w",  "of":"a","as":'info' },
+            //         { "as":"chart","x":0,"b":200,"h":150,"t0":0.25,"Dt":3,"mode":"preview","canvas":"chart1","ref":"a",
+            //             "yaxis":{"show":"w","of":"c"},
+            //             "xaxis":{"show":"w","of":"a"}
+            //         },
+            //     ]
+            // }
+            // this.model = {
+            //     "id":"pumpjack",
+            //     "nodes": [
+            //         // { "id":"origin", "x":0,        "y":0,        "base":true },
+            //         { "id":"A0",     "x":712*0.4,  "y":558*0.4,  "base":true },
+            //         { "id":"A",      "x":807*0.4,  "y":724*0.4               },
+            //         { "id":"B",      "x":765*0.4,  "y":1325*0.4              },
+            //         { "id":"B0",     "x":1148*0.4, "y":1193*0.4, "base":true },
+            //     ],
+            //     "constraints": [
+            //         { "id":"a", "p1":"A0", "p2":"A", "len": { "type":"const" }, "ori":{ "type":"drive", "func":"linear", "Dt":5, "Dw":2*Math.PI, "repeat":10000 } },
+            //         { "id":"b", "p1":"A",  "p2":"B", "len": { "type":"const" } },
+            //         { "id":"c", "p1":"B0", "p2":"B", "len": { "type":"const" } }
+            //     ],
+            //     "shapes": [
+            //         { "type":"img", "uri":"./img/pumpjack/pumpjack2.png",  "b":2085, "h":1680, "scl": .4 },
+            //         { "type":"poly", "pts":[{"x":0,"y":0},{"x":2085*.4,"y":0},{"x":2085*.4,"y":1680*.4},{"x":0,"y":1680*.4}], "fill":"#0001" },
+            //         { "type":"img", "uri":"./img/pumpjack/crank.png",   "p":"A0", "wref":"a", "dx":-220*.4, "dy":-50*.4,  "w0":-pi/2,     "scl":.4 },
+            //         { "type":"img", "uri":"./img/pumpjack/rocker.png",  "p":"B0", "wref":"c", "dx":-430*.4, "dy":-226*.4, "w0":-1.005*pi, "scl":.4 },
+            //         { "type":"img", "uri":"./img/pumpjack/coupler.png", "p":"A",  "wref":"b", "dx":-34*.4,  "dy":-35*.4,  "w0":-pi/2,     "scl":.4 },
+            //         { "type":"img", "uri":"./img/pumpjack/frame.png",   "p":"B0",             "dx":-60*.4,  "dy":-34*.4,                  "scl":.4 }
+            //     ]
+            // };
 
             /**
             * mecEdit version.
             * @const
             * @type {string}
             */
-            this.VERSION = '0.6.8';
+            this.VERSION = '0.6.9';
 
             /**
             * mixin requirement.
@@ -279,13 +328,15 @@ const App = {
             this.g = g2();
 
             this.registerEventsFor(this.ctx.canvas)
-                .on(['pointer', 'drag', 'buttondown', 'buttonup', 'click'], e => { this.g.exe( editor.on(this.pntToUsr(Object.assign({}, e))) ).exe(this.ctx); })  // apply events to g2 ...
+                .on(['pointer','buttondown', 'buttonup', 'click'], e => { this.g.exe( editor.on(this.pntToUsr(Object.assign({}, e))) ) })  // ... apply events to g2
+                // .on(['drag', 'buttondown', 'buttonup', 'click'], e => { this.g.exe( editor.on(this.pntToUsr(Object.assign({}, e))) ).exe(this.ctx); })  // apply events to g2 ...
                 .on(['pointer', 'drag', 'pan', 'fps', 'buttondown', 'buttonup', 'click', 'pointerenter', 'pointerleave'], () => this.showStatus())
                 .on('drag', e => {
                     if (!this.dragMove) { // dragEdit mode
                         editor.curElm.x0 = editor.curElm.x;
                         editor.curElm.y0 = editor.curElm.y;
                     };
+                    this.g.exe(this.ctx);
                     this.showTooltip(e);
                 })
                 .on('pan', e => {
@@ -373,8 +424,6 @@ const App = {
         */
         showTooltip(e) {
             const info = this.model.info;
-            tooltip.style.left = ((e.clientX) + 15) + 'px';
-            tooltip.style.top = (e.clientY - 50) + 'px';
             // type of info
             if (editor.dragInfo && !this.dragMove) {
                 tooltip.innerHTML = editor.dragInfo;
@@ -385,6 +434,12 @@ const App = {
             }
             else
                 this.hideTooltip();
+
+            // update position only when visible
+            if (tooltip.style.display === 'inline') {
+                tooltip.style.left = ((e.clientX) + 15) + 'px';
+                tooltip.style.top = (e.clientY - 50) + 'px';
+            }
         },
 
         /**
@@ -461,6 +516,8 @@ const App = {
 
             if (typeof t === 'undefined' || t === null)    // dont start second timer if init() is called again
                 this.startTimer();                           // start synchronized ticks
+
+            this.toggleGravity(false, true);
 
             // this.state = (this.model.inputs.length > 0) ? 'input' : 'initialized';
             runSymbol.setAttribute('d',svgplay); // for reinits
@@ -544,6 +601,7 @@ const App = {
         /**
         * Switch between dark- and lightmode.
         * @method
+        * @param {boolean} eventTarget - true when invoked by gui event, e.g. 'click'
         */
         toggleDarkmode(eventTarget = false) {
             this.show.darkmode = !this.show.darkmode;
@@ -563,7 +621,31 @@ const App = {
             this.notify('render');
         },
 
-            //     /**
+        /**
+        * Switch gravity in model on or off.
+        * @method
+        * @param {boolean} eventTarget - true when invoked by gui event, i.e. clicking
+        * @param {boolean} syncModel - set true to sync toggle state to model state, e.g. at init()
+        */
+        toggleGravity(eventTarget = false, syncModel = false) {
+            if (!syncModel)
+                this.model.gravity.active = !this.model.gravity.active;
+
+            // handle toggle switch in navbar when called programmatically or from element that isn't linked to the checkbox
+            if (!eventTarget || syncModel) {
+                const toggle = document.querySelector('#gravity');
+                if (this.model.gravity.active && !toggle.checked) {
+                    toggle.checked = true;
+                } else if (!this.model.gravity.active && toggle.checked) {
+                    toggle.checked = false;
+                }
+            }
+
+            // app.updateg(); // to be removed
+            this.notify('render');
+        },
+
+    //     /**
     //     *
     //     * @method
     //     */
@@ -626,13 +708,13 @@ const App = {
                 .z()
                 .stroke({ ls: ()=>this.show.darkmode?'rgba(255, 255, 255, 0.3)':'rgba(0, 0, 0, 0.2)', lw: 2 })
                 .use({grp:origin,x: () => (10 - this.view.x)/this.view.scl, y: () => (10 - this.view.y)/this.view.scl, scl: () => this.view.scl});
-                if(apphasmodel && this.model.hasGravity) {
-                    if(this.cartesian) {
-                        this.g.use({grp:gravvec(true),x: () => (this.cnv.width - 30 - this.view.x)/this.view.scl, y: () => (this.cnv.height - 15 - this.view.y)/this.view.scl, scl: () => this.view.scl});
-                    } else {
-                        this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 30 - this.view.x)/this.view.scl, y: () => (- this.view.y + 69 )/this.view.scl, scl: () => this.view.scl});
-                    };
-                };
+                // if(apphasmodel && this.model.hasGravity) {
+                //     if(this.cartesian) {
+                //         this.g.use({grp:gravvec(true),x: () => (this.cnv.width - 30 - this.view.x)/this.view.scl, y: () => (this.cnv.height - 15 - this.view.y)/this.view.scl, scl: () => this.view.scl});
+                //     } else {
+                //         this.g.use({grp:gravvec(false),x: () => (this.cnv.width - 30 - this.view.x)/this.view.scl, y: () => (- this.view.y + 69 )/this.view.scl, scl: () => this.view.scl});
+                //     };
+                // };
 
             if (apphasmodel)
                 this.model.draw(this.g);
@@ -1304,19 +1386,59 @@ const App = {
             fr.readAsText(file); // fires load event
         },
 
+        // /**
+        // * Opens a dialogue to download thr current model as a JSON file.
+        // * @method
+        // */
+        // saveToJSON() {
+        //     let a = document.createElement('a'),
+        //         file = new Blob([this.model.asJSON()], { type: 'application/json' });
+        //     a.href = URL.createObjectURL(file);
+        //     a.download = (!!this.model.id && this.model.id.length > 0) ? `${this.model.id}.json` : 'linkage.json';
+        //     document.body.appendChild(a); // Firefox needs the element to be added to the DOM for this to work, Chrome & Edge ¯\_(ツ)_/¯
+        //     a.click();
+        //     document.body.removeChild(a);
+        // },
+
+        // /**
+        // * Opens a dialogue to download the current model as a JSON file.
+        // * @method
+        // */
+        // saveToHTML() {
+        //     let modelHasId = (!!this.model.id && this.model.id.length) ? true : false;
+        //     let a = document.createElement('a');
+        //     let file = new Blob([tmpl.mec2Element(modelHasId)], { type: 'application/html' });
+        //     a.href = URL.createObjectURL(file);
+        //     a.download = modelHasId ? `${this.model.id}.html` : 'linkage.html';
+        //     document.body.appendChild(a);
+        //     a.click();
+        //     document.body.removeChild(a);
+        // },
+
         /**
-        * Opens a dialogue to download teh cuurent model as a JSON file.
+        * Opens a dialogue to download the current model as a specified file (json or html).
         * @method
         */
-        saveToJSON() {
-            let a = document.createElement('a');
-            let file = new Blob([this.model.asJSON()], { type: 'application/json' });
+        saveToFile(filetype = 'json') {
+            let modelHasId = (!!this.model.id && this.model.id.length) ? true : false,
+                a = document.createElement('a'),
+                file = false;
+
+            if (filetype === 'json') {
+                file = new Blob([this.model.asJSON()], { type: 'application/json' });
+            } else if (filetype === 'html') {
+                file = new Blob([tmpl.mec2Element(modelHasId)], { type: 'application/html' });
+            } else {
+                console.log('File creation aborted.');
+                return false;
+            }
+
             a.href = URL.createObjectURL(file);
-            a.download = (!!this.model.id && this.model.id.length > 0) ? `${this.model.id}.json` : 'linkage.json';
-            document.body.appendChild(a); // Firefox needs the element to be added to the DOM for this to work, Chrome & Edge ¯\_(ツ)_/¯
+            a.download = modelHasId ? `${this.model.id}.${filetype}` : `linkage.${filetype}`;
+            document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        },
+    },
 
         /**
         * Defines a new model.
@@ -1604,6 +1726,7 @@ load()
     events.resize(); // binds to window
     events.modalShown('modelModal');
     events.modalAccept('modalAccept');
+    events.copyModel('copyModel');
     events.viewModalChange('viewModal');
     events.viewModalClick('viewModal');
     events.viewModalHide('viewModal');
@@ -1618,6 +1741,6 @@ load()
     window.dispatchEvent(new Event('resize'));
 
 })
-.catch((error) => {
-    console.error('Initialisation failed, error:', error);
-});
+// .catch((error) => {
+//     console.error('Initialisation failed, error:', error);
+// });

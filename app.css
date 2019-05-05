@@ -24,6 +24,11 @@ i, svg {
 
     .main-container {
         height: inherit !important;
+        min-width: 330px;
+    }
+
+    .sidebar .nav {
+        margin-bottom: 0 !important;
     }
 }
 
@@ -153,10 +158,21 @@ output.badge {
     top: .125em;
 }
 
+#g-arrow {
+    margin-top: .4rem;
+}
+
 .navbar-nav-svg {
     width:25px;
     height:25px;
     /* margin-top: .3rem; */
+}
+
+.nav-svg-logo {
+    color: #6c757d
+}
+.nav-svg-logo:hover {
+    color: rgba(255, 255, 255, 0.75) !important;
 }
 
 /* fix nav-toogle button jumping left/right */
@@ -172,6 +188,11 @@ output.badge {
 .navafter::after {
     margin-top: .7rem !important;
     margin-left: .3rem !important;
+}
+
+.grav {
+    /* padding: .375rem .75rem; */
+    padding-top: .375rem;
 }
 
 /* disable horizontal scrolling here because it is inconsistent in sb classes */
@@ -260,6 +281,55 @@ output.badge {
 .lbl {
 	position: relative;
 	display: block;
+	height: 18px;
+	width: 32px;
+	background: #898989;
+	border-radius: 100px;
+	cursor: pointer;
+    margin-bottom: 0px;
+    margin-top: 6px;
+    transition: all 0.3s ease;
+}
+
+.lbl:after {
+	position: absolute;
+	left: 1px;
+	top: 1px;
+	display: block;
+	width: 16px;
+	height: 16px;
+	border-radius: 100px;
+	background: #fff;
+	box-shadow: 0px 3px 3px rgba(0,0,0,0.05);
+	content: '';
+	transition: all 0.3s ease;
+}
+
+.lbl:active:after {
+	transform: scale(1.15, 0.85);
+}
+
+.cbx:checked ~ label {
+	background: #6fbeb5;
+}
+
+.cbx:checked ~ label:after {
+	left: 15px;
+	background: #179588;
+}
+
+.cbx:disabled ~ label {
+	background: #d5d5d5;
+	pointer-events: none;
+}
+
+.cbx:disabled ~ label:after {
+	background: #bcbdbc;
+}
+
+/* .lbl {
+	position: relative;
+	display: block;
 	height: 14px;
 	width: 30px;
 	background: #898989;
@@ -304,7 +374,7 @@ output.badge {
 
 .cbx:disabled ~ label:after {
 	background: #bcbdbc;
-}
+} */
 /* end toogleswitch */
 
 .ctxm-section-title {
@@ -358,7 +428,15 @@ output.badge {
 }
 
 #modalTextarea {
-    max-height: calc(70vh); /*if <pre> set max-height*/
+    /* max-height: calc(70vh); */
+}
+
+.CodeMirror {
+    height: auto !important;
+}
+
+.CodeMirror-scroll {
+    max-height: calc(70vh);
 }
 
 .viewmodal {
@@ -460,7 +538,7 @@ input[type='color'] {
     /* overflow-y: auto; */
     overflow-y: hidden;
     overflow-x: hidden;
-    min-width: 330px;
+    /* min-width: 330px; */
 }
 
 .content {
@@ -535,7 +613,7 @@ h1 {
     margin-left: auto;
     /* hide scrollbar */
     margin-right: -20px;
-    height: calc(100vh - 56px - 30px);
+    max-height: calc(100vh - 56px - 30px);
     overflow-x: hidden;
     overflow-y: hidden;
     /* padding-left:0px; */
@@ -546,8 +624,10 @@ h1 {
     /* margin-top: 60px; */
     /* transform: translateX(200px);
     transition: transform 250ms ease-in-out; */
-    transition: padding-left 250ms;
+    transition: padding-left 250ms ease-in-out;
     /* background: linear-gradient(180deg, #FC466B 0%, #3F5EFB 100%); */
+    /* click through sidebar & content */
+    pointer-events: none;
 }
 
 #sb-r:hover {
@@ -555,7 +635,7 @@ h1 {
 }
 
 #sb-canvas-container {
-    padding: 75px 0 0 0;
+    /* padding: 75px 0 0 0; */
     /* border: solid red 2px; */
     overflow-x: hidden;
     overflow-y: auto;
@@ -569,8 +649,8 @@ h1 {
     padding: 0 .5rem .2rem .5rem;
 }
 
-.pt-4px {
-    padding-top: 4px;
+.pt-custom {
+    padding-top: .34rem;
 }
 
 /* #sidebar-toggle {

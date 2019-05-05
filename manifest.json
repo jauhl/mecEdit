@@ -2,7 +2,7 @@
     "name": "mecEdit",
     "short_name": "mecEdit",
     "description": "A lightweight editor for modeling and simulation of planar linkages.",
-    "start_url": "./mecEdit.html",
+    "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#344c6b",
     "theme_color": "#343a40",

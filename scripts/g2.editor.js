@@ -51,7 +51,7 @@ g2.editor.prototype = {
     hit(elm) {
         this.curElm = elm; // provide element pointed at to api
         const {type,x,y,dx,dy} = this.evt;
-        if (!elm || !(typeof elm.type === 'string') || ['vector','trace'].includes(elm.type))   // commands without arguments object or mec2.views.. or beamshapes for whatever reason...!
+        if (!elm || !(typeof elm.type === 'string') || ['vector','trace','img'].includes(elm.type))  // commands without arguments object or mec2.views.. or beamshapes for whatever reason...!
             return false;
 
         if (!elm.state) {                                               // no mode

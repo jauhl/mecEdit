@@ -12,7 +12,7 @@ const examples = {
             { id: 'C', x: 250, y: 320, m: 1 }
         ],
         constraints: [
-            { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' } },
+            { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori:{ "type":"drive","Dt":3,"Dw":6.283185307179586 } },
             { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
             { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
             { id: 'd', p1: 'B', p2: 'C', ori: { type:'const', ref:'b'}, len: { type: 'const' } }
@@ -88,6 +88,29 @@ const examples = {
             { id:'g',p1:'D',p2:'E',len:{type:'const'} },
             { id:'h',p1:'E',p2:'F',len:{type:'const'} },
             { id:'i',p1:'F',p2:'D',len:{type:'const'} }
+        ]
+    },
+    'pumpjack': {
+        "id":"pumpjack",
+        "nodes": [
+            { "id":"origin", "x":0,        "y":0,        "base":true },
+            { "id":"A0",     "x":712*0.4,  "y":558*0.4,  "base":true },
+            { "id":"A",      "x":807*0.4,  "y":724*0.4               },
+            { "id":"B",      "x":765*0.4,  "y":1325*0.4              },
+            { "id":"B0",     "x":1148*0.4, "y":1193*0.4, "base":true },
+        ],
+        "constraints": [
+            { "id":"a", "p1":"A0", "p2":"A", "len": { "type":"const" }, "ori":{ "type":"drive", "func":"linear", "Dt":5, "Dw":2*Math.PI, "repeat":10000 } },
+            { "id":"b", "p1":"A",  "p2":"B", "len": { "type":"const" } },
+            { "id":"c", "p1":"B0", "p2":"B", "len": { "type":"const" } }
+        ],
+        "shapes": [
+            { "type":"img", "uri":"./img/pumpjack/pumpjack2.png",  "p":"origin", "b":2085, "h":1680, "scl": .4 },
+            { "type":"poly", "pts":[{"x":0,"y":0},{"x":2085*.4,"y":0},{"x":2085*.4,"y":1680*.4},{"x":0,"y":1680*.4}], "p":"origin", "fill":"#0006" },
+            { "type":"img", "uri":"./img/pumpjack/crank.png",   "p":"A0", "wref":"a", "dx":-220*.4, "dy":-50*.4,  "w0":-Math.PI/2,     "scl":.4 },
+            { "type":"img", "uri":"./img/pumpjack/rocker.png",  "p":"B0", "wref":"c", "dx":-430*.4, "dy":-226*.4, "w0":-1.005*Math.PI, "scl":.4 },
+            { "type":"img", "uri":"./img/pumpjack/coupler.png", "p":"A",  "wref":"b", "dx":-34*.4,  "dy":-35*.4,  "w0":-Math.PI/2,     "scl":.4 },
+            { "type":"img", "uri":"./img/pumpjack/frame.png",   "p":"B0",             "dx":-60*.4,  "dy":-34*.4,                       "scl":.4 }
         ]
     },
     'basictruss': {

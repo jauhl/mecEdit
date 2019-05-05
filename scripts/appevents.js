@@ -25,8 +25,8 @@ const events = {
 
             // File
             if (e.target && e.target.id === 'newModel') { app.newModel(); };
-            if (e.target && e.target.id.includes('nav-example-')) { app.newModel(JSON.parse(JSON.stringify(examples[e.target.id.replace('nav-example-','')]))); }; // use copy so source wont be changed
-            if (e.target && e.target.id === 'export') { app.saveToJSON(); };
+            if (e.target && e.target.id.includes('nav-example-')) { app.newModel(JSON.parse(JSON.stringify(examples[e.target.id.replace('nav-example-','')]))); }; // copy so source won't be changed
+            if (e.target && e.target.id.includes('export-')) { app.saveToFile(e.target.id.replace('export-','')); }; // desired filetype remains and is passed
             if (e.target && e.target.id === 'import') { app.importConfirmed = confirm('All unsaved changes will be lost! Continue?') ? true : (e.preventDefault(),false)}; // false -> dont open file window (and return undefined) and return false
 
             // Edit
@@ -105,11 +105,11 @@ const events = {
             };
             if (e.target && e.target.id === 'stop') { app.stop(); };
             if (e.target && e.target.id === 'reset') { app.reset(); };
-            if (e.target && e.target.id === 'toggle-g') { app.model.gravity.active = !app.model.gravity.active; app.updateg(); };
+            if (e.target && e.target.id === 'toggle-g') { app.toggleGravity(e.target.id); /* app.model.gravity.active = !app.model.gravity.active; app.updateg(); */ };
 
             if (e.target && e.target.id === 'sidebar-toggle') {
-                const sb = document.querySelector('#sb-r');
-                sb.style['padding-left'] = sb.style['padding-left'] === '0px' ? '270px' : '0px';
+                    const sb = document.querySelector('#sb-r');
+                    sb.style['padding-left'] = sb.style['padding-left'] === '0px' ? '270px' : '0px';
             };
         })
     },
@@ -137,8 +137,9 @@ const events = {
                 if (e.key === 'r')
                     app.resetView();
                 if (e.key === 'g') {
-                    app.model.gravity.active = !app.model.gravity.active;
-                    app.updateg();
+                    app.toggleGravity(false);
+                    // app.model.gravity.active = !app.model.gravity.active;
+                    // app.updateg();
                 };
                 if (e.key === 'v')
                     app.initViewModal(); // open view modal
@@ -359,6 +360,18 @@ const events = {
                 app.init();
                 // app.updateg(); // moved to app.init()
             };
+        })
+    },
+    copyModel: id => {
+        document.getElementById(id).addEventListener('click', e => {
+            navigator.clipboard.writeText(app.jsonEditor.getValue())
+  	        .then(() => {
+    	        console.log('Model copied to clipboard.');
+            })
+  	        .catch(err => {
+                // users might have denied clipboard permissions
+                console.error('Could not copy model: ', err);
+            });
         })
     },
     resize: () => {

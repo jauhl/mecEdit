@@ -1,29 +1,32 @@
 const APP_PREFIX = 'mecEdit'
-const VERSION = 'v0.6.8'
+const VERSION = 'v0.6.9'
 const CACHE_NAME = APP_PREFIX + '_' + VERSION
 const URLS = [
-  `./`,
-  `./mecEdit.html`,
-  `./vendor/bootstrap4.1.3.min.css`,
-  `./app.css`,
-  `./vendor/codemirror/codemirror5.39.2.css`,
-  `./vendor/codemirror/lucario.css`,
-  `./vendor/codemirror/mdn-like.css`,
-  `./vendor/bootstrap-native-v4.min.js`,
-  `./vendor/draggabilly.pkgd.min.js`,
-  `./vendor/codemirror/codemirror5.39.2.min.js`,
-  `./vendor/codemirror/codemirror.jsmode5.39.2.js`,
-  `./vendor/codemirror/matchbrackets.js`,
-  `./scripts/g2.js`,
-  `./scripts/g2.editor.js`,
-  `./scripts/mec2.min.js`,
-  `./app.min.js`,
-  `./img/favicon/favicon-16x16.png`,
-  `./img/favicon/favicon-32x32.png`,
-  `./img/favicon/apple-touch-icon.png`,
-  `./img/favicon/safari-pinned-tab.svg`,
-  `./img/favicon/browserconfig.xml`,
-  `./manifest.json`
+  './',
+  './index.html',
+  './manifest.json',
+  './img/favicon/favicon-16x16.png',
+  './img/favicon/favicon-32x32.png',
+  './img/android/android-launchericon-96-96.png',
+  './img/windows10/Square150x150Logo.scale-100.png',
+  './img/favicon/apple-touch-icon.png',
+  './img/favicon/safari-pinned-tab.svg',
+  './img/favicon/favicon.ico',
+  './img/favicon/browserconfig.xml',
+  './vendor/bootstrap4.1.3.min.css',
+  './app.min.css',
+  './vendor/codemirror/codemirror5.39.2.css',
+  './vendor/codemirror/lucario.css',
+  './vendor/codemirror/mdn-like.css',
+  './vendor/bootstrap-native-v4.min.js',
+  './vendor/draggabilly.pkgd.min.js',
+  './vendor/codemirror/codemirror5.39.2.min.js',
+  './vendor/codemirror/codemirror.jsmode5.39.2.js',
+  './vendor/codemirror/matchbrackets.js',
+  './scripts/g2.js',
+  './scripts/g2.editor.js',
+  './scripts/mec2.min.js',
+  './app.min.js'
 ]
 
 // Respond with cached resources
@@ -41,7 +44,7 @@ self.addEventListener('fetch', function (e) {
       return response || fetch(e.request)
     })
     .catch(function(error) {
-      console.error('sw fetch error:', error);
+      console.error('sw fetch error:', error, '\nrequest: ', e.request.url);
     })
   )
 })

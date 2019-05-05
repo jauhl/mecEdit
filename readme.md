@@ -1,6 +1,6 @@
 
 ---
-## [Try **_mecEdit_** out!](https://jauhl.github.io/mecEdit/mecEdit.html "mecEdit")
+## [Try **_mecEdit_** out!](https://mecedit.com "mecEdit")
 ---
 
 
@@ -35,10 +35,20 @@ english version: todo
 
 # Changelog
 
+## v0.6.9
+
+### general:
++ UI updates & optimization.
++ Added option to export the model as a standalone html file for viewing.
++ Copy a JSON-String of your model to the clipboard by clicking the new copy button in the JSON editor.
++ You can now reach mecEdit under [mecedit.com](https://mecedit.com)
+
+---
+
 ## v0.6.8
 
 ### general:
-+ `mec2` charts-views are now fully supported. Charts have to be added via the JSON-editor. They can either be rendered directly to the main canvas or to a separate canvas for each chart. To do so simply give the chart definition in your model a property `"canvas":"canvasId"` with an arbitrary id as a value. Everething else is handled by *mecEdit*.
++ `mec2` charts-views are now fully supported. Charts have to be added via the JSON-editor. They can either be rendered directly to the main canvas or to a separate canvas for each chart. To do so simply give the chart definition in your model a property `"canvas":"canvasId"` with an arbitrary id as a value. Everything else is handled by *mecEdit*.
 + Added an option to scale the radius of each node by its mass. This can be toggled from the navigationbar under __View__ -> __Nodescaling__.
 + Some CSS fine-tuning.
 
@@ -56,7 +66,7 @@ english version: todo
 ### general:
 + Updated `mec2` to v0.8.5 which introduced major changes to references in constraints.
 + Updated vendor dependency `bootstrap` to v4.1.3.
-+ The contextmenu of constraits now shows values for their current orientation and length.
++ The contextmenu of constraints now shows values for their current orientation and length.
 
 ---
 
@@ -140,7 +150,7 @@ english version: todo
 ### general:
 + Added some additional keyboard shortcuts and documented them under Navbar -> Help -> Keyboard Shortcuts.
 + Generalized purging elements via Navbar -> Edit -> Purge Element by replacing `app.clearNode()` with `app.purgeElement()`.
-+ Replaced the 'Run' and 'Idle' buttons with a combined buttton that takes `app.state` into account.
++ Replaced the 'Run' and 'Idle' buttons with a combined button that takes `app.state` into account.
 
 ---
 
@@ -193,7 +203,7 @@ english version: todo
 ## v0.4.8.5 - loads & node-tracing
 
 ### general:
-+ The sidebar has now buttons to add loads (forces and springs) to the model. Those loads additionally have their own contextmenu. 
++ The sidebar has now buttons to add loads (forces and springs) to the model. Those loads additionally have their own contextmenu.
 + The contextmenu of nodes now offers an option to trace this node. Clicking this toggle adds or removes an `view` `type:'trace'` to the model.
 + Reworked the tooltip. It now shows node coordinates while dragging them in dragmode EDIT and views while hovering nodes with views in dragmode MOVE.
 
@@ -210,16 +220,16 @@ english version: todo
 
 ### general:
 + Introduced app-states. The controlpanel in the navbar sets `app.state`, which is then utilized in `app.tick()`.
-+ Users can now switch between a light- and a dark-theme for the editor window via the Navbar -> View -> toogle darkmode. The app defaults to dark because I like my retinas unburnt.
++ Users can now switch between a light- and a dark-theme for the editor window via the Navbar -> View -> toggle darkmode. The app defaults to dark because I like my retinas unburnt.
 
 ---
 
 ## v0.4.8.2 - new model editor & mec2 release merge
 
 ### general:
-+ merged changes from mec2 library (initital release)
++ merged changes from mec2 library (initial release)
 + added a model-editor where the user can directly edit the code (in `JSON`) that defines the model. menu -> edit -> model editor (or Hotkey `[e]`)
-+ added dependency [CodeMirror](https://codemirror.net/) for sytaxhighlighting in the model-editor
++ added dependency [CodeMirror](https://codemirror.net/) for syntax highlighting in the model-editor
 + added entry 'New model' to the Navbarmenu. This discards the current model and initializes an empty one.
 
 ### appenvents.js:
@@ -238,7 +248,7 @@ english version: todo
 
 ### general:
 + merged changes from @goessner (02.08.18) which mainly add forces and moments to the model
-+ some functionallity might still be broken
++ some functionality might still be broken
 
 ---
 
@@ -298,7 +308,7 @@ english version: todo
 + new library that contains functions which return html-templates to build a dynamic contextmenu
 
 ### mec.constraint.js:
-+ partially implemented `constraint.prototype.toJSON()`, which reenables the export function
++ partially implemented `constraint.prototype.toJSON()`, which re-enables the export function
 
 ---
 
@@ -338,13 +348,13 @@ english version: todo
 + probably implemented a whole lotta other bugs in the process of merging versions...
 
 ### mec2.js & mec.constraint.js:
-+ to update a constraint you can now simlpy call `constraint.prototype.init()` again and pass the model 
++ to update a constraint you can now simlpy call `constraint.prototype.init()` again and pass the model
 
 ---
 
 ## alpha v4.6 - nodes can now be deleted
 
-### g2.editor.js: 
+### g2.editor.js:
 + hovered element now belongs to editor namespace -> `editor.curElm`
 
 ### mec2.js:
@@ -352,7 +362,7 @@ english version: todo
 
 ### main.js:
 + fully implemented `deleteNode()`
-+ changed graphicsqueue approach -> adding & deleting elements from `app.model` now rebuilds the queue, thus maintainig the correct order/layer of graphicelements
++ changed graphics queue approach -> adding & deleting elements from `app.model` now rebuilds the queue, thus maintaining the correct order/layer of graphic elements
 + added global escape event -> pressing `[Escape]` now leaves and resets `app.edit`-state at any time
 + model properties for actuator angle representation (e.g. `app.model.phi`) are now added dynamically and thus can be omitted in JSON-files
 + fixed bug: clicking in empty space when adding a constraint no longer freezes the app
@@ -361,7 +371,7 @@ english version: todo
 
 ## alpha v4.5.9 - node dragging is now permanent
 
-### g2.editor.js: 
+### g2.editor.js:
 + updates adjacent constraints to new node coordinates when dragging ends
 
 ### mec2.js:

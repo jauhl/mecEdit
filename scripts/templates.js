@@ -1,5 +1,5 @@
 'use-strict';
-tmpl = {
+const tmpl = {
     header: (elm,type) => `<h6 class="mb-0">${type} <span style="font-family:roboto;font-weight:500;font-style:italic;">${elm.id}</span></h6>`, // stringified constraints have no type: ${elm.type}
     sectionTitle: (title,elm) => {
         let value = title === 'ori' ? 'w' : title === 'len' ? 'r' : false,
@@ -472,5 +472,26 @@ tmpl = {
         return template;
     },
     selectHead: (prop, disabled = false, tooltip = false) => `<div class="input-group mb-3"><div class="input-group-prepend"><label ${tooltip ? `title="${tooltip}"` : ''} class="input-group-text view-inputtext" for="select-view-${prop}">${prop}: </label></div><select class="custom-select m-0" id="select-view-${prop}" ${disabled?'disabled':''}>`,
-    selectTail: () => `</select></div>`
+    selectTail: () => `</select></div>`,
+    mec2Element: (modelHasId = false) => `<!doctype html>
+<html>
+
+<head>
+    <title>${modelHasId?app.model.id:''}</title>
+    <meta charset='utf-8'>
+</head>
+
+<body>
+    <mec-2 width=${app.cnv.width} height=${app.cnv.height} grid ${app.view.cartesian?'cartesian':''} x0=${app.view.x} y0=${app.view.y}>
+${app.model.asJSON()}
+    </mec-2>
+
+    <script src="https://gitcdn.xyz/repo/goessner/g2/master/src/g2.js"></script>
+    <script src="https://gitcdn.xyz/repo/goessner/mec2/master/mec2.min.js"></script>
+    <script src="https://gitcdn.xyz/repo/jauhl/mecEdit/master/scripts/mecelement/canvasInteractor.js"></script>
+    <script src="https://gitcdn.xyz/repo/jauhl/mecEdit/master/scripts/mecelement/g2.selector.js"></script>
+    <script src="https://gitcdn.xyz/repo/jauhl/mecEdit/master/scripts/mecelement/mec.htmlelement.js"></script>
+</body>
+
+</html>`
 };
