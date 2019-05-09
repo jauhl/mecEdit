@@ -20,7 +20,7 @@ const examples = {
         views: [
             { "id":"view1","show":"pos","of":'C',"as":'trace',"stroke":"rgba(255,0,0,1)", "fill":"rgba(255,235,13,.5)" },
             { "id":"ia",   "show":"w",  "of":"a","as":'info' },
-            { "as":"chart","x":0,"b":200,"h":150,"t0":0.25,"Dt":3,"mode":"preview","canvas":"chart1",
+            { "as":"chart","x":0,"b":200,"h":150,"t0":0.25,"Dt":3,"mode":"preview","canvas":"chart1", "ref":"a",
                 "yaxis":{"show":"w","of":"c"},
                 "xaxis":{"show":"w","of":"a"}
             },
@@ -93,7 +93,6 @@ const examples = {
     'pumpjack': {
         "id":"pumpjack",
         "nodes": [
-            { "id":"origin", "x":0,        "y":0,        "base":true },
             { "id":"A0",     "x":712*0.4,  "y":558*0.4,  "base":true },
             { "id":"A",      "x":807*0.4,  "y":724*0.4               },
             { "id":"B",      "x":765*0.4,  "y":1325*0.4              },
@@ -105,12 +104,12 @@ const examples = {
             { "id":"c", "p1":"B0", "p2":"B", "len": { "type":"const" } }
         ],
         "shapes": [
-            { "type":"img", "uri":"./img/pumpjack/pumpjack2.png",  "p":"origin", "b":2085, "h":1680, "scl": .4 },
-            { "type":"poly", "pts":[{"x":0,"y":0},{"x":2085*.4,"y":0},{"x":2085*.4,"y":1680*.4},{"x":0,"y":1680*.4}], "p":"origin", "fill":"#0006" },
-            { "type":"img", "uri":"./img/pumpjack/crank.png",   "p":"A0", "wref":"a", "dx":-220*.4, "dy":-50*.4,  "w0":-Math.PI/2,     "scl":.4 },
-            { "type":"img", "uri":"./img/pumpjack/rocker.png",  "p":"B0", "wref":"c", "dx":-430*.4, "dy":-226*.4, "w0":-1.005*Math.PI, "scl":.4 },
-            { "type":"img", "uri":"./img/pumpjack/coupler.png", "p":"A",  "wref":"b", "dx":-34*.4,  "dy":-35*.4,  "w0":-Math.PI/2,     "scl":.4 },
-            { "type":"img", "uri":"./img/pumpjack/frame.png",   "p":"B0",             "dx":-60*.4,  "dy":-34*.4,                       "scl":.4 }
+            { "type":"img", "uri":"./img/pumpjack/pumpjack.png", "scl": .4 },
+            { "type":"poly", "pts":[{"x":0,"y":0},{"x":2085*.4,"y":0},{"x":2085*.4,"y":1680*.4},{"x":0,"y":1680*.4}], "fill":"#0007" },
+            { "type":"img", "uri":"./img/pumpjack/crank.png",   "p":"A0", "wref":"a", "xoff":-220, "yoff":-50,  "w0":-Math.PI/2,     "scl":.4 },
+            { "type":"img", "uri":"./img/pumpjack/rocker.png",  "p":"B0", "wref":"c", "xoff":-430, "yoff":-226, "w0":-1.005*Math.PI, "scl":.4 },
+            { "type":"img", "uri":"./img/pumpjack/coupler.png", "p":"A",  "wref":"b", "xoff":-34,  "yoff":-35,  "w0":-Math.PI/2,     "scl":.4 },
+            { "type":"img", "uri":"./img/pumpjack/frame.png",   "p":"B0",             "xoff":-60,  "yoff":-34,                       "scl":.4 }
         ]
     },
     'basictruss': {
