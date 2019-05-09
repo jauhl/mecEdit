@@ -30,6 +30,10 @@ i, svg {
     .sidebar .nav {
         margin-bottom: 0 !important;
     }
+
+    .grav {
+        padding-top: .2rem !important;
+    }
 }
 
 @media (max-width: 440px) {

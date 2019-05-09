@@ -252,7 +252,7 @@ const App = {
             // this.model = {
             //     "id":"pumpjack",
             //     "nodes": [
-            //         // { "id":"origin", "x":0,        "y":0,        "base":true },
+            //         { "id":"origin", "x":0,        "y":0,        "base":true },
             //         { "id":"A0",     "x":712*0.4,  "y":558*0.4,  "base":true },
             //         { "id":"A",      "x":807*0.4,  "y":724*0.4               },
             //         { "id":"B",      "x":765*0.4,  "y":1325*0.4              },
@@ -264,12 +264,33 @@ const App = {
             //         { "id":"c", "p1":"B0", "p2":"B", "len": { "type":"const" } }
             //     ],
             //     "shapes": [
-            //         { "type":"img", "uri":"./img/pumpjack/pumpjack2.png",  "b":2085, "h":1680, "scl": .4 },
-            //         { "type":"poly", "pts":[{"x":0,"y":0},{"x":2085*.4,"y":0},{"x":2085*.4,"y":1680*.4},{"x":0,"y":1680*.4}], "fill":"#0001" },
-            //         { "type":"img", "uri":"./img/pumpjack/crank.png",   "p":"A0", "wref":"a", "dx":-220*.4, "dy":-50*.4,  "w0":-pi/2,     "scl":.4 },
-            //         { "type":"img", "uri":"./img/pumpjack/rocker.png",  "p":"B0", "wref":"c", "dx":-430*.4, "dy":-226*.4, "w0":-1.005*pi, "scl":.4 },
-            //         { "type":"img", "uri":"./img/pumpjack/coupler.png", "p":"A",  "wref":"b", "dx":-34*.4,  "dy":-35*.4,  "w0":-pi/2,     "scl":.4 },
-            //         { "type":"img", "uri":"./img/pumpjack/frame.png",   "p":"B0",             "dx":-60*.4,  "dy":-34*.4,                  "scl":.4 }
+            //         { "type":"poly", "pts":[{"x":0,"y":0},{"x":2085*.4,"y":0},{"x":2085*.4,"y":1680*.4},{"x":0,"y":1680*.4}], "fill":"#3ae" },
+            //         // { "type":"poly", "pts":[0,0,500,0,500,200,0,200], "fill":"#3ae" }
+            //         // { "type":"poly", "pts":[[0,0],[500,0],[500,200],[0,200]],"p":"origin", "fill":"#3ae" }
+            //         { "type":"img", "uri":"./img/pumpjack/pumpjack2.png",  "scl": .4 }
+            //         // {
+            //         //     type:"img",
+            //         //     uri:"./img/pumpjack/pumpjack2.png",
+            //         //     // p:"A",
+            //         //     // p: {x:200, y:100},
+            //         //     // b:500,
+            //         //     // h:500,
+            //         //     // sx: 300,
+            //         //     // sy: 100,
+            //         //     // sb: 800,
+            //         //     // sh: 800,
+            //         //     // xoff: -100,
+            //         //     // yoff: -100,
+            //         //     // w0: 0.5,
+            //         //     wref: "c",
+            //         //     scl:0.5
+            //         // }
+
+            //         // { "type":"poly", "pts":[{"x":0,"y":0},{"x":2085*.4,"y":0},{"x":2085*.4,"y":1680*.4},{"x":0,"y":1680*.4}], "fill":"#0007" },
+            //         // { "type":"img", "uri":"./img/pumpjack/crank.png",   "p":"A0", "wref":"a", "xoff":-220, "yoff":-50,  "w0":-pi/2,     "scl":.4 },
+            //         // { "type":"img", "uri":"./img/pumpjack/rocker.png",  "p":"B0", "wref":"c", "xoff":-430, "yoff":-226, "w0":-1.005*pi, "scl":.4 },
+            //         // { "type":"img", "uri":"./img/pumpjack/coupler.png", "p":"A",  "wref":"b", "xoff":-34,  "yoff":-35,  "w0":-pi/2,     "scl":.4 },
+            //         // { "type":"img", "uri":"./img/pumpjack/frame.png",   "p":"B0", "xoff":-60, "yoff":-34, "scl":.4 }
             //     ]
             // };
 
@@ -329,14 +350,14 @@ const App = {
 
             this.registerEventsFor(this.ctx.canvas)
                 .on(['pointer','buttondown', 'buttonup', 'click'], e => { this.g.exe( editor.on(this.pntToUsr(Object.assign({}, e))) ) })  // ... apply events to g2
-                // .on(['drag', 'buttondown', 'buttonup', 'click'], e => { this.g.exe( editor.on(this.pntToUsr(Object.assign({}, e))) ).exe(this.ctx); })  // apply events to g2 ...
                 .on(['pointer', 'drag', 'pan', 'fps', 'buttondown', 'buttonup', 'click', 'pointerenter', 'pointerleave'], () => this.showStatus())
                 .on('drag', e => {
                     if (!this.dragMove) { // dragEdit mode
                         editor.curElm.x0 = editor.curElm.x;
                         editor.curElm.y0 = editor.curElm.y;
                     };
-                    this.g.exe(this.ctx);
+                    this.g.exe(editor.on(this.pntToUsr(Object.assign({}, e)))) // ... apply drag event to g2
+                          .exe(this.ctx); // ... and render
                     this.showTooltip(e);
                 })
                 .on('pan', e => {
