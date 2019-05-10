@@ -1,6 +1,6 @@
 const DEPLOYMENT_ACCESS_TOKEN = '' // add token with scope repo_deployments to query private repos -> https://github.com/settings/tokens
 const APP_PREFIX = 'mecEdit'
-let VERSION = '';
+let VERSION = '0.6.9';
 let CACHE_NAME = APP_PREFIX + '_' + VERSION
 const updateHash = async function() {
   const response = await fetch(`https://api.github.com/repos/jauhl/mecEdit/deployments${DEPLOYMENT_ACCESS_TOKEN?`?access_token=${DEPLOYMENT_ACCESS_TOKEN}`:''}`);
