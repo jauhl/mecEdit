@@ -9,8 +9,8 @@
 const canvasInteractor = {
     create() {
         const o = Object.create(this.prototype);
-        o.constructor.apply(o,arguments); 
-        return o; 
+        o.constructor.apply(o,arguments);
+        return o;
     },
     // global static tickTimer properties
     fps: '?',
@@ -152,19 +152,19 @@ const canvasInteractor = {
             // view, geometry or graphics might be modified ...
             this.dirty = true;
         },
-        pointerdown() { 
+        pointerdown() {
             this.evt.xbtn = this.evt.x;
             this.evt.ybtn = this.evt.y;
         },
-        pointerup() { 
+        pointerup() {
             this.evt.type = this.evt.x===this.evt.xbtn && this.evt.y===this.evt.ybtn ? 'click' : 'pointerup';
             this.evt.xbtn = this.evt.x;
             this.evt.ybtn = this.evt.y;
         },
-        pointerleave() { 
+        pointerleave() {
             this.evt.inside = false;
         },
-        pointerenter() { 
+        pointerenter() {
             this.evt.inside = true;
         },
         wheel() {
@@ -178,11 +178,11 @@ const canvasInteractor = {
         isDefaultPreventer(type) {
             return ['pointermove','pointerdown','pointerup','wheel'].includes(type);
         },
-        pntToUsr: function(p) { 
-            let vw = this.view; 
-            p.x = (p.x - vw.x)/vw.scl; 
-            p.y = (p.y - vw.y)/vw.scl; 
-            return p; 
+        pntToUsr: function(p) {
+            let vw = this.view;
+            p.x = (p.x - vw.x)/vw.scl;
+            p.y = (p.y - vw.y)/vw.scl;
+            return p;
         },
         // tickTimer interface
         startTimer() {
@@ -218,18 +218,18 @@ const canvasInteractor = {
 */
         // observable interface
         notify(key,val) {
-            if (this.signals && this.signals[key]) 
-                for (let hdl of this.signals[key]) 
+            if (this.signals && this.signals[key])
+                for (let hdl of this.signals[key])
                     hdl(val);
             return this;
         },
         on(key,handler) {   // support array of keys as first argument.
             if (Array.isArray(key))
-                for (let k of key) 
+                for (let k of key)
                     this.on(k,handler);
             else
                 ((this.signals || (this.signals = {})) && this.signals[key] || (this.signals[key]=[])).push(handler);
-            
+
             return this;
         },
         remove(key,handler) {
