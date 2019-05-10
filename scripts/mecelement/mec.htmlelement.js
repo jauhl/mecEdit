@@ -1,6 +1,6 @@
 class Mec2Element extends HTMLElement {
     static get observedAttributes() {
-        return ['width', 'height','cartesian','grid', 'x0', 'y0', 
+        return ['width', 'height','cartesian','grid', 'x0', 'y0',
                 'darkmode', 'shownodelabels', 'showconstraintlabels'];
     }
 
@@ -36,7 +36,7 @@ class Mec2Element extends HTMLElement {
     }
 
     get pausing() { return this._state.pause; }
-    set pausing(q) { 
+    set pausing(q) {
         if (this._state.pause && !q) {  // start / continue running
             if (!this._model.isActive)
                 this._model.reset();
@@ -54,7 +54,7 @@ class Mec2Element extends HTMLElement {
     }
 
     get editing() { return this._state.edit; }
-    set editing(q) { 
+    set editing(q) {
         if (!this._state.edit && q) {  // edit in initial pose only
             if (this.hasInputs)
                 for (const input of this._inputs) {
@@ -117,8 +117,8 @@ class Mec2Element extends HTMLElement {
             // add input event listeners
             for (const input of this._inputs) {
                 const z0 = input.sub === 'ori' ? input.w0 : input.r0;
-                input.hdl = e => { 
-                    if (this.editing) this.editing = false; 
+                input.hdl = e => {
+                    if (this.editing) this.editing = false;
                     input.constraint[input.sub].inputCallbk((+e.target.value-z0),false);
                     this.pausing = false;
                 };
@@ -171,7 +171,7 @@ class Mec2Element extends HTMLElement {
     parseModel() {
         try { this._model = JSON.parse(this.innerHTML); return true; }
         catch(e) { this._root.innerHTML = e.message; }
-        return false; 
+        return false;
     }
 
     reset() {
@@ -182,8 +182,8 @@ class Mec2Element extends HTMLElement {
     showInfo(e) {
         const info = this._model.info;
         if (info) {
-            this._info.style.left = (e.x + 5)+'px'; 
-            this._info.style.top = this.cartesian 
+            this._info.style.left = (e.x + 5)+'px';
+            this._info.style.top = this.cartesian
                                  ? (this._ctx.canvas.height - e.y - 15)+'px'
                                  : (e.y - 20)+'px';
             this._info.innerHTML = info;
@@ -197,15 +197,16 @@ class Mec2Element extends HTMLElement {
             this._info.style.display = 'none';
     }
 
-    log(str) { 
-        this._logview.innerHTML = str; 
+    log(str) {
+        this._logview.innerHTML = str;
     }
 
     ondrag(e) {
         if (this._selector.selection && this._selector.selection.drag) {
 
             this._selector.selection.drag({x:e.xusr,y:e.yusr,dx:e.dxusr,dy:e.dyusr,mode:this.editing?'edit':'drag'});
-            this._model.preview();
+            if (this._state.edit)
+                this._model.preview();
             this._model.pose();
             this._g.exe(this._ctx);
             // this._state.edit ? this._model.reset() : this._model.pose();
@@ -222,7 +223,7 @@ class Mec2Element extends HTMLElement {
             this._g.exe(this._selector);
             this._g.exe(this._ctx);
         }
-        // avoid unnecessary model.tick's with mechanims fully controlled by inputs .. !  
+        // avoid unnecessary model.tick's with mechanims fully controlled by inputs .. !
         if (this.pausing === false &&
             this._model.activeDriveCount - this.inputDriveCount === 0 &&
             (this._model.dof === 0 || this._model.isSleeping))
