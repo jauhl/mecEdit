@@ -479,18 +479,33 @@ const tmpl = {
 <head>
     <title>${modelHasId?app.model.id:''}</title>
     <meta charset='utf-8'>
+    ${app.show.darkmode?`<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        background-color: #000;
+    }
+    .container {
+        background: linear-gradient(0deg, #000, #4d4d4d);
+        padding: .5rem 0 0 .5rem;
+    }
+  </style>`:''}
 </head>
 
 <body>
-    <mec-2 width=${app.cnv.width} height=${app.cnv.height} grid ${app.view.cartesian?'cartesian':''} x0=${app.view.x} y0=${app.view.y}>
+    <div class="container">
+        <mec-2 width=${app.cnv.width} height=${app.cnv.height-20} grid ${app.view.cartesian?'cartesian':''} ${app.show.darkmode?'darkmode':''} x0=${app.view.x} y0=${app.view.y} >
 ${app.model.asJSON()}
-    </mec-2>
+        </mec-2>
+    </div>
 
-    <script src="https://gitcdn.xyz/repo/goessner/g2/master/src/g2.js"></script>
-    <script src="https://gitcdn.xyz/repo/goessner/mec2/master/mec2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/jauhl/mecEdit@0cc975150b605d88c301648d10a4ca8630c63754/scripts/mecelement/canvasInteractor.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/jauhl/mecEdit@0cc975150b605d88c301648d10a4ca8630c63754/scripts/mecelement/g2.selector.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/jauhl/mecEdit@0cc975150b605d88c301648d10a4ca8630c63754/scripts/mecelement/mec.htmlelement.js"></script>
+    <script src="https://jauhl.github.io/mecEdit/scripts/g2.js"></script>
+    <script src="https://jauhl.github.io/mecEdit/scripts/mec2.min.js"></script>
+    <script src="https://jauhl.github.io/mecEdit/scripts/mecelement/canvasInteractor.js"></script>
+    <script src="https://jauhl.github.io/mecEdit/scripts/mecelement/g2.selector.js"></script>
+    <script src="https://jauhl.github.io/mecEdit/scripts/mecelement/mec.htmlelement.js"></script>
 </body>
 
 </html>`

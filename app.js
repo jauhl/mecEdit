@@ -235,7 +235,7 @@ const App = {
             //         { id: 'C', x: 250, y: 320, m: 1 }
             //     ],
             //     constraints: [
-            //         { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori:{ "type":"drive","Dt":3,"Dw":6.283185307179586 } },
+            //         { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori:{ "type":"drive","Dt":3,"Dw":6.283185307179586, "repeat":100 } },
             //         { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
             //         { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
             //         { id: 'd', p1: 'B', p2: 'C', ori: { type:'const', ref:'b'}, len: { type: 'const' } }
