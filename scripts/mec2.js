@@ -1374,6 +1374,7 @@ mec.constraint = {
                             + (this.len.t0 && this.len.t0 > 0.0001 ? ',"t0":'+this.len.t0 : '')
                             + (this.len.Dt ? ',"Dt":'+this.len.Dt : '')
                             + (this.len.Dr ? ',"Dr":'+this.len.Dr : '')
+                            + (this.len.repeat ? ',"repeat":'+this.len.repeat : '')
                             + (this.len.bounce ? ',"bounce":true' : '')
                             + (this.len.input ? ',"input":true' : '')
                             + ' }'
@@ -1384,13 +1385,14 @@ mec.constraint = {
                             + (this.ori.type === 'drive' ? ',"ori":{ "type":"drive"' : '')
                             + (this.ori.ref ? ',"ref":"'+this.ori.ref.id+'"' : '')
                             + (this.ori.reftype ? ',"reftype":"'+this.ori.reftype+'"' : '')
-                            + (this.ori.w0 && this.ori.w0 > 0.0001 ? ',"r0":'+this.ori.w0 : '')
+                            + (this.ori.w0 && this.ori.w0 > 0.0001 ? ',"w0":'+this.ori.w0 : '')
                             + (this.ori.ratio && Math.abs(this.ori.ratio-1)>0.0001 ? ',"ratio":'+this.ori.ratio : '')
                             + (this.ori.func ? ',"func":"'+this.ori.func+'"' : '')
                             + (this.ori.arg ? ',"arg":"'+this.ori.arg+'"' : '')
                             + (this.ori.t0 && this.ori.t0 > 0.0001 ? ',"t0":'+this.ori.t0 : '')
                             + (this.ori.Dt ? ',"Dt":'+this.ori.Dt : '')
                             + (this.ori.Dw ? ',"Dw":'+this.ori.Dw : '')
+                            + (this.ori.repeat ? ',"repeat":'+this.ori.repeat : '')
                             + (this.ori.bounce ? ',"bounce":true' : '')
                             + (this.ori.input ? ',"input":true' : '')
                             + ' }'
