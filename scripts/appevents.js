@@ -31,9 +31,9 @@ const events = {
 
             // Edit
             if (e.target && e.target.id === 'dragmode') {
-                app.dragMove = !app.dragMove;
-                if (!app.dragMove)
-                    app.reset();
+                app.editing = !app.editing;
+                // if (app.editing)
+                app.reset();
             };
             if (e.target && e.target.id === 'model-edit') { app.modelModal.show(); };
             if (e.target && e.target.id === 'nav-purgeelement') {
@@ -145,13 +145,16 @@ const events = {
                     app.initViewModal(); // open view modal
                 if (e.key === 'i') {
                     let cb = document.querySelector('#dragmode');
-                    app.dragMove = !app.dragMove; // toggle drag-mode
-                    if (!app.dragMove) {
-                        app.reset();
+                    app.editing = !app.editing; // toggle drag-mode
+                    // update toggle in navbar
+                    app.reset();
+                    if (app.editing) {
                         cb.checked = true;
                     } else {
                         cb.checked = false;
                     }
+                    // update statusbar immediately
+                    app.showStatus();
                 };
                 if (e.key === 'p') {
                     app.build = { mode: 'purgeelement' };
@@ -374,6 +377,18 @@ const events = {
             });
         })
     },
+    copyChart: id => {
+        document.getElementById(id).addEventListener('click', e => {
+            navigator.clipboard.writeText(tmpl.chart())
+  	        .then(() => {
+    	        console.log('Chart template copied to clipboard.');
+            })
+  	        .catch(err => {
+                // users might have denied clipboard permissions
+                console.error('Could not copy chart template: ', err);
+            });
+        })
+    },
     resize: () => {
         window.onresize = (e) => {
             let c = document.getElementById('canvas'),
@@ -458,5 +473,36 @@ const events = {
         document.getElementById(id).addEventListener('hide.bs.modal', (e) => {
             app.resetApp();
         });
-    }
+    },
+    canvasDragDrop: (id) => {
+        document.getElementById(id).addEventListener('drop', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+
+            if (files[0].type.match('application/json')) {
+                console.log('Model was dropped ...');
+                app.loadFromJSON(files)
+            } else {
+                console.error('Only files of type JSON can be processed!');
+            }
+
+            document.querySelector('.drop-info').style.display = 'none';
+        });
+
+        document.getElementById(id).addEventListener('dragover', (e) => {
+            // prevent default behavior (prevent file from being opened)
+            e.preventDefault();
+        });
+
+        document.getElementById(id).addEventListener('dragenter', (e) => {
+            // show drop-info
+            document.querySelector('.drop-info').style.display = 'block';
+        });
+
+        document.getElementById(id).addEventListener('dragleave', (e) => {
+            // hide drop-info
+            document.querySelector('.drop-info').style.display = 'none';
+        });
+    },
 }

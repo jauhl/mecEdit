@@ -95,7 +95,7 @@ const tooltip = document.getElementById('info'),
       */
       sbDragging =  document.getElementById('sbDragging'),
       /**
-      * Statusbar container for `App.prototype.dragMove`.
+      * Statusbar container for `App.prototype.editing`.
       * @const
       * @type {HTMLElement}
       */
@@ -225,30 +225,65 @@ const App = {
                 "id":"linkage"
             };
             // this.model = {
-            //     id: 'crank-rocker',
-            //     gravity: true,
-            //     nodes: [
-            //         { id: 'A0', x: 100, y: 100, base: true },
-            //         { id: 'A', x: 100, y: 150 },
-            //         { id: 'B', x: 350, y: 220 },
-            //         { id: 'B0', x: 300, y: 100, base: true },
-            //         { id: 'C', x: 250, y: 320, m: 1 }
+            //     "id":"crank-rocker",
+            //     "gravity":true,
+            //     "nodes": [
+            //       { "id":"A0","x":100,"y":100,"base":true },
+            //       { "id":"A","x":91,"y":150 },
+            //       { "id":"B","x":350,"y":220 },
+            //       { "id":"B0","x":300,"y":100,"base":true },
+            //       { "id":"C","x":250,"y":320 }
             //     ],
-            //     constraints: [
-            //         { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori:{ "type":"drive","Dt":3,"Dw":6.283185307179586, "repeat":100 } },
-            //         { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
-            //         { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
-            //         { id: 'd', p1: 'B', p2: 'C', ori: { type:'const', ref:'b'}, len: { type: 'const' } }
+            //     "constraints": [
+            //       { "id":"a","p1":"A0","p2":"A","len":{ "type":"const" },"ori":{ "type":"drive","Dt":3,"Dw":6.283185307179586 } },
+            //       { "id":"b","p1":"A","p2":"B","len":{ "type":"const" } },
+            //       { "id":"c","p1":"B0","p2":"B","len":{ "type":"const" } },
+            //       { "id":"d","p1":"B","p2":"C","len":{ "type":"const" },"ori":{ "type":"const","ref":"b" } }
             //     ],
-            //     views: [
-            //         { "id":"view1","show":"pos","of":'C',"as":'trace',"stroke":"rgba(255,0,0,1)", "fill":"rgba(255,235,13,.5)" },
-            //         { "id":"ia",   "show":"w",  "of":"a","as":'info' },
-            //         { "as":"chart","x":0,"b":200,"h":150,"t0":0.25,"Dt":3,"mode":"preview","canvas":"chart1","ref":"a",
-            //             "yaxis":{"show":"w","of":"c"},
-            //             "xaxis":{"show":"w","of":"a"}
-            //         },
+            //     "views": [
+            //       { "show":"pos","of":"C","as":"trace","mode":"preview","id":"view1","Dt":3,"stroke":"rgba(255,0,0,1)","fill":"rgba(255,235,13,.5)" },
+            //       { "show":"w","of":"a","as":"info","id":"ia" },
+            //       { "as":"chart","canvas":"chart1","x":40,"y":40,"b":200,"h":150,"t0":0.25,"Dt":3,"mode":"preview","xaxis":{"show":"w","of":"a" },
+            //   "yaxis":{"show":"w","of":"c"}}
             //     ]
-            // }
+            //   }
+            // this.model = {
+            //     "id":"linkage",
+            //     "nodes": [
+            //       { "id":"A","x":372,"y":386,"base":true },
+            //       { "id":"B","x":375,"y":240 },
+            //       { "id":"C","x":371,"y":531 },
+            //       { "id":"D","x":233,"y":393 }
+            //     ],
+            //     "constraints": [
+            //       { "id":"b","p1":"A","p2":"B","len":{ "type":"const" } },
+            //       { "id":"a","p1":"A","p2":"C","ori":{ "type":"const","ref":"b" } },
+            //       { "id":"c","p1":"A","p2":"D","len":{ "type":"const" },"ori":{ "type":"drive","Dt":1,"Dw":6.283185307179586 } }
+            //     ]
+            //   }
+            // this.model = {
+            //     "id":"crank-rocker",
+            //     "gravity":true,
+            //     "nodes": [
+            //       { "id":"A0","x":100,"y":100,"base":true },
+            //       { "id":"A","x":91,"y":150 },
+            //       { "id":"B","x":350,"y":220 },
+            //       { "id":"B0","x":300,"y":100,"base":true },
+            //       { "id":"C","x":250,"y":320 }
+            //     ],
+            //     "constraints": [
+            //       { "id":"a","p1":"A0","p2":"A","len":{ "type":"const" },"ori":{ "type":"drive","Dt":3,"Dw":6.283185307179586 } },
+            //       { "id":"b","p1":"A","p2":"B","len":{ "type":"const" } },
+            //       { "id":"c","p1":"B0","p2":"B","len":{ "type":"const" } },
+            //       { "id":"d","p1":"B","p2":"C","len":{ "type":"const" },"ori":{ "type":"const","ref":"b" } }
+            //     ],
+            //     "views": [
+            //       { "show":"pos","of":"C","as":"trace","mode":"preview","id":"view1","Dt":3,"stroke":"rgba(255,0,0,1)","fill":"rgba(255,235,13,.5)" },
+            //       { "show":"w","of":"a","as":"info","id":"ia" },
+            //       { "as":"chart","canvas":"chart1","x":40,"y":40,"b":200,"h":150,"t0":0.25,"Dt":3,"mode":"preview","xaxis":{"show":"w","of":"a" },
+            //   "yaxis":{"show":"w","of":"c"}}
+            //     ]
+            //   }
             // this.model = {
             //     "id":"pumpjack",
             //     "nodes": [
@@ -352,12 +387,12 @@ const App = {
                 .on(['pointer','buttondown', 'buttonup', 'click'], e => { this.g.exe( editor.on(this.pntToUsr(Object.assign({}, e))) ) })  // ... apply events to g2
                 .on(['pointer', 'drag', 'pan', 'fps', 'buttondown', 'buttonup', 'click', 'pointerenter', 'pointerleave'], () => this.showStatus())
                 .on('drag', e => {
-                    if (!this.dragMove) { // dragEdit mode
-                        editor.curElm.x0 = editor.curElm.x;
-                        editor.curElm.y0 = editor.curElm.y;
-                    };
+                    // if (this.editing) { // dragEdit mode // now in in elm.drag()
+                    //     editor.curElm.x0 = editor.curElm.x;
+                    //     editor.curElm.y0 = editor.curElm.y;
+                    // };
                     this.g.exe(editor.on(this.pntToUsr(Object.assign({}, e)))) // ... apply drag event to g2
-                          .exe(this.ctx); // ... and render
+                        //   .exe(this.ctx); // ... and render
                     this.showTooltip(e);
                 })
                 .on('pan', e => {
@@ -391,6 +426,24 @@ const App = {
         }, // constructor
 
         /**
+        * Get this.dragMove state.
+        * @const
+        * @type {boolean}
+        */
+        get editing() {
+            return !this.dragMove;
+        },
+
+        /**
+        * Set this.dragMove state.
+        * @const
+        * @type {boolean}
+        */
+        set editing(q) {
+            this.dragMove = !q;
+        },
+
+        /**
         * Evaluates used coordinate system.
         * @const
         * @type {boolean}
@@ -418,7 +471,7 @@ const App = {
         showStatus() {
             let { x, y } = this.pntToUsr({ x: this.evt.x, y: this.evt.y });
             sbCoords.innerHTML = `x=${x}, y=${y}`;
-            sbDragmode.innerHTML = `dragmode=${this.dragMove?'move':'edit'}`;
+            sbDragmode.innerHTML = `dragmode=${this.editing?'edit':'move'}`;
             sbDOF.innerHTML = `dof=${this.model.dof}`;
             sbFPS.innerHTML = `fps=${this.fps}`;
             // if (!!this.model.nodes && this.model.nodes.length > 0 ) { // only useful when model has nodes
@@ -446,10 +499,10 @@ const App = {
         showTooltip(e) {
             const info = this.model.info;
             // type of info
-            if (editor.dragInfo && !this.dragMove) {
+            if (editor.dragInfo && this.editing) {
                 tooltip.innerHTML = editor.dragInfo;
                 tooltip.style.display = 'inline';
-            } else if (info && this.dragMove) { // don't show views in dragEdit mode
+            } else if (info && !this.editing) { // don't show info-views when editing
                 tooltip.innerHTML = info;
                 tooltip.style.display = 'inline';
             }
@@ -480,7 +533,7 @@ const App = {
         tick(e) {
             if (!!this.model) { // check if model is defined first
                 if (this.dragging) {
-                    this.dragMove ? this.model.pose() : this.updDependants(editor.curElm); // null, if updating on dragend via editor
+                    this.editing ? this.updDependants(editor.curElm) : this.model.pose(); // null, if updating on dragend via editor
                 }
                 else if (this.state === 'active') {     // perform time step
                     this.model.tick(1/60);
@@ -514,13 +567,12 @@ const App = {
                 chartcontainer.removeChild(chartcontainer.lastChild);
             };
 
+            this.charts = {};        // (re-)empty chart tracker
+            this.model.inputs = [];  // track drives by id and dof for responsive range-input sizing
+
             this.checkForPreviews(); // check if model has preview-views and set model state accordingly
             this.checkForCharts();   // check if model has chart-views and set model state accordingly
 
-            // expand or retract sidebar for charts
-            document.querySelector('#sb-r').style['padding-left'] = Object.keys(this.charts).length ? '0px' : '270px';
-
-            this.model.inputs = [];     // track drives by id and dof for responsive range-input sizing
 
             let drv, prv=false;
             while (drv = this.driveByInput(prv)) {
@@ -536,12 +588,19 @@ const App = {
             };
 
             if (typeof t === 'undefined' || t === null)    // dont start second timer if init() is called again
-                this.startTimer();                           // start synchronized ticks
+                this.startTimer();                         // start synchronized ticks
 
             this.toggleGravity(false, true);
 
             // this.state = (this.model.inputs.length > 0) ? 'input' : 'initialized';
+
+            // visuals ...
+            // set color of sidebar-toggle-button to show if model has charts
+            document.querySelector('#sidebar-toggle').style.color = !!this.model.state.hasChart ? '#fff' : '#6c757d';
+            // expand or retract sidebar for charts
+            document.querySelector('#sb-r').style['padding-left'] = !!this.model.state.hasChart ? '0px' : '270px';
             runSymbol.setAttribute('d',svgplay); // for reinits
+
             this.state = 'initialized';
         },
 
@@ -597,15 +656,73 @@ const App = {
         * @method
         * @param {object} elm - Element whose dependants should be reinitialized.
         */
+        // updDependants(elm) {
+        //     let dependants = {ori:[],len:[]}; // declaring and filling array would be way more efficient in app scope since dependents don't change during drag
+        //     // for (const el of this.model.constraints) {
+        //     //     if (el.dependsOn(elm) && (  (el.ori.type === 'const' && el.ori.ref)
+        //     //                              ||  el.ori.type === 'drive'
+        //     //                              || (el.len.type === 'const' && el.len.ref)
+        //     //                              ||  el.len.type === 'drive')) {
+        //     //     // if (el.dependsOn(elm) && (el.ori.type === 'drive' || el.len.type === 'drive')) {
+        //     //         dependants.push(el);
+        //     //     }
+        //     // };
+        //     for (const el of this.model.constraints) {
+        //         if (el.dependsOn(elm)) {
+        //             if ( (el.ori.type === 'const' && el.ori.ref) || el.ori.type === 'drive' ) {
+        //                 dependants.ori.push(el);
+        //             }
+        //             if ( (el.len.type === 'const' && el.len.ref) || el.len.type === 'drive' ) {
+        //                 dependants.len.push(el);
+        //             }
+        //         }
+        //         // if (el.dependsOn(elm) && (el.ori.type === 'drive' || el.len.type === 'drive')) {
+        //     };
+        //     console.log(dependants);
+        //     // debugger
+        //     // dependants.forEach(el => el.init(this.model)); // since only needed for drives, maybe implement user setting to choose between performance & simplicity
+        //     // dependants.ori.forEach(el => {
+        //     //     if (el.ori.type === 'drive')
+        //     //         el.w0 = el.w
+        //     //         // el.init_ori_drive(el.ori)
+        //     //     if (el.len.type === 'drive')
+        //     //         el.init_len_drive(el.len)
+        //     //     // el.init(this.model);
+        //     // });
+        //     dependants.ori.forEach(el => el.w0 = el.w);
+        //     dependants.len.forEach(el => el.r0 = el.r);
+
+        //     if (this.model.state.hasChartPreview || this.model.state.hasTracePreview)
+        //         this.model.preview();
+        // },
+
         updDependants(elm) {
             let dependants = []; // declaring and filling array would be way more efficient in app scope since dependents don't change during drag
-            for (const constraint of this.model.constraints) {
-                if (constraint.dependsOn(elm))
-                    dependants.push(constraint);
+            for (const el of this.model.constraints) {
+                // if (el.dependsOn(elm) && (  (el.ori.type === 'const' && el.ori.ref)
+                //                          ||  el.ori.type === 'drive'
+                //                          || (el.len.type === 'const' && el.len.ref)
+                //                          ||  el.len.type === 'drive')) {
+                if (el.dependsOn(elm) && (el.ori.type === 'drive' || el.len.type === 'drive')) {
+                    dependants.push(el);
+                }
             };
-            dependants.forEach(el =>  el.init(this.model));
-            if (this.model.state.hasPreview)
+            // dependants.forEach(el => el.init(this.model)); // since only needed for drives, maybe implement user setting to choose between performance & simplicity
+            dependants.forEach(el => {
+                if (el.ori.type === 'drive')
+                    el.w0 = el.w
+                    // el.init_ori_drive(el.ori)
+                if (el.len.type === 'drive')
+                    el.r0 = el.r
+                    // el.init_len_drive(el.len)
+                // el.init(this.model);
+            });
+            if (this.model.state.hasChartPreview || this.model.state.hasTracePreview) {
                 this.model.preview();
+            } else { // mere eyecandy...
+                this.model.reset();
+                this.model.pose();
+            };
         },
 
         /**
@@ -933,12 +1050,15 @@ const App = {
                     prv = drv;
                 };
                 window.dispatchEvent(new Event('resize')); // lazy range-width fitting ...
-            } else if (!newC.ori.input && this.model.inputs.includes(newC.id+'-ori')) { // remove redundant ori inputs
-                actcontainer.removeChild(document.getElementById(newC.id+'-ori'));
-                this.model.inputs.splice(this.model.inputs.findIndex((el)=>el.id === newC.id),1);
-            } else if (!newC.len.input && this.model.inputs.includes(newC.id+'-len')) { // remove redundant len inputs
-                actcontainer.removeChild(document.getElementById(newC.id+'-len'));
-                this.model.inputs.splice(this.model.inputs.findIndex((el)=>el.id === newC.id),1);
+            } else {
+                if (!newC.ori.input && this.model.inputs.includes(newC.id+'-ori')) { // remove redundant ori inputs
+                    actcontainer.removeChild(document.getElementById(newC.id+'-ori'));
+                    this.model.inputs = this.model.inputs.filter( el => el !== newC.id+'-ori' );
+                };
+                if (!newC.len.input && this.model.inputs.includes(newC.id+'-len')) { // remove redundant len inputs
+                    actcontainer.removeChild(document.getElementById(newC.id+'-len'));
+                    this.model.inputs = this.model.inputs.filter( el => el !== newC.id+'-len' );
+                };
             };
 
             // update range internals
@@ -1081,6 +1201,10 @@ const App = {
                 elm.init(this.model);
 
                 this.updateg(); // update graphics
+
+                if (this.model.state.hasChartPreview || this.model.state.hasTracePreview) // preview stuff
+                    this.model.preview();
+
                 this.resetApp(); // reset state and instructions
             } else if (elm === undefined) {
                 return;
@@ -1574,15 +1698,19 @@ const App = {
         },
 
         /**
-        * Checks if one or more previews are in the model and sets model.state accordingly.
+        * Checks if one or more previews (not in charts!) are in the model and sets model.state accordingly.
         * @method
         */
         checkForPreviews() {
-            if (this.model.state.hasOwnProperty('hasPreview'))
-                this.model.state.hasPreview = false;    // mecEdit only state, assume no preview
+            if (this.model.state.hasOwnProperty('hasChartPreview'))
+                this.model.state.hasChartPreview = false;    // mecEdit only state, assume no preview
+                if (this.model.state.hasOwnProperty('hasTracePreview'))
+                this.model.state.hasTracePreview = false;    // mecEdit only state, assume no preview
             for (const view of this.model.views) {
-                if (view.mode === 'preview' && view.as !== 'chart') {
-                    this.model.state.hasPreview = true;
+                if (view.mode === 'preview' && view.as == 'chart') {
+                    this.model.state.hasChartPreview = true;
+                } else if (view.mode === 'preview' && view.as == 'trace') {
+                    this.model.state.hasTracePreview = true;
                 }
             }
         },
@@ -1603,7 +1731,7 @@ const App = {
                     }
                 }
             }
-        },
+        }
     }, mixin.observable,      // for handling (custom) events ..
        mixin.pointerEventHdl, // managing (delegated) pointer events
        mixin.tickTimer,       // synchronize pointer events and rendering
@@ -1748,9 +1876,11 @@ load()
     events.modalShown('modelModal');
     events.modalAccept('modalAccept');
     events.copyModel('copyModel');
+    events.copyChart('copyChart');
     events.viewModalChange('viewModal');
     events.viewModalClick('viewModal');
     events.viewModalHide('viewModal');
+    events.canvasDragDrop('canvas');
 
     // set some visuals
     app.toggleDarkmode();

@@ -349,8 +349,8 @@
                         </svg>
                     </a>
 
-            <button id="sidebar-toggle" class="btn btn-dark order-3 mb-auto" type="button" aria-label="Toggle sidebar" data-toggle="popover" data-placement="bottom" data-content="Charts">
-                    <!-- <svg class="navbar-nav-svg " viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'>
+                    <button id="sidebar-toggle" class="btn btn-dark order-3 mb-auto" style="color: #6c757d" type="button" aria-label="Toggle sidebar" data-toggle="popover" data-placement="bottom" data-content="Charts">
+                        <!-- <svg class="navbar-nav-svg " viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'>
                         <path stroke='rgba(255, 255, 255, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'>
                     </svg> -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
@@ -473,7 +473,7 @@
             <main id="main" class="col p-0 main-container">
                 <div class="d-flex">
                     <div id="canvas-container" class="p-0">
-                        <canvas id="canvas" class="canvas" width="1200" height="820"></canvas>
+                        <canvas id="canvas" class="canvas dragover" width="1200" height="820"></canvas>
                     </div>
                     <div id="instructions"></div>
                     <div id="actuators-container" class="d-inline-flex flex-wrap"></div>
@@ -491,8 +491,21 @@
                         <div id="sbDragging" class="text-dark pl-1"></div>
                     </div>
                     <!-- padding must be set as style in element, not in stylesheet! -->
-                    <div id="sb-r" style="padding-left:270px;" >
+                    <div id="sb-r" style="padding-left:270px;">
                         <div id="sb-canvas-container" class="glass" style="width:100%; height:100%; "><!-- canvas-elements for charts go here --></div>
+                    </div>
+                </div>
+                <div class="drop-info" style="display:none;">
+                    <div class="drop-content">
+                        <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 486 486">
+                        	<g>
+                        		<path fill="currentColor" d="M452.5,285c15,0,27,12,27,27v147c0,15-12,27-27,27h-418c-15,0-28-12-28-27V312c0-15,13-27,28-27
+                        			s27,12,27,27v119h364V312C425.5,297,437.5,285,452.5,285z"/>
+                        		<path fill="currentColor" d="M152.5,156c-11,11-27,11-38,0s-11-27,0-38l110-110c5-5,12-8,19-8s14,3,19,8l110,110
+                        			c11,11,11,27,0,38c-5,5-12,8-19,8s-15-3-20-8l-63-63v234c0,15-12,27-27,27s-27-12-27-27V93L152.5,156z"/>
+                        	</g>
+                        </svg>
+                        <h2><br/>Drop to a <b>JSON</b> file to upload a model</h2>
                     </div>
                 </div>
             </main>
@@ -507,7 +520,7 @@
     </div>
 
     <!-- ========================== Tooltip ========================== -->
-    <span id='info' class="badge badge-light text-left text-monospace" style="position:absolute;display:none;">tooltip</span>
+    <span id='info' class="badge badge-light text-left text-monospace" style="position:absolute;display:none;pointer-events:none;">tooltip</span>
 
     <!-- ========================== Custom Editor Modal ========================== -->
     <div id="modelModal" class="modal fade" role="dialog" aria-labelledby="modelModallabel" aria-hidden="true">
@@ -523,12 +536,20 @@
                     <textarea id="modalTextarea">no model</textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary mr-auto" id="copyModel" data-toggle="popover" data-placement="right" data-content="Copy the model to the clipboard.">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                            <path fill="none" d="M0 0h24v24H0V0z"/>
-                            <path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm-1 4H8c-1.1 0-1.99.9-1.99 2L6 21c0 1.1.89 2 1.99 2H19c1.1 0 2-.9 2-2V11l-6-6zM8 21V7h6v5h5v9H8z"/>
-                        </svg>
-                    </button>
+                    <div class="mr-auto modal-btn-container d-inline-flex">
+                        <button type="button" class="btn btn-primary modal-svg" id="copyModel" data-toggle="popover" data-placement="bottom" data-content="Copy the model to the clipboard.">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="none" d="M0 0h24v24H0V0z"/>
+                                <path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm-1 4H8c-1.1 0-1.99.9-1.99 2L6 21c0 1.1.89 2 1.99 2H19c1.1 0 2-.9 2-2V11l-6-6zM8 21V7h6v5h5v9H8z"/>
+                            </svg>
+                        </button>
+                        <button type="button" class="btn btn-primary modal-svg" id="copyChart" data-toggle="popover" data-placement="bottom" data-content="Copy a chart template to the clipboard.">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-width="2" d="M2,2 L2,22 M1,21 L22,21" />
+                                <path d="M5 18 Q 9 3, 13 11 T 20 4" stroke="currentColor" stroke-width="2" fill="transparent" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" id="modalAccept">Apply changes</button>
                 </div>

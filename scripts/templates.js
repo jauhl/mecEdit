@@ -508,5 +508,9 @@ ${app.model.asJSON()}
     <script src="https://jauhl.github.io/mecEdit/scripts/mecelement/mec.htmlelement.js"></script>
 </body>
 
-</html>`
+</html>`,
+chart: () => `{ "as":"chart","canvas":"","b":200,"h":150,"t0":0.1,"Dt":1,"mode":"preview",
+      "xaxis":{"show":"","of":"" },
+      "yaxis":{"show":"","of":""}
+}`
 };

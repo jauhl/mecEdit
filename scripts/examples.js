@@ -2,29 +2,29 @@
 
 const examples = {
     'crankrocker': {
-        id: 'crank-rocker',
-        gravity: true,
-        nodes: [
-            { id: 'A0', x: 100, y: 100, base: true },
-            { id: 'A', x: 100, y: 150 },
-            { id: 'B', x: 350, y: 220 },
-            { id: 'B0', x: 300, y: 100, base: true },
-            { id: 'C', x: 250, y: 320, m: 1 }
-        ],
-        constraints: [
-            { id: 'a', p1: 'A0', p2: 'A', len: { type: 'const' }, ori:{ "type":"drive","Dt":3,"Dw":6.283185307179586 } },
-            { id: 'b', p1: 'A', p2: 'B', len: { type: 'const' } },
-            { id: 'c', p1: 'B0', p2: 'B', len: { type: 'const' } },
-            { id: 'd', p1: 'B', p2: 'C', ori: { type:'const', ref:'b'}, len: { type: 'const' } }
-        ],
-        views: [
-            { "id":"view1","show":"pos","of":'C',"as":'trace',"stroke":"rgba(255,0,0,1)", "fill":"rgba(255,235,13,.5)" },
-            { "id":"ia",   "show":"w",  "of":"a","as":'info' },
-            { "as":"chart","x":0,"b":200,"h":150,"t0":0.25,"Dt":3,"mode":"preview","canvas":"chart1", "ref":"a",
-                "yaxis":{"show":"w","of":"c"},
-                "xaxis":{"show":"w","of":"a"}
-            },
-        ]
+      "id":"crank-rocker",
+      "gravity":true,
+      "nodes": [
+        { "id":"A0","x":100,"y":100,"base":true },
+        { "id":"A","x":100,"y":150 },
+        { "id":"B","x":350,"y":220 },
+        { "id":"B0","x":300,"y":100,"base":true },
+        { "id":"C","x":250,"y":320 }
+      ],
+      "constraints": [
+        { "id":"a","p1":"A0","p2":"A","len":{ "type":"const" },"ori":{ "type":"drive","Dt":3,"Dw":6.283185307179586 } },
+        { "id":"b","p1":"A","p2":"B","len":{ "type":"const" } },
+        { "id":"c","p1":"B0","p2":"B","len":{ "type":"const" } },
+        { "id":"d","p1":"B","p2":"C","len":{ "type":"const" },"ori":{ "type":"const","ref":"b" } }
+      ],
+      "views": [
+        { "show":"pos","of":"C","as":"trace","mode":"preview","id":"view1","Dt":3,"stroke":"rgba(255,0,0,1)","fill":"rgba(255,235,13,.5)" },
+        { "show":"w","of":"a","as":"info","id":"ia" },
+        { "as":"chart","canvas":"chart1","x":40,"y":40,"b":200,"h":150,"t0":0.1,"Dt":3,"mode":"preview","ref":"a",
+          "xaxis":{ "show":"w","of":"a" },
+          "yaxis":{ "show":"w","of":"c" }
+        }
+      ]
     },
     'slidercrank': {
         id: 'slider-crank',
