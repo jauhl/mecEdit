@@ -1187,7 +1187,7 @@ mec.constraint = {
                 ori.t = () => this.model.timer.t;
 
             ori.drive = mec.drive.create({ func: ori.func || ori.input && 'static' || 'linear',
-                                            z0: ori.ref ? 0 : this.w0,
+                                            z0: () => ori.ref ? 0 : this.w0,
                                             Dz: ori.Dw,
                                             t0: ori.t0,
                                             Dt: ori.Dt,
@@ -1314,7 +1314,7 @@ mec.constraint = {
                 len.t = () => this.model.timer.t;
 
             len.drive = mec.drive.create({func: len.func || len.input && 'static' || 'linear',
-                                          z0: len.ref ? 0 : this.r0,
+                                          z0: () => len.ref ? 0 : this.r0,
                                           Dz: len.Dr,
                                           t0: len.t0,
                                           Dt: len.Dt,
@@ -1516,7 +1516,7 @@ mec.drive = {
             DtTotal *= repeat;  // preserve duration per repetition
         }
         return {
-            f:   () => z0 + drv.f(Math.max(0,Math.min((t() - t0)/DtTotal,1)))*Dz,
+            f:   () => z0() + drv.f(Math.max(0,Math.min((t() - t0)/DtTotal,1)))*Dz,
             ft:  () => isin(t(),t0,t0+DtTotal) ? drv.fd((t()-t0)/DtTotal)*Dz/Dt : 0,
             ftt: () => isin(t(),t0,t0+DtTotal) ? drv.fdd((t()-t0)/DtTotal)*Dz/Dt/Dt : 0
         };
@@ -2428,7 +2428,10 @@ mec.view.chart = {
 
         if (this.ref) {
             this.previewTimeTable = [];
-            this.local_t = () => this.model.constraintById(this.ref)['ori'].t();
+            const ref = this.model.constraintById(this.ref);
+            this.local_t = ref.ori.type === "drive"
+                ? () => ref.ori.t()
+                : () => ref.len.t();
         }
     },
     dependsOn(elem) {
@@ -2470,14 +2473,18 @@ mec.view.chart = {
         }
         // If mode is preview and preview was already rendered once
         else if (this.graph.xAxis && this.ref) {
-            const g = this.graph;
-            const local_t = this.local_t();
-            g.funcs.forEach((func,idx) => {
-                const pt = this.previewTimeTable.findIndex(t => t > local_t);
-                this.nods[idx] = pt === -1
-                    ? { x:0, y:0, scl: 0 } // If point is out of bounds
-                    : { ...g.pntOf(func.data[pt]), scl: 1}
-            });
+            // const ref = this.model.constraintById(this.ref)
+            // if (!(ref.p1.state & g2.DRAG || ref.p2.state & g2.DRAG)) { // only execute block if no node is being dragged
+            if (!this.model.env.editing) {  // alternative, true if undefined
+                const g = this.graph;
+                const local_t = this.local_t();
+                g.funcs.forEach((func,idx) => {
+                    const pt = this.previewTimeTable.findIndex(t => t > local_t);
+                    this.nods[idx] = pt === -1
+                        ? { x:0, y:0, scl: 0 } // If point is out of bounds
+                        : { ...g.pntOf(func.data[pt] || {x:0, y:0}), scl: 1}
+                });
+            }
         }
     },
     asJSON() {
@@ -2493,9 +2500,10 @@ mec.view.chart = {
             Dt: this.Dt,
             mode: this.mode,
             cnv: this.cnv,
+            ref: this.ref,
             xaxis: {...this.xaxis, aly:undefined}, // disregard "aly" ...
             yaxis: {...this.yaxis, aly:undefined},
-        }).replace('"yaxis"', '\n"yaxis"').replace('{"', '{ "').replace('"}', '" }');
+        }).replace('"xaxis"', '\n      "xaxis"').replace('}}', '}\n   }').replace('"yaxis"', '\n      "yaxis"').replace(/[{]/gm, '{ ').replace(/[}]/gm, ' }');
     },
     draw(g) {
         g.chart(this.graph);
@@ -3210,7 +3218,7 @@ mec.model = {
             if (previewMode) {
                 this.reset();
                 this.state.preview = true;
-                this.timer.dt = 1/30;
+                this.timer.dt = mec.clamp(1/this.env.fps || 1/30, 1/30, 1/5);
 
                 for (this.timer.t = 0; this.timer.t <= tmax; this.timer.t += this.timer.dt) {
                     this.pre().itr().post();
