@@ -1666,12 +1666,15 @@ const App = {
         cleanTempElmNew(prop) {
             let temp = JSON.parse(JSON.stringify(this.tempElm.new)); // copy for immutability
 
-            const order = ['show','of','as'];
+            const order = ['id','show','of','as'];
 
-            let startIndex = order.indexOf(prop) + 1;
+            const endIndex = order.indexOf(prop) + 1; // first elm to be not kept
+            const keep = order.slice(0,endIndex);     // Array of keys to keep
+            const tempKeys = Object.keys(temp);       // Array of keys in temp
 
-            for (let i = startIndex; i < order.length; i++) {
-                delete temp[order[i]];
+            for (const key of tempKeys) {
+                if (!keep.includes(key))
+                    delete temp[key]
             }
 
             // assign copy
