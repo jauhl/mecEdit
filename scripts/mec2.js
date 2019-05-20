@@ -1989,7 +1989,7 @@ mec.view.point = {
         Object.assign(this.p,this.of[this.show]);
     },
     asJSON() {
-        return '{ "show":"'+this.show+'","of":"'+this.of.id+'","as":"point" }';
+        return '{ "show":"'+this.show+'","of":"'+(this.show==='cog'?'model':this.of.id)+'","as":"point" }';
     },
     // interaction
     get r() { return 6; },
@@ -2208,7 +2208,7 @@ mec.view.trace = {
             this.addPoint();
     },
     asJSON() {
-        return '{ "show":"'+this.show+'","of":"'+this.of.id+'","as":"'+this.as+'"'
+        return '{ "show":"'+this.show+'","of":"'+(this.show==='cog'?'model':this.of.id)+'","as":"'+this.as+'"'
                 + (this.ref ? ',"ref":'+this.ref.id : '')
                 + (this.mode !== 'dynamic' ? ',"mode":"'+this.mode+'"' : '')
                 + (this.id ? ',"id":"'+this.id+'"' : '')
@@ -3219,7 +3219,7 @@ mec.model = {
             if (previewMode) {
                 this.reset();
                 this.state.preview = true;
-                this.timer.dt = mec.clamp(1/this.env.fps || 1/30, 1/30, 1/5);
+                this.timer.dt = mec.clamp(1/this.env.fps || 1/30, 1/30, 1/10);
 
                 for (this.timer.t = 0; this.timer.t <= tmax; this.timer.t += this.timer.dt) {
                     this.pre().itr().post();

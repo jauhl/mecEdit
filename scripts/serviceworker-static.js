@@ -1,5 +1,5 @@
 const APP_PREFIX = 'mecEdit'
-const VERSION = 'v0.6.9-19.05.2019-c'
+const VERSION = 'v0.6.9-20.05.2019'
 const CACHE_NAME = APP_PREFIX + '_' + VERSION
 const URLS = [
   './',
