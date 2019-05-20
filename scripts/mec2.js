@@ -567,6 +567,7 @@ mec.node = {
         asJSON() {
             return '{ "id":"'+this.id+'","x":'+this.x0+',"y":'+this.y0
                  + (this.base ? ',"base":true' : '')
+                 + ((!this.base && this.m !== 1) ? ',"m":"'+this.m+'"' : '')
                  + (this.idloc ? ',"idloc":"'+this.idloc+'"' : '')
                  + ' }';
         },
