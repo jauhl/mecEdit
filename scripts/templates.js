@@ -171,19 +171,19 @@ const tmpl = {
                          </li>`
     ,
     removeSpringButton: () => `<div class="section-divider"></div><li class="input-group" style="height:28px;"><div id="spring-trash" class="ctxm-right"><svg class="svg-icon" width="22px" height="22px" viewBox="0 0 448 512">                             <path d="M192 188v216c0 6.627-5.373 12-12 12h-24c-6.627 0-12-5.373-12-12V188c0-6.627 5.373-12 12-12h24c6.627 0 12 5.373 12 12zm100-12h-24c-6.627 0-12 5.373-12 12v216c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12V188c0-6.627-5.373-12-12-12zm132-96c13.255 0 24 10.745 24 24v12c0 6.627-5.373 12-12 12h-20v336c0 26.51-21.49 48-48 48H80c-26.51 0-48-21.49-48-48V128H12c-6.627 0-12-5.373-12-12v-12c0-13.255 10.745-24 24-24h74.411l34.018-56.696A48 48 0 0 1 173.589 0h100.823a48 48 0 0 1 41.16 23.304L349.589 80H424zm-269.611 0h139.223L276.16 50.913A6 6 0 0 0 271.015 48h-94.028a6 6 0 0 0-5.145 2.913L154.389 80zM368 128H80v330a6 6 0 0 0 6 6h276a6 6 0 0 0 6-6V128z"                             fill="currentColor"/>                         </svg></div></li>`,
-    viewModal: () => `<div class="modal-header bg-dark text-white">
+    viewModal: (fromTarget = false) => `<div class="modal-header bg-dark text-white">
                           <h5 class="modal-title">add view component</h5>
                           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
                       </div>
                       <div id="view-body" class="modal-body">
-                          ${tmpl.viewContent()}
+                          ${tmpl.viewContent(fromTarget)}
                       </div>
                       <div class="modal-footer">
                           <button type="button" id="view-cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
                           <button type="button" id="view-accept" class="btn btn-primary" id="modalAccept">Accept</button>
                       </div>`
     ,
-    viewContent: () => {
+    viewContent: (fromTarget = false) => {
 
         /**************** ID property *****************/
         // template holds markup-string
@@ -335,7 +335,7 @@ const tmpl = {
         // evaluate what 'show' value is for
         if (app.model.elementById(app.tempElm.new.of).type === 'node' ) {
             type = 'nodes'
-        } else if (['free','rot','tran','ctrl'].includes(app.model.elementById(app.tempElm.new.of))) {
+        } else if (['free','rot','tran','ctrl'].includes(app.model.elementById(app.tempElm.new.of).type)) {
             type = 'constraints'
         };
 
@@ -347,7 +347,8 @@ const tmpl = {
             // 'show' type 'info'
             if ( app.alyValues[type].info.includes(app.tempElm.new.show) ) {
                 // initial call
-                if ( !app.tempElm.new.hasOwnProperty('as') )
+                // if ( !app.tempElm.new.hasOwnProperty('as') )
+                if (fromTarget !== 'select-view-as')
                     app.tempElm.new.as = 'info';
 
                 template += `<option value="info" ${((app.tempElm.new.as === 'info') ? 'selected' : '')}>info</option>`;
@@ -356,7 +357,8 @@ const tmpl = {
             // 'show' type 'vector'
             if ( app.alyValues[type].vector.includes(app.tempElm.new.show) ) {
                 // initial call
-                if ( !app.tempElm.new.hasOwnProperty('as') )
+                // if ( !app.tempElm.new.hasOwnProperty('as') )
+                if (fromTarget !== 'select-view-as')
                     app.tempElm.new.as = 'vector';
 
                 template += `<option value="vector" ${((app.tempElm.new.as === 'vector') ? 'selected' : '')}>vector</option>`;
@@ -365,7 +367,8 @@ const tmpl = {
             // 'show' type 'point' OR 'trace'
             if ( app.alyValues[type].tracePoint.includes(app.tempElm.new.show) ) {
                 // initial call
-                if ( !app.tempElm.new.hasOwnProperty('as') )
+                // if ( !app.tempElm.new.hasOwnProperty('as') )
+                if (fromTarget !== 'select-view-as')
                     app.tempElm.new.as = 'trace';
 
                 ['point','trace'].forEach(opt => {
@@ -385,7 +388,8 @@ const tmpl = {
         if (app.tempElm.new.as === 'point') {
 
             // all optional properties have been removed with app.tidyTempElmNew()
-            if (!app.tempElm.new.hasOwnProperty('by'))
+            // if (!app.tempElm.new.hasOwnProperty('by'))
+            if (fromTarget !== 'select-view-by')
                 app.tempElm.new.by = 'dot';
 
             // add head
@@ -404,9 +408,9 @@ const tmpl = {
         if (app.tempElm.new.as === 'vector') {
 
             // all optional properties have been removed with app.tidyTempElmNew()
-            if (!app.tempElm.new.hasOwnProperty('at')) {
-                app.tempElm.new.at = app.tempElm.new.of; // copy default
-            }
+            // if (!app.tempElm.new.hasOwnProperty('at'))
+            if (fromTarget !== 'select-view-at')
+                app.tempElm.new.at = app.model.nodes[0].id; // first node in model
 
             // add head
             template += tmpl.selectHead('at', false, 'Origin of vector');
@@ -425,9 +429,9 @@ const tmpl = {
             // ####### ['mode'] #######
 
             // all optional properties have been removed with app.tidyTempElmNew()
-            if (!app.tempElm.new.hasOwnProperty('mode')) {
+            // if (!app.tempElm.new.hasOwnProperty('mode'))
+            if (fromTarget !== 'select-view-mode')
                 app.tempElm.new.mode = 'dynamic'; // set default
-            }
 
             // add head
             template += tmpl.selectHead('mode', false, 'Mode of trace-analysis');

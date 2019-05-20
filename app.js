@@ -371,7 +371,7 @@ const App = {
                 },
                 constraints: {
                     info: ['w','wt','wtt','r','rt','rtt','forceAbs','moment'],
-                    vector: ['polAcc','polChgVel'],
+                    vector: [], // ['polAcc','polChgVel'] currently not really working
                     tracePoint: ['pole','velPole','accPole','inflPole']
                 }
             };
@@ -1669,7 +1669,7 @@ const App = {
             const order = ['id','show','of','as'];
 
             const endIndex = order.indexOf(prop) + 1; // first elm to be not kept
-            const keep = order.slice(0,endIndex);     // Array of keys to keep
+            const keep = [...order.slice(0,endIndex), 'as'];     // Array of keys to keep
             const tempKeys = Object.keys(temp);       // Array of keys in temp
 
             for (const key of tempKeys) {

@@ -409,7 +409,7 @@ const events = {
     viewModalChange: (id) => {
         /*********************************  viewmodal change handler  ****************************************/
         document.getElementById(id).addEventListener('change', (e) => {
-            let skipUpdate = true;
+            let skipUpdate = true, passTarget = false;
 
             if (e.target && e.target.id === 'input-view-id') {
                 app.updateTempElmNew('id',e.target.value);
@@ -428,22 +428,22 @@ const events = {
                 app.updateTempElmNew('as',e.target.value);
                 app.tidyTempElmNew(app.tempElm.new.as); // remove not needed optional properties
                 skipUpdate = false;
+                passTarget = e.target.id;
             };
             if (e.target && e.target.id === 'select-view-by') {
                 app.updateTempElmNew('by',e.target.value);
                 skipUpdate = false;
+                passTarget = e.target.id;
             };
             if (e.target && e.target.id === 'select-view-at') {
                 app.updateTempElmNew('at',e.target.value);
                 skipUpdate = false;
+                passTarget = e.target.id;
             };
             if (e.target && e.target.id === 'select-view-mode') {
                 app.updateTempElmNew('mode',e.target.value);
                 skipUpdate = false;
-            };
-            if (e.target && e.target.id === 'select-view-elem') {
-                app.updateTempElmNew('elem',e.target.value);
-                skipUpdate = false; // valid values can change between elems
+                passTarget = e.target.id;
             };
             if (e.target && e.target.id === 'view-stroke-color') {
                 app.updateTempElmNew('stroke',e.target.value);
@@ -453,7 +453,7 @@ const events = {
             };
 
             if (!skipUpdate) {
-                app.viewModal.setContent(tmpl.viewModal());
+                app.viewModal.setContent(tmpl.viewModal(passTarget));
                 if (!!document.getElementById('view-fill-color-btn'))
                     document.getElementById('view-fill-color-btn').style.backgroundColor = document.getElementById('view-fill-color').disabled ? 'transparent' : '#e9ecef';
                 app.viewModal.update();
