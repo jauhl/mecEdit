@@ -1,11 +1,11 @@
 'use-strict';
 const tmpl = {
-    header: (elm,type) => `<h6 class="mb-0">${type} <span style="font-family:roboto;font-weight:500;font-style:italic;">${elm.id}</span></h6>`, // stringified constraints have no type: ${elm.type}
+    header: (elm,type) => `<h6 class="mb-0">${type} <span style="font-weight:600;font-style:italic;">${elm.id}</span></h6>`, // stringified constraints have no type: ${elm.type}
     sectionTitle: (title,elm) => {
         let value = title === 'ori' ? 'w' : title === 'len' ? 'r' : false,
             template = `<div class="section-divider"></div>
                         <li class="input-group">
-                            <label class="input-group-text ctxm-section-title"style="font-family:roboto;font-weight:500;">${title}</label>
+                            <label class="input-group-text ctxm-section-title"style="font-weight:600;">${title}</label>
                             ${value?`<div class="ctxm-right">${`${value}: ${(app.model.constraintById(elm.id)[`${value}`]*mec.aly[`${value}`].scl).toPrecision(3)} ${mec.aly[`${value}`].unit}`}</div>`:''}
                         </li>`;
         return template;
