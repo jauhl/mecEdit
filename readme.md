@@ -26,9 +26,9 @@ planar linkages.
 <br><br>
 # User guide
 
-[german version](./docs/userguide_de.md)
+[English](./docs/userguide_en.md)
 
-english version: todo
+[German](./docs/userguide_de.md)
 
 ---
 <br><br>
