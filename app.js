@@ -165,31 +165,6 @@ const origin = g2().beg({ lc: 'round', lj: 'round', ls:()=>app.show.darkmode?'si
                         .txt({str:'y', x: 6, y: 30})
                     .end();
 
-// deprecated
-// /**
-// * Returns a gravity vector as a g2-object.
-// * @method
-// * @returns {object}
-// */
-// const gravvec = (cartesian = true) => {
-//     const ytxt = cartesian ? -20 : -15;
-//     return g2().beg({ w: -pi/2, lw: 2, ls:()=>app.show.darkmode?'silver':'slategray', fs: 'darkgray'})
-//                .p()
-//                    .m({ x: 0, y: 0 })
-//                    .l({ x: 50, y: 0 })
-//                .stroke()
-//                .p()
-//                    .m({ x: 50, y: 0 })
-//                    .l({ x: 50 - 17.5, y: -3.5 })
-//                    .a({ dw: pi/3, x: 50 - 17.5, y: 3.5 })
-//                .z()
-//                .drw()
-//             .end()
-//             .beg({ ls:()=>app.show.darkmode?'silver':'slategray', font: '14px roboto'})
-//                 .txt({str:'g', x: -15, y: ytxt})
-//             .end();
-// };
-
 /**
 * Container for `create()` & `prototype()`.
 * @typedef {object}
@@ -224,110 +199,6 @@ const App = {
             this.model = {
                 "id":"linkage"
             };
-            // this.model = {
-            //     "id":"crank-rocker",
-            //     "gravity":true,
-            //     "nodes": [
-            //       { "id":"A0","x":100,"y":100,"base":true },
-            //       { "id":"A","x":91,"y":150 },
-            //       { "id":"B","x":350,"y":220 },
-            //       { "id":"B0","x":300,"y":100,"base":true },
-            //       { "id":"C","x":250,"y":320 }
-            //     ],
-            //     "constraints": [
-            //       { "id":"a","p1":"A0","p2":"A","len":{ "type":"const" },"ori":{ "type":"drive","Dt":3,"Dw":6.283185307179586 } },
-            //       { "id":"b","p1":"A","p2":"B","len":{ "type":"const" } },
-            //       { "id":"c","p1":"B0","p2":"B","len":{ "type":"const" } },
-            //       { "id":"d","p1":"B","p2":"C","len":{ "type":"const" },"ori":{ "type":"const","ref":"b" } }
-            //     ],
-            //     "views": [
-            //       { "show":"pos","of":"C","as":"trace","mode":"preview","id":"view1","Dt":3,"stroke":"rgba(255,0,0,1)","fill":"rgba(255,235,13,.5)" },
-            //       { "show":"w","of":"a","as":"info","id":"ia" },
-            //       { "as":"chart","canvas":"chart1","x":40,"y":40,"b":200,"h":150,"t0":0.25,"Dt":3,"mode":"preview","xaxis":{"show":"w","of":"a" },
-            //   "yaxis":{"show":"w","of":"c"}}
-            //     ]
-            //   }
-            // this.model = {
-            //     "id":"linkage",
-            //     "nodes": [
-            //       { "id":"A","x":372,"y":386,"base":true },
-            //       { "id":"B","x":375,"y":240 },
-            //       { "id":"C","x":371,"y":531 },
-            //       { "id":"D","x":233,"y":393 }
-            //     ],
-            //     "constraints": [
-            //       { "id":"b","p1":"A","p2":"B","len":{ "type":"const" } },
-            //       { "id":"a","p1":"A","p2":"C","ori":{ "type":"const","ref":"b" } },
-            //       { "id":"c","p1":"A","p2":"D","len":{ "type":"const" },"ori":{ "type":"drive","Dt":1,"Dw":6.283185307179586 } }
-            //     ]
-            //   }
-            // this.model = {
-            //     "id":"crank-rocker",
-            //     "gravity":true,
-            //     "nodes": [
-            //       { "id":"A0","x":100,"y":100,"base":true },
-            //       { "id":"A","x":91,"y":150 },
-            //       { "id":"B","x":350,"y":220 },
-            //       { "id":"B0","x":300,"y":100,"base":true },
-            //       { "id":"C","x":250,"y":320 }
-            //     ],
-            //     "constraints": [
-            //       { "id":"a","p1":"A0","p2":"A","len":{ "type":"const" },"ori":{ "type":"drive","Dt":3,"Dw":6.283185307179586 } },
-            //       { "id":"b","p1":"A","p2":"B","len":{ "type":"const" } },
-            //       { "id":"c","p1":"B0","p2":"B","len":{ "type":"const" } },
-            //       { "id":"d","p1":"B","p2":"C","len":{ "type":"const" },"ori":{ "type":"const","ref":"b" } }
-            //     ],
-            //     "views": [
-            //       { "show":"pos","of":"C","as":"trace","mode":"preview","id":"view1","Dt":3,"stroke":"rgba(255,0,0,1)","fill":"rgba(255,235,13,.5)" },
-            //       { "show":"w","of":"a","as":"info","id":"ia" },
-            //       { "as":"chart","canvas":"chart1","x":40,"y":40,"b":200,"h":150,"t0":0.25,"Dt":3,"mode":"preview","xaxis":{"show":"w","of":"a" },
-            //   "yaxis":{"show":"w","of":"c"}}
-            //     ]
-            //   }
-            // this.model = {
-            //     "id":"pumpjack",
-            //     "nodes": [
-            //         { "id":"origin", "x":0,        "y":0,        "base":true },
-            //         { "id":"A0",     "x":712*0.4,  "y":558*0.4,  "base":true },
-            //         { "id":"A",      "x":807*0.4,  "y":724*0.4               },
-            //         { "id":"B",      "x":765*0.4,  "y":1325*0.4              },
-            //         { "id":"B0",     "x":1148*0.4, "y":1193*0.4, "base":true },
-            //     ],
-            //     "constraints": [
-            //         { "id":"a", "p1":"A0", "p2":"A", "len": { "type":"const" }, "ori":{ "type":"drive", "func":"linear", "Dt":5, "Dw":2*Math.PI, "repeat":10000 } },
-            //         { "id":"b", "p1":"A",  "p2":"B", "len": { "type":"const" } },
-            //         { "id":"c", "p1":"B0", "p2":"B", "len": { "type":"const" } }
-            //     ],
-            //     "shapes": [
-            //         { "type":"poly", "pts":[{"x":0,"y":0},{"x":2085*.4,"y":0},{"x":2085*.4,"y":1680*.4},{"x":0,"y":1680*.4}], "fill":"#3ae" },
-            //         // { "type":"poly", "pts":[0,0,500,0,500,200,0,200], "fill":"#3ae" }
-            //         // { "type":"poly", "pts":[[0,0],[500,0],[500,200],[0,200]],"p":"origin", "fill":"#3ae" }
-            //         { "type":"img", "uri":"./img/pumpjack/pumpjack2.png",  "scl": .4 }
-            //         // {
-            //         //     type:"img",
-            //         //     uri:"./img/pumpjack/pumpjack2.png",
-            //         //     // p:"A",
-            //         //     // p: {x:200, y:100},
-            //         //     // b:500,
-            //         //     // h:500,
-            //         //     // sx: 300,
-            //         //     // sy: 100,
-            //         //     // sb: 800,
-            //         //     // sh: 800,
-            //         //     // xoff: -100,
-            //         //     // yoff: -100,
-            //         //     // w0: 0.5,
-            //         //     wref: "c",
-            //         //     scl:0.5
-            //         // }
-
-            //         // { "type":"poly", "pts":[{"x":0,"y":0},{"x":2085*.4,"y":0},{"x":2085*.4,"y":1680*.4},{"x":0,"y":1680*.4}], "fill":"#0007" },
-            //         // { "type":"img", "uri":"./img/pumpjack/crank.png",   "p":"A0", "wref":"a", "xoff":-220, "yoff":-50,  "w0":-pi/2,     "scl":.4 },
-            //         // { "type":"img", "uri":"./img/pumpjack/rocker.png",  "p":"B0", "wref":"c", "xoff":-430, "yoff":-226, "w0":-1.005*pi, "scl":.4 },
-            //         // { "type":"img", "uri":"./img/pumpjack/coupler.png", "p":"A",  "wref":"b", "xoff":-34,  "yoff":-35,  "w0":-pi/2,     "scl":.4 },
-            //         // { "type":"img", "uri":"./img/pumpjack/frame.png",   "p":"B0", "xoff":-60, "yoff":-34, "scl":.4 }
-            //     ]
-            // };
 
             /**
             * mecEdit version.
@@ -656,46 +527,6 @@ const App = {
         * @method
         * @param {object} elm - Element whose dependants should be reinitialized.
         */
-        // updDependants(elm) {
-        //     let dependants = {ori:[],len:[]}; // declaring and filling array would be way more efficient in app scope since dependents don't change during drag
-        //     // for (const el of this.model.constraints) {
-        //     //     if (el.dependsOn(elm) && (  (el.ori.type === 'const' && el.ori.ref)
-        //     //                              ||  el.ori.type === 'drive'
-        //     //                              || (el.len.type === 'const' && el.len.ref)
-        //     //                              ||  el.len.type === 'drive')) {
-        //     //     // if (el.dependsOn(elm) && (el.ori.type === 'drive' || el.len.type === 'drive')) {
-        //     //         dependants.push(el);
-        //     //     }
-        //     // };
-        //     for (const el of this.model.constraints) {
-        //         if (el.dependsOn(elm)) {
-        //             if ( (el.ori.type === 'const' && el.ori.ref) || el.ori.type === 'drive' ) {
-        //                 dependants.ori.push(el);
-        //             }
-        //             if ( (el.len.type === 'const' && el.len.ref) || el.len.type === 'drive' ) {
-        //                 dependants.len.push(el);
-        //             }
-        //         }
-        //         // if (el.dependsOn(elm) && (el.ori.type === 'drive' || el.len.type === 'drive')) {
-        //     };
-        //     console.log(dependants);
-        //     // debugger
-        //     // dependants.forEach(el => el.init(this.model)); // since only needed for drives, maybe implement user setting to choose between performance & simplicity
-        //     // dependants.ori.forEach(el => {
-        //     //     if (el.ori.type === 'drive')
-        //     //         el.w0 = el.w
-        //     //         // el.init_ori_drive(el.ori)
-        //     //     if (el.len.type === 'drive')
-        //     //         el.init_len_drive(el.len)
-        //     //     // el.init(this.model);
-        //     // });
-        //     dependants.ori.forEach(el => el.w0 = el.w);
-        //     dependants.len.forEach(el => el.r0 = el.r);
-
-        //     if (this.model.state.hasChartPreview || this.model.state.hasTracePreview)
-        //         this.model.preview();
-        // },
-
         updDependants(elm) {
             let dependants = []; // declaring and filling array would be way more efficient in app scope since dependents don't change during drag
             for (const el of this.model.constraints) {
@@ -859,19 +690,6 @@ const App = {
             this.notify('render')
         },
 
-        // /**
-        // * Create a canvas for a chart, set options & append to container.
-        // * @method
-        // * @param {object} chart - chart-view for canvas.
-        // */
-        // createCanvas(chart) {
-        //     let canvas = document.createElement('canvas');
-        //     canvas.id = chart.canvas;
-        //     canvas.width = 350;
-        //     canvas.height = 200;
-        //     chartcontainer.appendChild(canvas);
-        // },
-
         /**
         * Builds a g2-command-queue for charts in secondary canvas-elements.
         * @method
@@ -911,12 +729,6 @@ const App = {
             this.instruct.innerHTML = ''; // reset instructions
             this.notify('render');
         },
-
-        // replaceNode(oldN, newN) { // deprecated
-        //     if (!(oldN.x === newN.x)) this.model.nodeById(oldN.id).x = newN.x;
-        //     if (!(oldN.y === newN.y)) this.model.nodeById(oldN.id).y = newN.y;
-        //     if (!(oldN.m === newN.m)) this.model.nodeById(oldN.id).m = newN.m;
-        // },
 
         /**
         * Adds a new node to the model.
@@ -1531,35 +1343,6 @@ const App = {
             fr.readAsText(file); // fires load event
         },
 
-        // /**
-        // * Opens a dialogue to download thr current model as a JSON file.
-        // * @method
-        // */
-        // saveToJSON() {
-        //     let a = document.createElement('a'),
-        //         file = new Blob([this.model.asJSON()], { type: 'application/json' });
-        //     a.href = URL.createObjectURL(file);
-        //     a.download = (!!this.model.id && this.model.id.length > 0) ? `${this.model.id}.json` : 'linkage.json';
-        //     document.body.appendChild(a); // Firefox needs the element to be added to the DOM for this to work, Chrome & Edge ¯\_(ツ)_/¯
-        //     a.click();
-        //     document.body.removeChild(a);
-        // },
-
-        // /**
-        // * Opens a dialogue to download the current model as a JSON file.
-        // * @method
-        // */
-        // saveToHTML() {
-        //     let modelHasId = (!!this.model.id && this.model.id.length) ? true : false;
-        //     let a = document.createElement('a');
-        //     let file = new Blob([tmpl.mec2Element(modelHasId)], { type: 'application/html' });
-        //     a.href = URL.createObjectURL(file);
-        //     a.download = modelHasId ? `${this.model.id}.html` : 'linkage.html';
-        //     document.body.appendChild(a);
-        //     a.click();
-        //     document.body.removeChild(a);
-        // },
-
         /**
         * Opens a dialogue to download the current model as a specified file (json or html).
         * @method
@@ -1762,32 +1545,6 @@ load()
 
     // arrays for view-modal, do this whenever...
     (async () => {
-        //  Slower version of new Set method
-        // copy-merge alyValue arrays for faster checking in view-modal (keep in mind that some (eg. acc, vel, forceAbs) are in multiple!)
-        // app.alyValues.forNodes = await app.alyValues.nodes.info.concat(app.alyValues.nodes.vector, app.alyValues.nodes.tracePoint);
-        // app.alyValues.forConstraints = await app.alyValues.constraints.info.concat(app.alyValues.constraints.vector, app.alyValues.constraints.tracePoint);
-
-        //build filtered array (no duplicates) with all possible aly values for all components
-        // copy node values to new array
-        // app.alyValues.all = await app.alyValues.forNodes.concat();
-        // app.alyValues.all = [];
-
-        // await app.alyValues.forNodes.forEach(element => {
-        //     if ( !app.alyValues.all.includes(element) )
-        //         app.alyValues.all.push(element);
-        // });
-        // // add constraint values
-        // await app.alyValues.forConstraints.forEach(element => {
-        //     if ( !app.alyValues.all.includes(element) )
-        //         app.alyValues.all.push(element);
-        // });
-        // // add model value(s) (currently a single element...)
-        // await app.alyValues.model.tracePoint.forEach(element => {
-        //     if ( !app.alyValues.all.includes(element) )
-        //         app.alyValues.all.push(element);
-        // });
-
-
         // copy-merge alyValue arrays for faster checking in view-modal (keep in mind that some (eg. acc, vel, forceAbs) are in multiple!)
         app.alyValues.forNodes = await [... new Set([
             ... app.alyValues.nodes.info,
@@ -1895,6 +1652,6 @@ load()
     window.dispatchEvent(new Event('resize'));
 
 })
-// .catch((error) => {
-//     console.error('Initialisation failed, error:', error);
-// });
+.catch((error) => {
+    console.error('Initialisation failed, error:', error);
+});
