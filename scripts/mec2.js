@@ -2436,7 +2436,7 @@ mec.view.chart = {
         }
     },
     dependsOn(elem) {
-        return this.yaxis.some(y => y.of === elem) || this.xaxis.of === elem;
+        return this.data.y.some(y => y.of === elem) || this.data.x.of === elem;
     },
     addPoint() {
         const g = this.graph;
