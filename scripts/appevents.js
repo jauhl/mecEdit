@@ -479,15 +479,18 @@ const events = {
             e.stopPropagation();
             e.preventDefault();
             const files = e.dataTransfer.files;
-
-            if (files[0].type.match('application/json')) {
-                console.log('Model was dropped ...');
-                app.loadFromJSON(files)
-            } else {
-                console.error('Only files of type JSON can be processed!');
+            try {
+                if (!!files && files.length && files[0].type.match('application/json')) {
+                    console.log('Model was dropped ...');
+                    app.loadFromJSON(files)
+                } else {
+                    console.error('Only files of type JSON can be processed!');
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                document.querySelector('.drop-info').style.display = 'none';
             }
-
-            document.querySelector('.drop-info').style.display = 'none';
         });
 
         document.getElementById(id).addEventListener('dragover', (e) => {
@@ -497,6 +500,7 @@ const events = {
 
         document.getElementById(id).addEventListener('dragenter', (e) => {
             // show drop-info
+            // console.log(e);
             document.querySelector('.drop-info').style.display = 'block';
         });
 

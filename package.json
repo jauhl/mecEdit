@@ -1,6 +1,6 @@
 {
   "name": "mecedit",
-  "version": "0.6.9",
+  "version": "0.7.0",
   "description": "A lightweight editor for modeling and simulation of planar linkages.",
   "keywords": [
     "vector",
@@ -20,7 +20,7 @@
     "build": "npm run minify && npm run minify-css && npm run minify-sw",
     "fullbuild": "npm run minify && npm run minify-css && npm run minify-sw && npm run jsdoc && npm run gzip",
     "minify": "uglifyjs ./scripts/mixin.js ./scripts/slider.js ./scripts/templates.js ./scripts/appevents.js ./scripts/examples.js ./app.js -o ./app.min.js --comments -c",
-    "minify-sw": "uglifyjs ./scripts/serviceworker-static.js -o ./sw.js --comments -c --define env.VERSION='%date%-%time%'",
+    "minify-sw": "uglifyjs ./scripts/serviceworker.js -o ./sw.js --comments -c --define env.VERSION='%date%-%time%'",
     "minify-css": "postcss app.css > app.min.css",
     "jsdoc": "jsdoc2md ./app.js > ./docs/app.md",
     "gzip": "ngzip ./app.min.js > ./app.min.js.gz"

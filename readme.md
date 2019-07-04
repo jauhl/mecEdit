@@ -26,14 +26,22 @@ planar linkages.
 <br><br>
 # User guide
 
-[English](./docs/userguide_en.md)
+[Deutsch](./docs/userguide_de.md)
 
-[German](./docs/userguide_de.md)
+[English](./docs/userguide_en.md)
 
 ---
 <br><br>
 
 # Changelog
+
+## v0.7.0
+
+### general:
++ Node and constraint visibility is now reset for each new model.
++ Fixed a bug where the drag&drop overlay would persist.
+
+---
 
 ## v0.6.9
 
