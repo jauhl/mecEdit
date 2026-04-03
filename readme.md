@@ -1,6 +1,6 @@
 
 ---
-## [Try **_mecEdit_** out!](https://mecedit.com "mecEdit")
+## [Try **_mecEdit_** out!](https://jauhl.github.io/mecEdit/)
 ---
 
 
@@ -51,7 +51,6 @@ planar linkages.
 + Copy a JSON-String of your model to the clipboard by clicking the new copy button in the JSON editor.
 + A snippet for chart-views is provided for you to copy to your clipboard and paste it in the JSON editor.
 + Drag&Drop your JSON models directly to the canvas.
-+ You can now reach mecEdit under [mecedit.com](https://mecedit.com)
 + (internal change) you should now get & set `app.dragMode` only via `app.editing`.
 
 ---
