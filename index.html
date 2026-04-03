@@ -10,7 +10,7 @@
     <title>mecEdit</title>
 
     <!-- meta -->
-    <link rel="canonical" href="https://mecedit.com/" />
+    <link rel="canonical" href="https://jauhl.github.io/mecEdit/" />
     <link rel='manifest' href='./manifest.json'>
 
     <link rel="apple-touch-icon" sizes="180x180" href="./img/favicon/apple-touch-icon.png">
@@ -695,7 +695,7 @@
             if (navigator.serviceWorker.controller) {
                 console.log('Service Worker found');
             } else {
-                navigator.serviceWorker.register('sw.js', {scope: '/'})
+                navigator.serviceWorker.register('sw.js')
                 .then((registration) => {
                   console.log('Service Worker registration successful, scope is:', registration.scope);
                 })
